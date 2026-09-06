@@ -715,7 +715,7 @@ erDiagram
 
     CARTS {
         bigint id PK
-        bigint user_id FK UK
+        bigint user_id FK "Unique per user"
         string status "active / checked_out"
     }
 
