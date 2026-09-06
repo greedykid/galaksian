@@ -58,6 +58,10 @@
 
                 flashSaleCountdown: { h: '04', m: '18', s: '29' },
                 searchQuery: '',
+                isSearching: false,
+                searchResults: [],
+                hasSearched: false,
+                searchTotal: 0,
                 waCsUrl: 'https://wa.me/6281200000001?text=Halo%20Admin%20Galaksian%2C%20saya%20butuh%20bantuan%20jastip',
 
                 toast: { show: false, message: '', type: 'success' },
@@ -249,20 +253,54 @@
                 },
 
                 async searchProducts() {
-                    if (!this.searchQuery.trim()) {
-                        this.fetchHome();
+                    const q = this.searchQuery ? this.searchQuery.trim() : '';
+                    if (!q) {
+                        this.clearSearch();
                         return;
                     }
+                    this.isSearching = true;
+                    this.hasSearched = true;
+                    const currentQuery = q;
                     try {
-                        const res = await fetch('/api/v1/products?q=' + encodeURIComponent(this.searchQuery), { headers: this.getHeaders() });
+                        const res = await fetch('/api/v1/products?q=' + encodeURIComponent(q), { headers: this.getHeaders() });
                         const json = await res.json();
+                        // Prevent race conditions if user typed something else while request was flying
+                        if (this.searchQuery.trim() !== currentQuery) {
+                            return;
+                        }
                         if (json.success) {
-                            this.homeData.product_grid.data = json.data;
-                            this.curatedTab = 'special';
+                            const items = Array.isArray(json.data) ? json.data : (json.data?.data || []);
+                            this.searchResults = items;
+                            this.searchTotal = (json.data && json.data.meta && json.data.meta.total !== undefined)
+                                ? json.data.meta.total
+                                : items.length;
+                            if (this.homeData && this.homeData.product_grid) {
+                                this.homeData.product_grid.data = items;
+                            }
+                        } else {
+                            this.searchResults = [];
+                            this.searchTotal = 0;
                         }
                     } catch (e) {
                         console.error('Search error:', e);
+                        if (this.searchQuery.trim() === currentQuery) {
+                            this.searchResults = [];
+                            this.searchTotal = 0;
+                        }
+                    } finally {
+                        if (this.searchQuery.trim() === currentQuery) {
+                            this.isSearching = false;
+                        }
                     }
+                },
+
+                clearSearch() {
+                    this.searchQuery = '';
+                    this.isSearching = false;
+                    this.hasSearched = false;
+                    this.searchResults = [];
+                    this.searchTotal = 0;
+                    this.fetchHome();
                 },
 
                 getCuratedProducts() {

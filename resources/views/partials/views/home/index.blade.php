@@ -8,6 +8,7 @@
         <!-- Search Bar Capsule -->
         <div class="mb-3.5">
             <div class="relative flex items-center bg-white rounded-full p-1 pl-3.5 shadow-sm">
+                <!-- Magnifying Glass Icon -->
                 <svg class="w-4 h-4 text-zinc-400 shrink-0 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -18,19 +19,38 @@
                     @input.debounce.300ms="searchProducts()"
                     @keydown.enter="searchProducts()"
                     :placeholder="t('search_placeholder', 'Cari produk dari Jepang...')" 
-                    class="w-full bg-transparent text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none"
+                    class="w-full bg-transparent text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none pr-1"
                 >
+                <!-- Clear Button (when text exists) -->
+                <button 
+                    type="button"
+                    x-show="searchQuery && searchQuery.length > 0"
+                    @click="clearSearch()"
+                    class="p-1 text-zinc-400 hover:text-zinc-600 rounded-full transition mr-1 shrink-0"
+                    title="Hapus pencarian">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
                 <button 
                     @click="searchProducts()"
-                    class="px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full transition shadow-xs shrink-0 active:scale-95"
-                    x-text="t('search_btn', 'Cari')">
-                    Cari
+                    :disabled="isSearching"
+                    class="px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full transition shadow-xs shrink-0 active:scale-95 disabled:opacity-75 flex items-center gap-1.5">
+                    <template x-if="isSearching">
+                        <svg class="w-3 h-3 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                    </template>
+                    <span x-text="t('search_btn', 'Cari')">Cari</span>
                 </button>
             </div>
         </div>
 
         <!-- Tokyo Summer Hero Carousel (Auto-sliding & Swipeable) -->
-        <div class="relative overflow-hidden min-h-[140px] select-none cursor-grab active:cursor-grabbing touch-pan-y" 
+        <div x-show="!searchQuery || !searchQuery.trim()">
+            <div class="relative overflow-hidden min-h-[140px] select-none cursor-grab active:cursor-grabbing touch-pan-y" 
              @mouseenter="pauseHeroCarousel()" 
              @mouseleave="startHeroCarousel()"
              @touchstart="handleHeroTouchStart($event)"
@@ -150,7 +170,139 @@
                 aria-label="Slide 3">
             </button>
         </div>
+        </div>
     </div>
+
+    <!-- ================= SEARCH RESULTS VIEW (WHEN SEARCHING) ================= -->
+    <div x-show="searchQuery && searchQuery.trim().length > 0" class="space-y-4 px-4 pt-1" x-cloak>
+        <!-- Search Header Bar -->
+        <div class="bg-white border border-zinc-200/90 rounded-2xl p-3 shadow-2xs flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-xs font-bold text-zinc-900" x-text="t('search_results_title', 'Hasil Pencarian')">Hasil Pencarian</span>
+                        <span class="text-xs font-extrabold text-[#1657FF] truncate max-w-[160px]" x-text="'“' + searchQuery.trim() + '”'"></span>
+                    </div>
+                    <p class="text-[10px] text-zinc-500 font-medium" x-text="isSearching ? t('search_searching', 'Mencari produk...') : (searchTotal + ' ' + t('search_found', 'produk ditemukan'))"></p>
+                </div>
+            </div>
+            <button 
+                @click="clearSearch()" 
+                class="text-[11px] font-bold text-zinc-500 hover:text-zinc-800 bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 px-3 py-1.5 rounded-xl transition flex items-center gap-1 shrink-0">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span x-text="t('search_reset', 'Reset')">Reset</span>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <template x-if="isSearching">
+            <div class="py-12 text-center bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-2xs">
+                <div class="inline-block w-8 h-8 border-3 border-[#1657FF] border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-xs font-semibold text-zinc-600 mt-3" x-text="t('search_searching', 'Mencari produk...')">Mencari produk...</p>
+            </div>
+        </template>
+
+        <!-- Empty State (No Products Found) -->
+        <template x-if="!isSearching && searchResults.length === 0 && hasSearched">
+            <div class="py-10 px-4 text-center bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
+                <div class="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center mx-auto text-zinc-400">
+                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-zinc-900" x-text="t('search_not_found', 'Produk Tidak Ditemukan')">Produk Tidak Ditemukan</h4>
+                    <p class="text-xs text-zinc-500 mt-1 max-w-[280px] mx-auto leading-relaxed">
+                        Tidak ada produk yang cocok dengan kata kunci <span class="font-bold text-zinc-800" x-text="'“' + searchQuery + '”'"></span>. Coba gunakan kata kunci umum seperti mie, matcha, skincare, atau camilan.
+                    </p>
+                </div>
+                <div class="pt-2 flex flex-col gap-2 max-w-[220px] mx-auto">
+                    <button 
+                        @click="clearSearch()" 
+                        class="w-full py-2 bg-[#1657FF] hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95">
+                        Lihat Semua Produk
+                    </button>
+                    <a 
+                        :href="waCsUrl + '&text=' + encodeURIComponent('Halo Admin Galaksian, saya mencari produk ' + searchQuery + ' tapi belum ada di katalog.')" 
+                        target="_blank" 
+                        class="w-full py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+                        <span>Titip via WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+        </template>
+
+        <!-- Search Results Grid (2 Columns) -->
+        <template x-if="!isSearching && searchResults.length > 0">
+            <div class="grid grid-cols-2 gap-2.5 pb-6">
+                <template x-for="prod in searchResults" :key="'search-' + prod.id">
+                    <div class="bg-white border border-zinc-200/80 rounded-2xl p-2.5 shadow-2xs flex flex-col justify-between hover:border-zinc-300 transition">
+                        <div>
+                            <!-- Product Image with Discount & Availability Badges -->
+                            <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100 cursor-pointer" @click="openProductDetail(prod)">
+                                <img :src="prod.primary_image || getFallbackImage(prod)" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80'">
+                                
+                                <!-- Discount badge -->
+                                <template x-if="prod.has_discount || (prod.discount_price && prod.discount_price < prod.price)">
+                                    <span class="absolute top-2 left-2 bg-[#00D06C] text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-2xs">
+                                        <span x-text="'-' + Math.round((1 - ((prod.unit_price || prod.discount_price || prod.final_price) / prod.price)) * 100) + '%'"></span>
+                                    </span>
+                                </template>
+                                
+                                <!-- Ready / PO badge -->
+                                <span 
+                                    :class="prod.availability_type === 'ready_stock' ? 'bg-emerald-700 text-white' : 'bg-zinc-900 text-white'"
+                                    class="absolute top-2 right-2 text-[8px] font-black px-1.5 py-0.5 rounded font-mono uppercase tracking-wider" 
+                                    x-text="prod.availability_type === 'ready_stock' ? 'READY' : 'PO'">
+                                </span>
+                            </div>
+
+                            <!-- Product Title -->
+                            <h4 class="text-xs font-semibold text-zinc-900 line-clamp-2 mt-2 leading-tight cursor-pointer hover:text-[#1657FF]" @click="openProductDetail(prod)" x-text="prod.name"></h4>
+
+                            <!-- Price Section -->
+                            <div class="mt-1.5 flex items-baseline gap-1.5 flex-wrap">
+                                <span class="text-[#00A862] font-extrabold text-xs tabular" x-text="formatRupiah(prod.final_price || prod.price)"></span>
+                                <template x-if="prod.has_discount || (prod.discount_price && prod.discount_price < prod.price)">
+                                    <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(prod.price)"></span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Bottom row: Cart quantity action -->
+                        <div class="mt-2.5 pt-2 border-t border-zinc-100">
+                            <template x-if="getCartItemQty(prod.id) === 0">
+                                <button 
+                                    @click="addToCart(prod, 1)" 
+                                    class="w-full py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-2xs active:scale-95">
+                                    <svg class="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span x-text="t('add_to_cart_short', '+ Keranjang')">+ Keranjang</span>
+                                </button>
+                            </template>
+                            <template x-if="getCartItemQty(prod.id) > 0">
+                                <div class="flex items-center justify-between w-full bg-zinc-50 border border-zinc-200 rounded-xl p-0.5">
+                                    <button @click="changeCartQty(prod.id, -1)" class="w-6 h-6 bg-white border border-zinc-200 rounded-lg text-zinc-800 font-bold text-xs hover:bg-zinc-100 flex items-center justify-center">-</button>
+                                    <span class="text-xs font-bold text-zinc-900 tabular px-1" x-text="getCartItemQty(prod.id)"></span>
+                                    <button @click="changeCartQty(prod.id, 1)" class="w-6 h-6 bg-[#1657FF] hover:bg-blue-700 rounded-lg text-white font-bold text-xs transition flex items-center justify-center">+</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- ================= STANDARD HOME CONTENT (WHEN NOT SEARCHING) ================= -->
+    <div x-show="!searchQuery || !searchQuery.trim()" class="space-y-4">
 
     <!-- ================= 2. KATEGORI (5 SOFT PASTEL CARDS, NO EMOJIS) ================= -->
     <div class="px-4">
@@ -522,6 +674,7 @@
                 </div>
             </template>
         </div>
+    </div>
     </div>
 
 </div>
