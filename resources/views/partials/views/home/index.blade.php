@@ -382,7 +382,7 @@
             </div>
 
             <!-- "Lihat >" link -->
-            <button @click="openBrandCategoryView('kategori', 'Bundle Hemat Diaspora', 'flash-sale')" class="text-xs font-bold text-[#1657FF] hover:underline flex items-center gap-0.5">
+            <button @click="openFlashSaleView('all')" class="text-xs font-bold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
                 <span>Lihat</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
@@ -434,7 +434,7 @@
             <h3 class="font-bold text-base text-zinc-900 tracking-tight">
                 Katalog Produk Indonesia
             </h3>
-            <button @click="openBrandCategoryView('kategori', 'Katalog Produk Indonesia', 'all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5">
+            <button @click="openIndonesiaCatalogView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
                 <span>Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
@@ -492,7 +492,7 @@
             <h3 class="font-bold text-base text-zinc-900 tracking-tight" x-text="t('special_for_you_title', 'Spesial Untuk Kamu')">
                 Spesial Untuk Kamu
             </h3>
-            <button @click="openBrandCategoryView('kategori', 'Spesial Untuk Kamu', 'special')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5">
+            <button @click="openSpecialForYouView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
                 <span>Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
@@ -547,7 +547,7 @@
             <h3 class="font-bold text-base text-zinc-900 tracking-tight" x-text="t('buy_again_title', 'Beli Lagi')">
                 Beli Lagi
             </h3>
-            <button @click="openBrandCategoryView('kategori', 'Beli Lagi', 'beli-lagi')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5">
+            <button @click="openBuyAgainView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
                 <span>Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>

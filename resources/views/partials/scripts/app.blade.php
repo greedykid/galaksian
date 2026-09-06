@@ -2,7 +2,11 @@
         function galaksianApp() {
             return {
                 activeTab: 'home',
-                activeSubView: null, // null | 'brand-category' | 'checkout' | 'payment-instruction' | 'order-detail' | 'qris-payment'
+                activeSubView: null, // null | 'brand-category' | 'flash-sale' | 'indonesia-catalog' | 'special-for-you' | 'buy-again' | 'checkout' | 'payment-instruction' | 'order-detail' | 'qris-payment'
+                flashSaleSubtab: 'all',
+                catalogSubtab: 'all',
+                specialSubtab: 'all',
+                buyAgainSubtab: 'all',
                 
                 // Order Detail state
                 selectedOrderId: null,
@@ -397,6 +401,117 @@
                         return items.filter(p => p.has_discount);
                     }
                     return items.length ? items : (this.homeData.special_for_you || []);
+                },
+
+                openFlashSaleView(subtab = 'all') {
+                    this.flashSaleSubtab = subtab;
+                    this.activeSubView = 'flash-sale';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                openIndonesiaCatalogView(subtab = 'all') {
+                    this.catalogSubtab = subtab;
+                    this.activeSubView = 'indonesia-catalog';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                openSpecialForYouView(subtab = 'all') {
+                    this.specialSubtab = subtab;
+                    this.activeSubView = 'special-for-you';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                openBuyAgainView(subtab = 'all') {
+                    this.buyAgainSubtab = subtab;
+                    this.activeSubView = 'buy-again';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                getFlashSaleProducts() {
+                    const baseItems = this.homeData.flash_sales?.length
+                        ? [...this.homeData.flash_sales]
+                        : (this.homeData.promo_products?.length
+                            ? [...this.homeData.promo_products]
+                            : [...(this.homeData.product_grid?.data || [])]);
+
+                    if (this.flashSaleSubtab === 'huge-discount') {
+                        return baseItems.filter(p => p.has_discount || (p.price && p.price > p.final_price * 1.3));
+                    }
+                    if (this.flashSaleSubtab === 'bundles') {
+                        const bundles = baseItems.filter(p => /bundle|paket|set|hemat|isi/i.test(p.name || ''));
+                        return bundles.length ? bundles : baseItems.slice(0, 4);
+                    }
+                    if (this.flashSaleSubtab === 'under100k') {
+                        return baseItems.filter(p => p.final_price <= 100000);
+                    }
+                    return baseItems;
+                },
+
+                getIndonesiaCatalogProducts() {
+                    const allItems = this.homeData.product_grid?.data || [];
+                    if (this.catalogSubtab === 'all') return allItems;
+
+                    const matchTerms = {
+                        'mie-sembako': ['mie', 'indomie', 'sedap', 'beras', 'minyak', 'gula', 'sembako', 'terigu', 'tepung'],
+                        'kopi-teh': ['kopi', 'teh', 'coffee', 'tea', 'luwak', 'kapal api', 'sariwangi', 'matcha'],
+                        'sambal-bumbu': ['sambal', 'bumbu', 'kecap', 'saus', 'racik', 'abc', 'indofood', 'sasa', 'royco', 'masako'],
+                        'herbal': ['tolak angin', 'jamu', 'kayu putih', 'herbal', 'madu', 'sidomuncul'],
+                        'snack': ['kerupuk', 'chips', 'snack', 'biskuit', 'chiki', 'taro', 'kacang', 'wafer', 'permen']
+                    };
+
+                    const terms = matchTerms[this.catalogSubtab] || [];
+                    const filtered = allItems.filter(p => {
+                        const name = (p.name || '').toLowerCase();
+                        const cat = (p.category?.name || '').toLowerCase();
+                        return terms.some(t => name.includes(t) || cat.includes(t));
+                    });
+
+                    return filtered.length ? filtered : allItems.slice(0, 8);
+                },
+
+                getSpecialForYouProducts() {
+                    const baseItems = this.homeData.special_for_you?.length
+                        ? [...this.homeData.special_for_you]
+                        : (this.homeData.best_sellers?.length
+                            ? [...this.homeData.best_sellers]
+                            : [...(this.homeData.product_grid?.data || [])]);
+
+                    if (this.specialSubtab === 'top-rated') {
+                        return [...baseItems].sort((a, b) => (b.rating || 4.9) - (a.rating || 4.9));
+                    }
+                    if (this.specialSubtab === 'trending') {
+                        return [...baseItems].reverse();
+                    }
+                    if (this.specialSubtab === 'most-reviewed') {
+                        return [...baseItems].sort((a, b) => (b.stock || 0) - (a.stock || 0));
+                    }
+                    return baseItems;
+                },
+
+                getBuyAgainProducts() {
+                    const baseItems = this.homeData.beli_lagi?.length
+                        ? [...this.homeData.beli_lagi]
+                        : (this.homeData.best_sellers?.length
+                            ? [...this.homeData.best_sellers]
+                            : [...(this.homeData.product_grid?.data?.slice(0, 10) || [])]);
+
+                    if (this.buyAgainSubtab === 'sembako') {
+                        const sembako = baseItems.filter(p => /mie|indomie|bumbu|beras|minyak/i.test(p.name || ''));
+                        return sembako.length ? sembako : baseItems.slice(0, 4);
+                    }
+                    if (this.buyAgainSubtab === 'snack') {
+                        const snack = baseItems.filter(p => /snack|kopi|teh|kerupuk|biskuit/i.test(p.name || ''));
+                        return snack.length ? snack : baseItems.slice(2, 6);
+                    }
+                    if (this.buyAgainSubtab === 'most-frequent') {
+                        return baseItems.slice(0, 5);
+                    }
+                    return baseItems;
+                },
+
+                formatYen(num) {
+                    if (num === null || num === undefined) return '¥0';
+                    return '¥' + Math.round(Number(num) / 105).toLocaleString();
                 },
 
                 startHeroCarousel() {

@@ -24,6 +24,10 @@
             <!-- HOME TAB & SUBVIEWS -->
             @include('partials.views.home.index')
             @include('partials.views.home.filter-page')
+            @include('partials.views.home.flash-sale-view')
+            @include('partials.views.home.indonesia-catalog-view')
+            @include('partials.views.home.special-for-you-view')
+            @include('partials.views.home.buy-again-view')
 
             <!-- CART TAB & SUBVIEWS -->
             @include('partials.views.cart.index')
