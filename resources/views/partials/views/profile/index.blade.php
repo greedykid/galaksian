@@ -121,7 +121,7 @@
                         <button 
                             @click="openChangeAvatar()"
                             class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#00D06C] border-2 border-[#1657FF] flex items-center justify-center text-white cursor-pointer shadow-2xs hover:scale-105 active:scale-95 transition"
-                            title="Ubah Foto Profil">
+                            :title="t('edit_profile_photo_title', 'Ubah Foto Profil')">
                             <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
@@ -140,12 +140,12 @@
                     
                     <!-- FIELD 1: NAMA LENGKAP -->
                     <div>
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NAMA LENGKAP</label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1" x-text="t('full_name_label', 'NAMA LENGKAP')">NAMA LENGKAP</label>
                         <!-- View Mode -->
                         <template x-if="inlineEditingField !== 'name'">
                             <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
                                 <span class="text-xs font-bold text-zinc-900 flex-1 truncate" x-text="currentUser?.name || 'Budi Santoso'"></span>
-                                <button @click="startInlineEdit('name', currentUser?.name || 'Budi Santoso')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nama">
+                                <button @click="startInlineEdit('name', currentUser?.name || 'Budi Santoso')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" :title="t('edit_name_title', 'Ubah Nama')">
                                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                                     </svg>
@@ -162,13 +162,13 @@
                                     @keydown.enter.prevent="saveInlineEdit('name')"
                                     @keydown.escape.prevent="cancelInlineEdit()"
                                     class="text-xs font-bold text-zinc-900 flex-1 focus:outline-none bg-transparent py-1 px-1"
-                                    placeholder="Masukkan nama lengkap">
+                                    :placeholder="t('full_name_placeholder', 'Masukkan nama lengkap')">
                                 <div class="flex items-center gap-1 shrink-0">
                                     <button 
                                         @click="saveInlineEdit('name')" 
                                         :disabled="inlineEditLoading"
                                         class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                                        title="Simpan">
+                                        :title="t('save_btn', 'Simpan')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
@@ -176,7 +176,7 @@
                                     <button 
                                         @click="cancelInlineEdit()" 
                                         class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
-                                        title="Batal">
+                                        :title="t('cancel_btn', 'Batal')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -189,12 +189,12 @@
 
                     <!-- FIELD 2: ALAMAT EMAIL -->
                     <div>
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">ALAMAT EMAIL</label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1" x-text="t('email_address_label', 'ALAMAT EMAIL')">ALAMAT EMAIL</label>
                         <!-- View Mode -->
                         <template x-if="inlineEditingField !== 'email'">
                             <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
                                 <span class="text-xs font-medium text-zinc-800 flex-1 truncate" x-text="currentUser?.email || 'budi@example.com'"></span>
-                                <button @click="startInlineEdit('email', currentUser?.email || 'budi@example.com')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Email">
+                                <button @click="startInlineEdit('email', currentUser?.email || 'budi@example.com')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" :title="t('edit_email_title', 'Ubah Email')">
                                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                                     </svg>
@@ -211,13 +211,13 @@
                                     @keydown.enter.prevent="saveInlineEdit('email')"
                                     @keydown.escape.prevent="cancelInlineEdit()"
                                     class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent py-1 px-1"
-                                    placeholder="nama@email.com">
+                                    :placeholder="t('email_placeholder', 'nama@email.com')">
                                 <div class="flex items-center gap-1 shrink-0">
                                     <button 
                                         @click="saveInlineEdit('email')" 
                                         :disabled="inlineEditLoading"
                                         class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                                        title="Simpan">
+                                        :title="t('save_btn', 'Simpan')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
@@ -225,7 +225,7 @@
                                     <button 
                                         @click="cancelInlineEdit()" 
                                         class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
-                                        title="Batal">
+                                        :title="t('cancel_btn', 'Batal')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -238,12 +238,12 @@
 
                     <!-- FIELD 3: NO. WHATSAPP AKTIF -->
                     <div>
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NO. WHATSAPP AKTIF</label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1" x-text="t('active_whatsapp_label', 'NO. WHATSAPP AKTIF')">NO. WHATSAPP AKTIF</label>
                         <!-- View Mode -->
                         <template x-if="inlineEditingField !== 'phone'">
                             <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
                                 <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="currentUser?.phone ? ('+' + currentUser.phone.replace(/^\+/, '')) : '+62 812-3456-7890'"></span>
-                                <button @click="startInlineEdit('phone', currentUser?.phone || '081234567890')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nomor WhatsApp">
+                                <button @click="startInlineEdit('phone', currentUser?.phone || '081234567890')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" :title="t('edit_phone_title', 'Ubah Nomor WhatsApp')">
                                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                                     </svg>
@@ -260,13 +260,13 @@
                                     @keydown.enter.prevent="saveInlineEdit('phone')"
                                     @keydown.escape.prevent="cancelInlineEdit()"
                                     class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent font-mono py-1 px-1"
-                                    placeholder="081234567890">
+                                    :placeholder="t('phone_placeholder', '081234567890')">
                                 <div class="flex items-center gap-1 shrink-0">
                                     <button 
                                         @click="saveInlineEdit('phone')" 
                                         :disabled="inlineEditLoading"
                                         class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                                        title="Simpan">
+                                        :title="t('save_btn', 'Simpan')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
@@ -274,7 +274,7 @@
                                     <button 
                                         @click="cancelInlineEdit()" 
                                         class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
-                                        title="Batal">
+                                        :title="t('cancel_btn', 'Batal')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -287,12 +287,12 @@
 
                     <!-- FIELD 4: NO. KTP / ID -->
                     <div>
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NO. KTP / ID</label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1" x-text="t('identity_card_label', 'NO. KTP / ID')">NO. KTP / ID</label>
                         <!-- View Mode -->
                         <template x-if="inlineEditingField !== 'identity_number'">
                             <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
                                 <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="profileKtp || currentUser?.identity_number || '3171012505870003'"></span>
-                                <button @click="startInlineEdit('identity_number', profileKtp || currentUser?.identity_number || '3171012505870003')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nomor KTP">
+                                <button @click="startInlineEdit('identity_number', profileKtp || currentUser?.identity_number || '3171012505870003')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" :title="t('edit_ktp_title', 'Ubah Nomor KTP')">
                                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                                     </svg>
@@ -309,13 +309,13 @@
                                     @keydown.enter.prevent="saveInlineEdit('identity_number')"
                                     @keydown.escape.prevent="cancelInlineEdit()"
                                     class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent font-mono py-1 px-1"
-                                    placeholder="16 digit NIK/KTP">
+                                    :placeholder="t('identity_placeholder', '16 digit NIK/KTP')">
                                 <div class="flex items-center gap-1 shrink-0">
                                     <button 
                                         @click="saveInlineEdit('identity_number')" 
                                         :disabled="inlineEditLoading"
                                         class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                                        title="Simpan">
+                                        :title="t('save_btn', 'Simpan')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
@@ -323,7 +323,7 @@
                                     <button 
                                         @click="cancelInlineEdit()" 
                                         class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
-                                        title="Batal">
+                                        :title="t('cancel_btn', 'Batal')">
                                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -385,7 +385,7 @@
             <input 
                 type="text" 
                 x-model="addressSearchQuery" 
-                placeholder="Cari alamat..." 
+                :placeholder="t('search_address_placeholder', 'Cari alamat...')" 
                 class="w-full bg-transparent text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none">
             <button x-show="addressSearchQuery" @click="addressSearchQuery = ''" class="text-zinc-400 hover:text-zinc-600">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -407,7 +407,7 @@
                     <div class="flex items-center gap-1.5">
                         <span 
                             class="px-3 py-0.5 bg-blue-50 text-[#1657FF] text-[11px] font-extrabold rounded-full"
-                            x-text="addr.address?.toLowerCase().includes('thamrin') || addr.address?.toLowerCase().includes('kantor') ? 'Kantor' : 'Rumah'">
+                            x-text="addr.address?.toLowerCase().includes('thamrin') || addr.address?.toLowerCase().includes('kantor') ? t('office', 'Kantor') : t('home', 'Rumah')">
                         </span>
                         <template x-if="addr.is_default">
                             <span class="px-3 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-extrabold rounded-full" x-text="t('primary_address_badge', 'Utama')">Utama</span>
@@ -418,7 +418,7 @@
                         <button 
                             @click="openAddressModal(addr)" 
                             class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1657FF] flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                            title="Ubah Alamat">
+                            :title="t('edit_address_btn', 'Ubah Alamat')">
                             <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
@@ -428,7 +428,7 @@
                             <button 
                                 @click="deleteAddress(addr.id)" 
                                 class="w-7 h-7 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500 flex items-center justify-center transition cursor-pointer shadow-2xs" 
-                                title="Hapus Alamat">
+                                :title="t('delete_address_btn', 'Hapus Alamat')">
                                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -512,7 +512,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm text-zinc-900" x-text="t('change_password', 'Ganti Password')">Ganti Password</h3>
-                        <p class="text-[11px] text-zinc-500">Perbarui kata sandi akun Anda</p>
+                        <p class="text-[11px] text-zinc-500" x-text="t('update_password_subtitle', 'Perbarui kata sandi akun Anda')">Perbarui kata sandi akun Anda</p>
                     </div>
                 </div>
                 <button @click="closeChangePasswordModal()" class="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 transition cursor-pointer">
@@ -523,12 +523,12 @@
             <form @submit.prevent="submitChangePassword()" class="space-y-3.5">
                 <!-- Password Lama -->
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Password Lama</label>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('old_password_label', 'Password Lama')">Password Lama</label>
                     <div class="relative">
                         <input 
                             :type="showCurrentPassword ? 'text' : 'password'" 
                             x-model="currentPassword" 
-                            placeholder="Masukkan password lama"
+                            :placeholder="t('old_password_placeholder', 'Masukkan password lama')"
                             class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
                         <button type="button" @click="showCurrentPassword = !showCurrentPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
                             <svg x-show="!showCurrentPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -540,8 +540,8 @@
                 <!-- Password Baru (min 8 karakter) -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Password Baru</label>
-                        <span class="text-[10px] text-blue-600 font-medium">Min. 8 karakter</span>
+                        <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block" x-text="t('new_password_label', 'Password Baru')">Password Baru</label>
+                        <span class="text-[10px] text-blue-600 font-medium" x-text="t('min_8_chars', 'Min. 8 karakter')">Min. 8 karakter</span>
                     </div>
                     <div class="relative">
                         <input 
@@ -549,7 +549,7 @@
                             x-model="newPassword" 
                             minlength="8"
                             required
-                            placeholder="Minimal 8 karakter"
+                            :placeholder="t('new_password_placeholder', 'Minimal 8 karakter')"
                             class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
                         <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
                             <svg x-show="!showNewPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -560,14 +560,14 @@
 
                 <!-- Konfirmasi Password Baru -->
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Konfirmasi Password Baru</label>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('confirm_new_password_label', 'Konfirmasi Password Baru')">Konfirmasi Password Baru</label>
                     <div class="relative">
                         <input 
                             :type="showConfirmPassword ? 'text' : 'password'" 
                             x-model="confirmPassword" 
                             minlength="8"
                             required
-                            placeholder="Ketik ulang password baru"
+                            :placeholder="t('confirm_new_password_placeholder', 'Ketik ulang password baru')"
                             class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
                         <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
                             <svg x-show="!showConfirmPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -581,15 +581,16 @@
                     <button 
                         type="button" 
                         @click="closeChangePasswordModal()" 
-                        class="w-1/3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs rounded-xl transition cursor-pointer">
+                        class="w-1/3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs rounded-xl transition cursor-pointer"
+                        x-text="t('cancel_btn', 'Batal')">
                         Batal
                     </button>
                     <button 
                         type="submit" 
                         :disabled="changePasswordLoading"
                         class="w-2/3 py-2.5 bg-[#1657FF] hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center gap-2">
-                        <span x-show="!changePasswordLoading">Simpan Password Baru</span>
-                        <span x-show="changePasswordLoading">Menyimpan...</span>
+                        <span x-show="!changePasswordLoading" x-text="t('save_new_password_btn', 'Simpan Password Baru')">Simpan Password Baru</span>
+                        <span x-show="changePasswordLoading" x-text="t('saving', 'Menyimpan...')">Menyimpan...</span>
                     </button>
                 </div>
             </form>

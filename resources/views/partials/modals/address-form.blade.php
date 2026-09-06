@@ -41,7 +41,7 @@
         <div class="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-white cursor-grab active:cursor-grabbing select-none"
              @touchstart.passive="startSheetDrag('address', $event)"
              @mousedown="startSheetDrag('address', $event)">
-            <h3 class="font-bold text-xs text-zinc-900" x-text="t('add_new_address', 'Tambah Alamat Baru')">Tambah Alamat Baru</h3>
+            <h3 class="font-bold text-xs text-zinc-900" x-text="addressForm.id ? t('edit_address_btn', 'Ubah Alamat') : t('add_new_address', 'Tambah Alamat Baru')">Tambah Alamat Baru</h3>
             <button @click.stop="showAddressModal = false" 
                     type="button"
                     class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 flex items-center justify-center transition-colors shrink-0">
@@ -55,7 +55,7 @@
         <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
             <div>
                 <label class="block font-semibold text-zinc-700 mb-1" x-text="t('recipient_name', 'Nama Penerima')">Nama Penerima</label>
-                <input type="text" x-model="addressForm.recipient_name" placeholder="Nama Lengkap" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition">
+                <input type="text" x-model="addressForm.recipient_name" :placeholder="t('full_name_placeholder_alt', 'Nama Lengkap')" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition">
             </div>
             <div>
                 <label class="block font-semibold text-zinc-700 mb-1" x-text="t('phone_number', 'Nomor Handphone')">Nomor Handphone</label>
@@ -63,16 +63,16 @@
             </div>
             <div>
                 <label class="block font-semibold text-zinc-700 mb-1" x-text="t('full_address', 'Alamat Lengkap')">Alamat Lengkap</label>
-                <textarea x-model="addressForm.address" rows="2" placeholder="Nama jalan, gedung, RT/RW" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition"></textarea>
+                <textarea x-model="addressForm.address" rows="2" :placeholder="t('address_placeholder', 'Nama jalan, gedung, RT/RW')" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition"></textarea>
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block font-semibold text-zinc-700 mb-1" x-text="t('city', 'Kota')">Kota</label>
-                    <input type="text" x-model="addressForm.city" placeholder="Jakarta Selatan" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition">
+                    <input type="text" x-model="addressForm.city" :placeholder="t('city_placeholder', 'Jakarta Selatan')" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition">
                 </div>
                 <div>
                     <label class="block font-semibold text-zinc-700 mb-1" x-text="t('postal_code', 'Kode Pos')">Kode Pos</label>
-                    <input type="text" x-model="addressForm.postal_code" placeholder="12190" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] font-mono transition">
+                    <input type="text" x-model="addressForm.postal_code" :placeholder="t('postal_code_placeholder', '12190')" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] font-mono transition">
                 </div>
             </div>
             <div>

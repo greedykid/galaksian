@@ -8,7 +8,7 @@
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span class="text-base font-extrabold text-white tracking-tight">Beli Lagi</span>
+            <span class="text-base font-extrabold text-white tracking-tight" x-text="t('buy_again_title', 'Beli Lagi')">Beli Lagi</span>
         </button>
         <button @click="goToTab('cart')" class="relative p-1.5 text-white hover:text-white/80 transition cursor-pointer">
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -29,17 +29,17 @@
             <div class="relative z-10 space-y-2.5">
                 <div class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-xs border border-white/20 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
                     <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-                    <span>Pemesanan Ulang Praktis</span>
+                    <span x-text="t('practical_reorder', 'Pemesanan Ulang Praktis')">Pemesanan Ulang Praktis</span>
                 </div>
 
                 <div>
-                    <h2 class="text-lg font-black tracking-tight text-white leading-tight">Stok Habis di Rumah?</h2>
-                    <p class="text-xs text-slate-200 mt-0.5">Beli kembali barang yang pernah kamu pesan tanpa repot mencari</p>
+                    <h2 class="text-lg font-black tracking-tight text-white leading-tight" x-text="t('out_of_stock_home', 'Stok Habis di Rumah?')">Stok Habis di Rumah?</h2>
+                    <p class="text-xs text-slate-200 mt-0.5" x-text="t('buy_again_hero_desc', 'Beli kembali barang yang pernah kamu pesan tanpa repot mencari')">Beli kembali barang yang pernah kamu pesan tanpa repot mencari</p>
                 </div>
 
                 <div class="bg-black/30 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                    <span class="text-slate-300">Total riwayat pesanan:</span>
-                    <span class="font-bold text-white tabular" x-text="(getBuyAgainProducts().length) + ' produk'"></span>
+                    <span class="text-slate-300" x-text="t('total_order_history', 'Total riwayat pesanan:')">Total riwayat pesanan:</span>
+                    <span class="font-bold text-white tabular" x-text="(getBuyAgainProducts().length) + ' ' + t('products', 'produk')"></span>
                 </div>
             </div>
         </div>
@@ -51,7 +51,8 @@
             <button 
                 @click="buyAgainSubtab = 'all'" 
                 :class="buyAgainSubtab === 'all' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
-                class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer">
+                class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer"
+                x-text="t('all_history', 'Semua Riwayat')">
                 Semua Riwayat
             </button>
             <button 
@@ -59,21 +60,21 @@
                 :class="buyAgainSubtab === 'sembako' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>
-                <span>Sembako Rutin</span>
+                <span x-text="t('cat_routine_groceries', 'Sembako Rutin')">Sembako Rutin</span>
             </button>
             <button 
                 @click="buyAgainSubtab = 'snack'" 
                 :class="buyAgainSubtab === 'snack' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"></path><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path></svg>
-                <span>Snack & Minum</span>
+                <span x-text="t('cat_snacks_drinks', 'Snack & Minum')">Snack & Minum</span>
             </button>
             <button 
                 @click="buyAgainSubtab = 'most-frequent'" 
                 :class="buyAgainSubtab === 'most-frequent' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-                <span>Paling Sering</span>
+                <span x-text="t('cat_most_frequent', 'Paling Sering')">Paling Sering</span>
             </button>
         </div>
     </div>
@@ -94,7 +95,7 @@
                         <div class="flex items-center gap-1.5">
                             <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
                                 <svg class="w-2.5 h-2.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span x-text="'Dibeli ' + (2 + (idx % 4)) + 'x sebelumnya'"></span>
+                                <span x-text="t('bought_prefix', 'Dibeli ') + (2 + (idx % 4)) + t('times_previously', 'x sebelumnya')"></span>
                             </span>
                         </div>
 
@@ -102,7 +103,7 @@
                         <h4 class="text-xs font-semibold text-zinc-900 line-clamp-2 mt-1 cursor-pointer hover:text-[#1657FF]" @click="openProductDetail(prod)" x-text="prod.name"></h4>
 
                         <!-- Last ordered date note -->
-                        <p class="text-[10px] text-zinc-400 mt-0.5" x-text="'Terakhir dibeli: ' + (14 + (idx * 2) % 15) + ' Ags 2026'"></p>
+                        <p class="text-[10px] text-zinc-400 mt-0.5" x-text="t('last_ordered', 'Terakhir dibeli: ') + (14 + (idx * 2) % 15) + ' Ags 2026'"></p>
 
                         <!-- Bold Blue Price (#1657FF) -->
                         <div class="mt-1">
@@ -118,14 +119,14 @@
                             @click="addToCart(prod, 1)" 
                             class="w-full py-2 bg-[#1657FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-98">
                             <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-                            <span>Beli Lagi Langsung</span>
+                            <span x-text="t('reorder_now', 'Beli Lagi Langsung')">Beli Lagi Langsung</span>
                         </button>
                     </template>
                     <template x-if="getCartItemQty(prod.id) > 0">
                         <div class="flex items-center justify-between w-full bg-blue-50 border border-blue-200 rounded-xl p-1">
                             <div class="flex items-center gap-1 px-2 text-xs font-semibold text-blue-900">
                                 <svg class="w-3.5 h-3.5 text-[#00D06C] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Ada di Keranjang</span>
+                                <span x-text="t('in_cart_badge', 'Ada di Keranjang')">Ada di Keranjang</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <button @click="changeCartQty(prod.id, -1)" class="w-7 h-7 bg-white border border-blue-200 rounded-lg text-blue-700 font-bold text-xs cursor-pointer active:scale-95 flex items-center justify-center">-</button>

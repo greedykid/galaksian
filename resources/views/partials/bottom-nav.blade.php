@@ -34,7 +34,7 @@
 
             <!-- Teks Jumlah Barang & Total Harga Hijau Tebal -->
             <div class="flex flex-col">
-                <span class="text-xs font-black text-[#0B1E54] tracking-tight leading-tight" x-text="(cart.total_qty || 0) + ' Barang'"></span>
+                <span class="text-xs font-black text-[#0B1E54] tracking-tight leading-tight" x-text="(cart.total_qty || 0) + ' ' + t('items', 'Barang')"></span>
                 <span class="text-sm font-black text-[#00A862] tabular leading-tight mt-0.5" x-text="formatRupiah(getCartTotalAmount())"></span>
             </div>
         </div>

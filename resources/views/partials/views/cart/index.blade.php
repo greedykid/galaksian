@@ -11,7 +11,7 @@
             </svg>
             <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('cart_title', 'Keranjang')">Keranjang</h1>
         </button>
-        <span class="bg-[#00D06C] text-white font-bold text-xs px-2.5 py-0.5 rounded-full shadow-2xs tabular" x-text="(cart.total_qty || 0) + ' item'"></span>
+        <span class="bg-[#00D06C] text-white font-bold text-xs px-2.5 py-0.5 rounded-full shadow-2xs tabular" x-text="(cart.total_qty || 0) + ' ' + t('items', 'item')"></span>
     </div>
 
     <!-- 2. Alamat Pengiriman Card (Seamless Edge-to-edge) -->
@@ -27,11 +27,11 @@
             <!-- Address Content -->
             <div class="min-w-0">
                 <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block leading-tight" x-text="t('shipping_address_label', 'ALAMAT PENGIRIMAN')">ALAMAT PENGIRIMAN</span>
-                <p class="font-bold text-xs text-zinc-900 line-clamp-1 mt-0.5" x-text="defaultAddress ? defaultAddress.address : 'Belum ada alamat tersimpan'"></p>
-                <p class="text-[11px] text-zinc-500 line-clamp-1" x-text="defaultAddress ? ((defaultAddress.city || '') + (defaultAddress.postal_code ? ' ' + defaultAddress.postal_code : '') + (defaultAddress.province ? ', ' + defaultAddress.province : '')) : 'Silakan tentukan alamat tujuan'"></p>
+                <p class="font-bold text-xs text-zinc-900 line-clamp-1 mt-0.5" x-text="defaultAddress ? defaultAddress.address : t('no_address_saved', 'Belum ada alamat tersimpan')"></p>
+                <p class="text-[11px] text-zinc-500 line-clamp-1" x-text="defaultAddress ? ((defaultAddress.city || '') + (defaultAddress.postal_code ? ' ' + defaultAddress.postal_code : '') + (defaultAddress.province ? ', ' + defaultAddress.province : '')) : t('please_set_destination', 'Silakan tentukan alamat tujuan')"></p>
             </div>
         </div>
-        <button @click="openAddressModal()" class="px-3.5 py-1 rounded-lg border border-blue-200 text-[#1657FF] hover:bg-blue-50 text-xs font-semibold transition shrink-0" x-text="t('edit_btn', 'Ubah')">
+        <button @click="openAddressModal()" class="px-3.5 py-1 rounded-lg border border-blue-200 text-[#1657FF] hover:bg-blue-50 text-xs font-semibold transition shrink-0 cursor-pointer" x-text="t('edit_btn', 'Ubah')">
             Ubah
         </button>
     </div>
@@ -61,7 +61,7 @@
                 @click="giftOptionEnabled = !giftOptionEnabled; syncCheckoutNotes(); showToast(giftOptionEnabled ? 'Layanan bingkisan diaktifkan (+Rp 10.000)' : 'Layanan bingkisan dinonaktifkan')" 
                 :class="giftOptionEnabled ? 'bg-[#00D06C] text-white' : 'bg-[#1657FF] text-white hover:bg-blue-700'"
                 class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition shadow-2xs cursor-pointer"
-                :title="giftOptionEnabled ? 'Bingkisan Aktif' : 'Aktifkan Bingkisan'">
+                :title="giftOptionEnabled ? t('gift_active', 'Bingkisan Aktif') : t('activate_gift', 'Aktifkan Bingkisan')">
                 <template x-if="!giftOptionEnabled">
                     <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline>
@@ -80,37 +80,37 @@
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5 text-[#1657FF] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    Kustomisasi Kartu Ucapan
+                    <span x-text="t('custom_greeting_card_title', 'Kustomisasi Kartu Ucapan')">Kustomisasi Kartu Ucapan</span>
                 </span>
-                <span class="text-[10px] text-zinc-400 font-medium">Tercetak di kartu bingkisan</span>
+                <span class="text-[10px] text-zinc-400 font-medium" x-text="t('printed_on_gift_card', 'Tercetak di kartu bingkisan')">Tercetak di kartu bingkisan</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Dari (Pengirim)</label>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('from_sender', 'Dari (Pengirim)')">Dari (Pengirim)</label>
                     <input 
                         type="text" 
                         x-model="giftCardFrom" 
                         @input="syncCheckoutNotes()"
-                        placeholder="Nama Pengirim" 
+                        :placeholder="t('sender_name_placeholder', 'Nama Pengirim')" 
                         class="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Untuk (Penerima)</label>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('to_recipient', 'Untuk (Penerima)')">Untuk (Penerima)</label>
                     <input 
                         type="text" 
                         x-model="giftCardTo" 
                         @input="syncCheckoutNotes()"
-                        placeholder="Nama Penerima" 
+                        :placeholder="t('recipient_name_placeholder', 'Nama Penerima')" 
                         class="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]">
                 </div>
             </div>
             <div>
-                <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Pesan Ucapan</label>
+                <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('greeting_message_label', 'Pesan Ucapan')">Pesan Ucapan</label>
                 <textarea 
                     x-model="giftCardMessage" 
                     @input="syncCheckoutNotes()"
                     rows="2" 
-                    placeholder="Tulis pesan ucapan Anda (misal: Selamat ulang tahun, semoga suka oleh-oleh dari Jepangnya!)..." 
+                    :placeholder="t('gift_message_placeholder', 'Tulis pesan ucapan Anda (misal: Selamat ulang tahun, semoga suka oleh-oleh dari Jepangnya!)...')" 
                     class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]"></textarea>
             </div>
         </div>
@@ -186,7 +186,7 @@
                             <svg class="w-3.5 h-3.5 text-zinc-400 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
-                            <span x-text="itemNotes[item.id] ? ('Catatan: ' + itemNotes[item.id]) : t('add_note_btn', 'Tambah Catatan')">Tambah Catatan</span>
+                            <span x-text="itemNotes[item.id] ? (t('note_prefix', 'Catatan: ') + itemNotes[item.id]) : t('add_note_btn', 'Tambah Catatan')">Tambah Catatan</span>
                         </button>
                     </div>
 
@@ -195,11 +195,11 @@
                         <textarea 
                             x-model="tempNoteText" 
                             rows="2" 
-                            placeholder="Tulis catatan varian, kemasan, atau instruksi jastip..."
+                            :placeholder="t('item_note_placeholder', 'Tulis catatan varian, kemasan, atau instruksi jastip...')"
                             class="w-full p-2 bg-white border border-zinc-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#1657FF]"></textarea>
                         <div class="flex justify-end gap-2 text-xs">
-                            <button @click="cancelItemNote()" class="px-3 py-1 rounded-lg text-zinc-600 hover:bg-zinc-200 font-medium">Batal</button>
-                            <button @click="saveItemNote(item.id)" class="px-3.5 py-1 bg-[#1657FF] text-white font-bold rounded-lg hover:bg-blue-700">Simpan</button>
+                            <button @click="cancelItemNote()" class="px-3 py-1 rounded-lg text-zinc-600 hover:bg-zinc-200 font-medium cursor-pointer" x-text="t('cancel_btn', 'Batal')">Batal</button>
+                            <button @click="saveItemNote(item.id)" class="px-3.5 py-1 bg-[#1657FF] text-white font-bold rounded-lg hover:bg-blue-700 cursor-pointer" x-text="t('save_btn', 'Simpan')">Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
                     <span class="w-1 h-3.5 bg-[#1657FF] rounded-full inline-block"></span>
                     <h3 class="font-extrabold text-xs text-zinc-900 tracking-tight" x-text="t('promo_voucher_title', 'Promo & Voucher Jastip')">Promo & Voucher Jastip</h3>
                 </div>
-                <span class="bg-[#00D06C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs" x-text="cart.voucher_applied ? '1 Dipakai' : (Object.values(voucherStates).filter(s => s === 'claimed').length ? Object.values(voucherStates).filter(s => s === 'claimed').length + ' Siap Pakai' : 'Tersedia')">Tersedia</span>
+                <span class="bg-[#00D06C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs" x-text="cart.voucher_applied ? t('voucher_1_applied', '1 Dipakai') : (Object.values(voucherStates).filter(s => s === 'claimed').length ? Object.values(voucherStates).filter(s => s === 'claimed').length + ' ' + t('ready_to_use', 'Siap Pakai') : t('available', 'Tersedia'))">Tersedia</span>
             </div>
 
             <!-- Card 1: Diskon Jastip 20% + Bebas Ongkir (Yellow Border Card) -->
@@ -237,13 +237,13 @@
                 <div class="border-t border-dashed border-amber-300 pt-2 flex items-center justify-between">
                     <div class="flex items-center gap-1.5 text-[10px] text-emerald-700 font-semibold">
                         <span class="w-1.5 h-1.5 rounded-full bg-[#00D06C]"></span>
-                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? 'Voucher aktif terpasang' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'Siap digunakan' : 'Tersedia')"></span>
+                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? t('voucher_active_applied', 'Voucher aktif terpasang') : (getVoucherState('GALAKSIAN10') === 'claimed' ? t('ready_to_use_title', 'Siap digunakan') : t('available', 'Tersedia'))"></span>
                     </div>
                     <button 
                         @click="handleVoucherAction('GALAKSIAN10')" 
                         :class="getVoucherState('GALAKSIAN10') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
                         class="px-4 py-1.5 font-extrabold text-xs rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
-                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? 'Dipakai' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'Pakai' : 'Klaim')"></span>
+                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('GALAKSIAN10') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
                     </button>
                 </div>
             </div>
@@ -267,13 +267,13 @@
                 <div class="border-t border-dashed border-blue-200 pt-2 flex items-center justify-between">
                     <div class="flex items-center gap-1.5 text-[10px] text-zinc-400">
                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? 'Voucher aktif terpasang' : (getVoucherState('POTONGAN15K') === 'claimed' ? 'Siap digunakan' : 'Belum dipakai')"></span>
+                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? t('voucher_active_applied', 'Voucher aktif terpasang') : (getVoucherState('POTONGAN15K') === 'claimed' ? t('ready_to_use_title', 'Siap digunakan') : t('not_used', 'Belum dipakai'))"></span>
                     </div>
                     <button 
                         @click="handleVoucherAction('POTONGAN15K')" 
                         :class="getVoucherState('POTONGAN15K') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('POTONGAN15K') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
                         class="px-4 py-1.5 font-extrabold text-xs rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
-                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? 'Dipakai' : (getVoucherState('POTONGAN15K') === 'claimed' ? 'Pakai' : 'Klaim')"></span>
+                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('POTONGAN15K') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
                     </button>
                 </div>
             </div>
@@ -310,8 +310,8 @@
                 <template x-if="giftOptionEnabled">
                     <div class="flex justify-between items-start text-zinc-600">
                         <div>
-                            <span class="block font-medium text-zinc-800">Biaya Bingkisan & Kartu</span>
-                            <span class="text-[10px] text-zinc-400 block">Kemasan khusus & ucapan</span>
+                            <span class="block font-medium text-zinc-800" x-text="t('gift_card_fee_label', 'Biaya Bingkisan & Kartu')">Biaya Bingkisan & Kartu</span>
+                            <span class="text-[10px] text-zinc-400 block" x-text="t('gift_card_fee_sub', 'Kemasan khusus & ucapan')">Kemasan khusus & ucapan</span>
                         </div>
                         <span class="font-bold text-zinc-900 tabular">+ Rp 10.000</span>
                     </div>
@@ -320,7 +320,7 @@
                 <!-- Active Voucher Discount (if any) -->
                 <template x-if="cart.pricing?.voucher_discount > 0">
                     <div class="flex justify-between items-center text-[#00D06C]">
-                        <span>Diskon Voucher</span>
+                        <span x-text="t('voucher_discount', 'Diskon Voucher')">Diskon Voucher</span>
                         <span class="font-bold tabular" x-text="'- ' + formatRupiah(cart.pricing.voucher_discount)"></span>
                     </div>
                 </template>

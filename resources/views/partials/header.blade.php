@@ -27,8 +27,8 @@
                                 <span class="font-extrabold text-[15px] tracking-tight text-white">GALAKSIAN</span>
                             </div>
                             <div class="flex items-center gap-1 text-[11px] text-white/90 font-medium cursor-pointer">
-                                <span>Kirim ke:</span>
-                                <span class="font-bold text-white">Tokyo, Jepang</span>
+                                <span x-text="t('ship_to', 'Kirim ke:')">Kirim ke:</span>
+                                <span class="font-bold text-white" x-text="t('tokyo_japan', 'Tokyo, Jepang')">Tokyo, Jepang</span>
                                 <svg class="w-3 h-3 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </div>
                         </div>
@@ -95,7 +95,7 @@
                             x-show="searchQuery && searchQuery.length > 0"
                             @click="clearSearch()"
                             class="p-1 text-zinc-400 hover:text-zinc-600 rounded-full transition mr-1 shrink-0"
-                            title="Hapus pencarian">
+                            :title="t('clear_search', 'Hapus pencarian')">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -131,22 +131,22 @@
                 
                 <!-- Top Row: KATALOG label on left + Search trigger on right -->
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[11px] font-black uppercase tracking-wider text-white">KATALOG</span>
+                    <span class="text-[11px] font-black uppercase tracking-wider text-white" x-text="t('catalog_badge', 'KATALOG')">KATALOG</span>
                     <div class="flex items-center gap-1.5">
                         <button 
                             @click="stickySearchExpanded = true; focusSearch()" 
                             class="h-6 px-2.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-white text-[10px] font-bold flex items-center gap-1 transition"
-                            title="Cari Produk">
+                            :title="t('search_products', 'Cari Produk')">
                             <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
-                            <span>Cari</span>
+                            <span x-text="t('search_btn', 'Cari')">Cari</span>
                         </button>
                         <button 
                             @click="window.scrollTo({top: 0, behavior: 'smooth'})"
                             class="w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-white flex items-center justify-center transition"
-                            title="Ke Atas">
+                            :title="t('back_to_top', 'Ke Atas')">
                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="18 15 12 9 6 15"></polyline>
                             </svg>
@@ -161,7 +161,7 @@
                         @click="catalogFilter = 'all'"
                         :class="catalogFilter === 'all' ? 'bg-white text-[#1657FF] font-bold shadow-xs' : 'border border-white/40 text-white hover:bg-white/10 font-medium'"
                         class="px-4 py-1 rounded-full transition shrink-0">
-                        Semua
+                        <span x-text="t('all', 'Semua')">Semua</span>
                     </button>
 
                     <!-- 2. Elektronik (Clean SVG Laptop) -->
@@ -173,7 +173,7 @@
                             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                             <line x1="2" y1="20" x2="22" y2="20"></line>
                         </svg>
-                        <span>Elektronik</span>
+                        <span x-text="t('category_electronics', 'Elektronik')">Elektronik</span>
                     </button>
 
                     <!-- 3. Fashion (Clean SVG Dress) -->
@@ -184,7 +184,7 @@
                         <svg class="w-3.5 h-3.5" :class="catalogFilter === 'fashion' ? 'text-[#1657FF]' : 'text-rose-300'" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C10.9 2 10 2.9 10 4V5.1C7.8 5.7 6.1 7.4 5.4 9.6L4.1 13.5C3.9 14.1 4.3 14.7 5 14.7H6V21C6 21.6 6.4 22 7 22H17C17.6 22 18 21.6 18 21V14.7H19C19.7 14.7 20.1 14.1 19.9 13.5L18.6 9.6C17.9 7.4 16.2 5.7 14 5.1V4C14 2.9 13.1 2 12 2ZM12 4C12.6 4 13 4.4 13 5V5.1C12.7 5 12.3 5 12 5C11.7 5 11.3 5 11 5.1V4C11 4.4 11.4 4 12 4Z"/>
                         </svg>
-                        <span>Fashion</span>
+                        <span x-text="t('category_fashion', 'Fashion')">Fashion</span>
                     </button>
 
                     <!-- 4. Kecantikan (Clean SVG Sparkle / Cosmetic) -->
@@ -195,9 +195,10 @@
                         <svg class="w-3.5 h-3.5" :class="catalogFilter === 'kecantikan' ? 'text-[#1657FF]' : 'text-amber-300'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
                         </svg>
-                        <span>Kecantikan</span>
+                        <span x-text="t('category_beauty', 'Kecantikan')">Kecantikan</span>
                     </button>
                 </div>
+
             </div>
         </div>
 

@@ -8,7 +8,7 @@
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span class="text-base font-extrabold text-white tracking-tight">Katalog Produk Indonesia</span>
+            <span class="text-base font-extrabold text-white tracking-tight" x-text="t('catalog_indonesia_title', 'Katalog Produk Indonesia')">Katalog Produk Indonesia</span>
         </button>
         <button @click="goToTab('cart')" class="relative p-1.5 text-white hover:text-white/80 transition cursor-pointer">
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -31,27 +31,27 @@
                     <svg class="w-3 h-3 text-amber-300 fill-current" viewBox="0 0 24 24">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                    <span>Otentik Nusantara di Jepang</span>
+                    <span x-text="t('catalog_authentic_subtitle', 'Otentik Nusantara di Jepang')">Otentik Nusantara di Jepang</span>
                 </div>
 
                 <div>
-                    <h2 class="text-lg font-black tracking-tight text-white leading-tight">Pantry & Cita Rasa Indonesia</h2>
-                    <p class="text-xs text-emerald-100/90 mt-0.5">Sembako, bumbu racik, sambal, hingga jamu tradisional siap kirim</p>
+                    <h2 class="text-lg font-black tracking-tight text-white leading-tight" x-text="t('catalog_hero_title', 'Pantry & Cita Rasa Indonesia')">Pantry & Cita Rasa Indonesia</h2>
+                    <p class="text-xs text-emerald-100/90 mt-0.5" x-text="t('catalog_hero_desc', 'Sembako, bumbu racik, sambal, hingga jamu tradisional siap kirim')">Sembako, bumbu racik, sambal, hingga jamu tradisional siap kirim</p>
                 </div>
 
                 <!-- 3 Guarantees Pills -->
                 <div class="grid grid-cols-3 gap-1.5 pt-1 text-[10px]">
                     <div class="bg-black/20 rounded-lg p-1.5 text-center flex flex-col items-center">
                         <svg class="w-3.5 h-3.5 text-emerald-300 mb-0.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span class="font-bold leading-tight">100% Asli</span>
+                        <span class="font-bold leading-tight" x-text="t('guarantee_authentic', '100% Asli')">100% Asli</span>
                     </div>
                     <div class="bg-black/20 rounded-lg p-1.5 text-center flex flex-col items-center">
                         <svg class="w-3.5 h-3.5 text-emerald-300 mb-0.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        <span class="font-bold leading-tight">Halal & BPOM</span>
+                        <span class="font-bold leading-tight" x-text="t('guarantee_halal', 'Halal & BPOM')">Halal & BPOM</span>
                     </div>
                     <div class="bg-black/20 rounded-lg p-1.5 text-center flex flex-col items-center">
                         <svg class="w-3.5 h-3.5 text-emerald-300 mb-0.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                        <span class="font-bold leading-tight">Aman ke JP</span>
+                        <span class="font-bold leading-tight" x-text="t('guarantee_safe_jp', 'Aman ke JP')">Aman ke JP</span>
                     </div>
                 </div>
             </div>
@@ -66,7 +66,7 @@
                 @click="catalogSubtab = 'all'" 
                 :class="catalogSubtab === 'all' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer">
-                Semua
+                <span x-text="t('all', 'Semua')">Semua</span>
             </button>
             <!-- Mie & Sembako -->
             <button 
@@ -74,7 +74,7 @@
                 :class="catalogSubtab === 'mie-sembako' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
-                <span>Mie & Sembako</span>
+                <span x-text="t('cat_noodles_groceries', 'Mie & Sembako')">Mie & Sembako</span>
             </button>
             <!-- Kopi & Teh -->
             <button 
@@ -82,7 +82,7 @@
                 :class="catalogSubtab === 'kopi-teh' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></svg>
-                <span>Kopi & Teh</span>
+                <span x-text="t('cat_coffee_tea', 'Kopi & Teh')">Kopi & Teh</span>
             </button>
             <!-- Sambal & Bumbu -->
             <button 
@@ -90,7 +90,7 @@
                 :class="catalogSubtab === 'sambal-bumbu' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 text-red-500 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
-                <span>Sambal & Bumbu</span>
+                <span x-text="t('cat_sambal_spices', 'Sambal & Bumbu')">Sambal & Bumbu</span>
             </button>
             <!-- Herbal & Jamu -->
             <button 
@@ -98,7 +98,7 @@
                 :class="catalogSubtab === 'herbal' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13C4 7 11 3 11 3s7 4 7 10a7 7 0 0 1-7 7Z"></path><path d="M11 3v17"></path></svg>
-                <span>Herbal & Jamu</span>
+                <span x-text="t('cat_herbal_jamu', 'Herbal & Jamu')">Herbal & Jamu</span>
             </button>
             <!-- Camilan Nusantara -->
             <button 
@@ -106,10 +106,11 @@
                 :class="catalogSubtab === 'snack' ? 'bg-[#047857] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"></path><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"></path><path d="M2 7h20"></path></svg>
-                <span>Camilan Nusantara</span>
+                <span x-text="t('cat_nusantara_snacks', 'Camilan Nusantara')">Camilan Nusantara</span>
             </button>
         </div>
     </div>
+
 
     <!-- 4. Authentic Indonesia Pantry Product Grid -->
     <div class="px-4">
@@ -159,7 +160,7 @@
                                 @click="addToCart(prod, 1)" 
                                 class="w-full py-2 bg-[#047857] hover:bg-[#065F46] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98">
                                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                <span>+ Keranjang</span>
+                                <span x-text="t('add_to_cart_short', '+ Keranjang')">+ Keranjang</span>
                             </button>
                         </template>
                         <template x-if="getCartItemQty(prod.id) > 0">

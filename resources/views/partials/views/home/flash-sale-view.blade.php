@@ -32,33 +32,33 @@
                         <svg class="w-3 h-3 text-amber-300 fill-current animate-pulse" viewBox="0 0 24 24">
                             <path d="M12 2c1.1 0 2 .9 2 2 0 .7-.4 1.4-1 1.7V7c1.7.5 3 2.1 3 4 0 1.7-1 3.2-2.5 3.8.3.7.5 1.4.5 2.2 0 2.8-2.2 5-5 5s-5-2.2-5-5c0-1.2.4-2.3 1.1-3.2C3.8 12.9 3 11.5 3 10c0-2.2 1.8-4 4-4 .3 0 .7 0 1 .1V5.7C7.4 5.4 7 4.7 7 4c0-1.1.9-2 2-2 1.7 0 3 1.3 3 3v.1c0-.1 0-.1 0 0z"/>
                         </svg>
-                        <span>Kilat Hari Ini</span>
+                        <span x-text="t('lightning_today', 'Kilat Hari Ini')">Kilat Hari Ini</span>
                     </div>
-                    <span class="text-[11px] text-blue-100/90 font-medium">Kuota Kloter Terbatas</span>
+                    <span class="text-[11px] text-blue-100/90 font-medium" x-text="t('limited_batch_quota', 'Kuota Kloter Terbatas')">Kuota Kloter Terbatas</span>
                 </div>
 
                 <div>
-                    <h2 class="text-lg font-black tracking-tight text-white leading-tight">Diskon Kilat Diaspora s/d 70%</h2>
-                    <p class="text-xs text-blue-100/80 mt-0.5">Stok terbatas untuk titipan kiriman langsung dari Jepang</p>
+                    <h2 class="text-lg font-black tracking-tight text-white leading-tight" x-text="t('flash_sale_hero_title', 'Diskon Kilat Diaspora s/d 70%')">Diskon Kilat Diaspora s/d 70%</h2>
+                    <p class="text-xs text-blue-100/80 mt-0.5" x-text="t('flash_sale_hero_desc', 'Stok terbatas untuk titipan kiriman langsung dari Jepang')">Stok terbatas untuk titipan kiriman langsung dari Jepang</p>
                 </div>
 
                 <!-- Live Countdown Digital Boxes -->
                 <div class="bg-black/30 backdrop-blur-xs rounded-xl p-2.5 border border-white/10 flex items-center justify-between">
-                    <span class="text-xs text-zinc-200 font-semibold">Berakhir dalam:</span>
+                    <span class="text-xs text-zinc-200 font-semibold" x-text="t('ends_in', 'Berakhir dalam:')">Berakhir dalam:</span>
                     <div class="flex items-center gap-1.5 font-mono">
                         <div class="flex flex-col items-center">
                             <span class="bg-red-600 text-white font-bold text-xs px-2 py-1 rounded-md shadow-xs tabular" x-text="flashSaleCountdown.h">02</span>
-                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5">Jam</span>
+                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5" x-text="t('hours', 'Jam')">Jam</span>
                         </div>
                         <span class="text-white font-bold text-sm -mt-2.5">:</span>
                         <div class="flex flex-col items-center">
                             <span class="bg-red-600 text-white font-bold text-xs px-2 py-1 rounded-md shadow-xs tabular" x-text="flashSaleCountdown.m">45</span>
-                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5">Mnt</span>
+                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5" x-text="t('mins', 'Mnt')">Mnt</span>
                         </div>
                         <span class="text-white font-bold text-sm -mt-2.5">:</span>
                         <div class="flex flex-col items-center">
                             <span class="bg-red-600 text-white font-bold text-xs px-2 py-1 rounded-md shadow-xs tabular" x-text="flashSaleCountdown.s">08</span>
-                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5">Dtk</span>
+                            <span class="text-[8px] text-zinc-300 uppercase mt-0.5" x-text="t('secs', 'Dtk')">Dtk</span>
                         </div>
                     </div>
                 </div>
@@ -73,30 +73,31 @@
                 @click="flashSaleSubtab = 'all'" 
                 :class="flashSaleSubtab === 'all' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer">
-                Semua Promo
+                <span x-text="t('all_promos', 'Semua Promo')">Semua Promo</span>
             </button>
             <button 
                 @click="flashSaleSubtab = 'huge-discount'" 
                 :class="flashSaleSubtab === 'huge-discount' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3 h-3 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span>Diskon >40%</span>
+                <span x-text="t('discount_over_40', 'Diskon >40%')">Diskon >40%</span>
             </button>
             <button 
                 @click="flashSaleSubtab = 'bundles'" 
                 :class="flashSaleSubtab === 'bundles' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                <span>Paket Bundle</span>
+                <span x-text="t('bundle_packages', 'Paket Bundle')">Paket Bundle</span>
             </button>
             <button 
                 @click="flashSaleSubtab = 'under100k'" 
                 :class="flashSaleSubtab === 'under100k' ? 'bg-[#1657FF] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer">
-                &lt; Rp 100rb
+                <span x-text="t('under_100k', '< Rp 100rb')">&lt; Rp 100rb</span>
             </button>
         </div>
     </div>
+
 
     <!-- 4. Flash Sale Scarcity Products Grid -->
     <div class="px-4">
@@ -129,7 +130,7 @@
                             <span class="text-[#00A862] font-black text-sm tabular block leading-tight" x-text="formatRupiah(prod.final_price)"></span>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(prod.price || (prod.final_price * 1.6))"></span>
-                                <span class="text-[9px] font-extrabold text-red-600 bg-red-50 px-1 py-0.2 rounded">HEMAT</span>
+                                <span class="text-[9px] font-extrabold text-red-600 bg-red-50 px-1 py-0.2 rounded" x-text="t('save_badge', 'HEMAT')">HEMAT</span>
                             </div>
                         </div>
 
@@ -141,9 +142,9 @@
                             <div class="flex items-center justify-between text-[10px] text-zinc-500 mt-1 font-medium">
                                 <span class="flex items-center gap-0.5 text-red-600 font-semibold">
                                     <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2 0 .7-.4 1.4-1 1.7V7c1.7.5 3 2.1 3 4 0 1.7-1 3.2-2.5 3.8.3.7.5 1.4.5 2.2 0 2.8-2.2 5-5 5s-5-2.2-5-5c0-1.2.4-2.3 1.1-3.2C3.8 12.9 3 11.5 3 10c0-2.2 1.8-4 4-4 .3 0 .7 0 1 .1V5.7C7.4 5.4 7 4.7 7 4c0-1.1.9-2 2-2 1.7 0 3 1.3 3 3v.1c0-.1 0-.1 0 0z"/></svg>
-                                    <span x-text="'Tersisa ' + (2 + (idx % 6)) + ' pcs'"></span>
+                                    <span x-text="t('remaining_prefix', 'Tersisa ') + (2 + (idx % 6)) + ' ' + t('pcs', 'pcs')"></span>
                                 </span>
-                                <span class="text-zinc-400" x-text="(prod.stock ? (prod.stock * 3 + 40) : (180 + idx * 12)) + ' terjual'"></span>
+                                <span class="text-zinc-400" x-text="(prod.stock ? (prod.stock * 3 + 40) : (180 + idx * 12)) + ' ' + t('sold', 'terjual')"></span>
                             </div>
                         </div>
                     </div>
@@ -155,7 +156,7 @@
                                 @click="addToCart(prod, 1)" 
                                 class="w-full py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98">
                                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                <span>Ambil Diskon</span>
+                                <span x-text="t('claim_discount_btn', 'Ambil Diskon')">Ambil Diskon</span>
                             </button>
                         </template>
                         <template x-if="getCartItemQty(prod.id) > 0">

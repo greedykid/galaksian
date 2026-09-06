@@ -8,7 +8,7 @@
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span class="text-base font-extrabold text-white tracking-tight">Spesial Untuk Kamu</span>
+            <span class="text-base font-extrabold text-white tracking-tight" x-text="t('special_for_you_title', 'Spesial Untuk Kamu')">Spesial Untuk Kamu</span>
         </button>
         <button @click="goToTab('cart')" class="relative p-1.5 text-white hover:text-white/80 transition cursor-pointer">
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -29,24 +29,24 @@
             <div class="relative z-10 space-y-2.5">
                 <div class="inline-flex items-center gap-1.5 bg-amber-400/20 border border-amber-300/30 text-amber-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
                     <svg class="w-3 h-3 text-amber-300 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <span>Kurasi Personal Spesial</span>
+                    <span x-text="t('curated_personal_special', 'Kurasi Personal Spesial')">Kurasi Personal Spesial</span>
                 </div>
 
                 <div>
-                    <h2 class="text-lg font-black tracking-tight text-white leading-tight">Pilihan Terbaik Buat Kamu</h2>
-                    <p class="text-xs text-indigo-100/90 mt-0.5">Direkomendasikan dari produk dengan tingkat kepuasan tertinggi</p>
+                    <h2 class="text-lg font-black tracking-tight text-white leading-tight" x-text="t('best_choice_for_you', 'Pilihan Terbaik Buat Kamu')">Pilihan Terbaik Buat Kamu</h2>
+                    <p class="text-xs text-indigo-100/90 mt-0.5" x-text="t('special_hero_desc', 'Direkomendasikan dari produk dengan tingkat kepuasan tertinggi')">Direkomendasikan dari produk dengan tingkat kepuasan tertinggi</p>
                 </div>
 
                 <!-- Social Proof Stats -->
                 <div class="flex items-center gap-3 pt-1 border-t border-white/10">
                     <div class="flex items-center gap-1">
                         <svg class="w-3.5 h-3.5 text-amber-300 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <span class="text-xs font-bold text-white">4.9 / 5.0 Rating</span>
+                        <span class="text-xs font-bold text-white" x-text="'4.9 / 5.0 ' + t('rating_label', 'Rating')">4.9 / 5.0 Rating</span>
                     </div>
                     <span class="text-white/40">•</span>
                     <div class="flex items-center gap-1">
                         <svg class="w-3.5 h-3.5 text-emerald-300 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span class="text-xs font-bold text-white">98.4% Puas</span>
+                        <span class="text-xs font-bold text-white" x-text="'98.4% ' + t('satisfied_label', 'Puas')">98.4% Puas</span>
                     </div>
                 </div>
             </div>
@@ -60,31 +60,32 @@
                 @click="specialSubtab = 'all'" 
                 :class="specialSubtab === 'all' ? 'bg-[#4338CA] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer">
-                Semua Rekomendasi
+                <span x-text="t('all_recommendations', 'Semua Rekomendasi')">Semua Rekomendasi</span>
             </button>
             <button 
                 @click="specialSubtab = 'top-rated'" 
                 :class="specialSubtab === 'top-rated' ? 'bg-[#4338CA] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3 h-3 text-amber-400 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span>Rating 4.9+</span>
+                <span x-text="t('rating_49_plus', 'Rating 4.9+')">Rating 4.9+</span>
             </button>
             <button 
                 @click="specialSubtab = 'trending'" 
                 :class="specialSubtab === 'trending' ? 'bg-[#4338CA] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                <span>Trending Pekan Ini</span>
+                <span x-text="t('trending_this_week', 'Trending Pekan Ini')">Trending Pekan Ini</span>
             </button>
             <button 
                 @click="specialSubtab = 'most-reviewed'" 
                 :class="specialSubtab === 'most-reviewed' ? 'bg-[#4338CA] text-white font-bold shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-medium'"
                 class="px-3.5 py-1.5 rounded-full transition shrink-0 cursor-pointer flex items-center gap-1">
                 <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>Banyak Diulas</span>
+                <span x-text="t('most_reviewed', 'Banyak Diulas')">Banyak Diulas</span>
             </button>
         </div>
     </div>
+
 
     <!-- 4. Curated Special For You Products Grid -->
     <div class="px-4">
@@ -121,7 +122,7 @@
 
                         <!-- Customer Review Snippet -->
                         <div class="mt-2 p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg text-[10px] text-zinc-600 leading-tight italic">
-                            <span x-text="idx % 2 === 0 ? '“Rasa otentik, packing aman sampai Tokyo!”' : '“Bumbu mantap, sangat mengobati rindu kampung halaman.”'"></span>
+                            <span x-text="idx % 2 === 0 ? t('review_snippet_1', '“Rasa otentik, packing aman sampai Tokyo!”') : t('review_snippet_2', '“Bumbu mantap, sangat mengobati rindu kampung halaman.”')"></span>
                         </div>
                     </div>
 
@@ -132,7 +133,7 @@
                                 @click="addToCart(prod, 1)" 
                                 class="w-full py-2 bg-[#4338CA] hover:bg-[#3730A3] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98">
                                 <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                <span>+ Keranjang</span>
+                                <span x-text="t('add_to_cart_short', '+ Keranjang')">+ Keranjang</span>
                             </button>
                         </template>
                         <template x-if="getCartItemQty(prod.id) > 0">

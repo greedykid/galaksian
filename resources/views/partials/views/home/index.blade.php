@@ -184,14 +184,15 @@
                 <div class="pt-2 flex flex-col gap-2 max-w-[220px] mx-auto">
                     <button 
                         @click="clearSearch()" 
-                        class="w-full py-2 bg-[#1657FF] hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95">
+                        class="w-full py-2 bg-[#1657FF] hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95"
+                        x-text="t('view_all_products', 'Lihat Semua Produk')">
                         Lihat Semua Produk
                     </button>
                     <a 
                         :href="waCsUrl + '&text=' + encodeURIComponent('Halo Admin Galaksian, saya mencari produk ' + searchQuery + ' tapi belum ada di katalog.')" 
                         target="_blank" 
                         class="w-full py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
-                        <span>Titip via WhatsApp</span>
+                        <span x-text="t('request_via_wa', 'Titip via WhatsApp')">Titip via WhatsApp</span>
                     </a>
                 </div>
             </div>
@@ -289,7 +290,7 @@
                         <path d="M5 13L27 9" stroke="#18181B" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950">Mie & Sembako</span>
+                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950" x-text="t('cat_noodles_groceries', 'Mie & Sembako')">Mie & Sembako</span>
             </button>
 
             <!-- 2. Kopi & Teh -->
@@ -306,7 +307,7 @@
                         <path d="M12 9C12 7.5 13.5 7 13.5 5.5M16 9C16 7.5 17.5 7 17.5 5.5" stroke="#92400E" stroke-width="1.3" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950">Kopi & Teh</span>
+                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950" x-text="t('cat_coffee_tea', 'Kopi & Teh')">Kopi & Teh</span>
             </button>
 
             <!-- 3. Sambal & Bumbu -->
@@ -321,7 +322,7 @@
                         <path d="M21 8C22 9.5 23.5 9 24 7.5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950">Sambal & Bumbu</span>
+                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950" x-text="t('cat_sambal_spices', 'Sambal & Bumbu')">Sambal & Bumbu</span>
             </button>
 
             <!-- 4. Herbal & Jamu -->
@@ -338,7 +339,7 @@
                         <path d="M10 18C10 15 13 13 16 13C16 17 13 18 10 18Z" fill="#22C55E" stroke="#18181B" stroke-width="1.6"/>
                     </svg>
                 </div>
-                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950">Herbal & Jamu</span>
+                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950" x-text="t('cat_herbal_jamu', 'Herbal & Jamu')">Herbal & Jamu</span>
             </button>
 
             <!-- 5. Snack & Camilan -->
@@ -353,7 +354,7 @@
                         <path d="M10 14C8.5 13 8.5 11 10 10C10 8.5 12 8 13.5 9C14.5 7.5 17 7.5 18 9C19.5 8 21.5 8.5 21.5 10C23 11 23 13 21.5 14H10Z" fill="#FEF08A" stroke="#18181B" stroke-width="1.6"/>
                     </svg>
                 </div>
-                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950">Snack & Camilan</span>
+                <span class="text-[11px] font-medium text-zinc-700 leading-tight mt-1.5 group-hover:text-zinc-950" x-text="t('cat_nusantara_snacks', 'Snack & Camilan')">Snack & Camilan</span>
             </button>
         </div>
     </div>
@@ -368,7 +369,7 @@
                     <svg class="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
                         <path d="M12 23c-4.97 0-9-4.03-9-9 0-3.32 1.83-6.23 4.54-7.79.43-.25.99-.07 1.21.36.21.41.05.92-.35 1.15C6.11 9.04 5 11.4 5 14c0 3.86 3.14 7 7 7s7-3.14 7-7c0-2.31-.92-4.42-2.43-5.96-.34-.35-.33-.91.02-1.25.35-.34.91-.33 1.25.02C19.68 8.65 21 11.17 21 14c0 4.97-4.03 9-9 9zm0-7c-1.66 0-3-1.34-3-3 0-1.12.61-2.1 1.52-2.61.4-.23.91-.08 1.14.32.22.38.08.87-.29 1.08C10.74 12.15 10.5 12.6 10.5 13c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5c0-.62-.25-1.18-.66-1.59-.34-.34-.34-.9 0-1.24.34-.34.9-.34 1.24 0C14.73 10.82 15 11.87 15 13c0 1.66-1.34 3-3 3z"/>
                     </svg>
-                    <span>Bundle Hemat Diaspora</span>
+                    <span x-text="t('bundle_hemat_title', 'Bundle Hemat Diaspora')">Bundle Hemat Diaspora</span>
                 </div>
 
                 <!-- Blue Countdown Boxes -->
@@ -383,7 +384,7 @@
 
             <!-- "Lihat >" link -->
             <button @click="openFlashSaleView('all')" class="text-xs font-bold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
-                <span>Lihat</span>
+                <span x-text="t('see_more', 'Lihat')">Lihat</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>
@@ -415,11 +416,11 @@
 
                     <!-- Bottom row: Sales count + Circular green '+' button -->
                     <div class="mt-2.5 pt-2 border-t border-zinc-100 flex items-center justify-between">
-                        <span class="text-[10px] text-zinc-400 font-medium" x-text="(item.stock ? (item.stock * 4 + 18) : 234) + ' terjual'">234 terjual</span>
+                        <span class="text-[10px] text-zinc-400 font-medium" x-text="(item.stock ? (item.stock * 4 + 18) : 234) + ' ' + t('sold', 'terjual')">234 terjual</span>
                         <button 
                             @click="addToCart(item, 1)" 
-                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95" 
-                            title="Tambah ke Keranjang">
+                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95 cursor-pointer" 
+                            :title="t('add_to_cart_tooltip', 'Tambah ke Keranjang')">
                             <svg class="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                     </div>
@@ -431,11 +432,11 @@
     <!-- ================= 4. KATALOG PRODUK INDONESIA (CATEGORY FILTER PILLS) ================= -->
     <div id="katalog-produk-indonesia" class="pt-1 scroll-mt-24">
         <div class="px-4 flex items-center justify-between mb-2">
-            <h3 class="font-bold text-base text-zinc-900 tracking-tight">
+            <h3 class="font-bold text-base text-zinc-900 tracking-tight" x-text="t('catalog_indonesia_title', 'Katalog Produk Indonesia')">
                 Katalog Produk Indonesia
             </h3>
             <button @click="openIndonesiaCatalogView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
-                <span>Lihat Semua</span>
+                <span x-text="t('see_all', 'Lihat Semua')">Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>
@@ -444,9 +445,10 @@
         <div class="flex gap-2 overflow-x-auto px-4 no-scrollbar pb-1 text-xs">
             <!-- 1. Semua -->
             <button 
-                @click="catalogFilter = 'all'"
+                @click="catalogFilter = 'all'" 
                 :class="catalogFilter === 'all' ? 'bg-[#1657FF] text-white font-bold shadow-sm' : 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-medium'"
-                class="px-4 py-2 rounded-full transition shrink-0">
+                class="px-4 py-2 rounded-full transition shrink-0"
+                x-text="t('all', 'Semua')">
                 Semua
             </button>
 
@@ -454,34 +456,34 @@
             <button 
                 @click="catalogFilter = 'elektronik'; openBrandCategoryView('kategori', 'Elektronik', 'elektronik')"
                 :class="catalogFilter === 'elektronik' ? 'bg-[#1657FF] text-white font-bold shadow-sm' : 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-medium'"
-                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5">
+                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                     <line x1="2" y1="20" x2="22" y2="20"></line>
                 </svg>
-                <span>Elektronik</span>
+                <span x-text="t('category_electronics', 'Elektronik')">Elektronik</span>
             </button>
 
             <!-- 3. Fashion (Clean SVG Dress / Shirt) -->
             <button 
                 @click="catalogFilter = 'fashion'; openBrandCategoryView('kategori', 'Fashion', 'fashion')"
                 :class="catalogFilter === 'fashion' ? 'bg-[#1657FF] text-white font-bold shadow-sm' : 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-medium'"
-                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5">
+                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C10.9 2 10 2.9 10 4V5.1C7.8 5.7 6.1 7.4 5.4 9.6L4.1 13.5C3.9 14.1 4.3 14.7 5 14.7H6V21C6 21.6 6.4 22 7 22H17C17.6 22 18 21.6 18 21V14.7H19C19.7 14.7 20.1 14.1 19.9 13.5L18.6 9.6C17.9 7.4 16.2 5.7 14 5.1V4C14 2.9 13.1 2 12 2ZM12 4C12.6 4 13 4.4 13 5V5.1C12.7 5 12.3 5 12 5C11.7 5 11.3 5 11 5.1V4C11 4.4 11.4 4 12 4Z"/>
                 </svg>
-                <span>Fashion</span>
+                <span x-text="t('category_fashion', 'Fashion')">Fashion</span>
             </button>
 
             <!-- 4. Kecantikan (Clean SVG Sparkle / Cosmetic) -->
             <button 
                 @click="catalogFilter = 'kecantikan'; openBrandCategoryView('kategori', 'Kecantikan', 'skincare-beauty')"
                 :class="catalogFilter === 'kecantikan' ? 'bg-[#1657FF] text-white font-bold shadow-sm' : 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-medium'"
-                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5">
+                class="px-3.5 py-2 rounded-full transition shrink-0 flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
                 </svg>
-                <span>Kecantikan</span>
+                <span x-text="t('category_beauty', 'Kecantikan')">Kecantikan</span>
             </button>
         </div>
     </div>
@@ -493,7 +495,7 @@
                 Spesial Untuk Kamu
             </h3>
             <button @click="openSpecialForYouView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
-                <span>Lihat Semua</span>
+                <span x-text="t('see_all', 'Lihat Semua')">Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>
@@ -531,8 +533,8 @@
                         <span class="text-[#00A862] font-extrabold text-xs tabular" x-text="formatRupiah(item.final_price)"></span>
                         <button 
                             @click="addToCart(item, 1)" 
-                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95"
-                            title="Tambah ke Keranjang">
+                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95 cursor-pointer"
+                            :title="t('add_to_cart_tooltip', 'Tambah ke Keranjang')">
                             <svg class="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                     </div>
@@ -548,7 +550,7 @@
                 Beli Lagi
             </h3>
             <button @click="openBuyAgainView('all')" class="text-xs font-semibold text-[#1657FF] hover:underline flex items-center gap-0.5 cursor-pointer">
-                <span>Lihat Semua</span>
+                <span x-text="t('see_all', 'Lihat Semua')">Lihat Semua</span>
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>
@@ -572,8 +574,8 @@
                         <span class="text-[#1657FF] font-extrabold text-xs tabular" x-text="formatRupiah(item.final_price)"></span>
                         <button 
                             @click="addToCart(item, 1)" 
-                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95"
-                            title="Tambah ke Keranjang">
+                            class="w-7 h-7 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center font-bold shadow-xs transition active:scale-95 cursor-pointer"
+                            :title="t('add_to_cart_tooltip', 'Tambah ke Keranjang')">
                             <svg class="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                     </div>
@@ -588,7 +590,7 @@
             <h3 class="font-bold text-base text-zinc-900 tracking-tight" x-text="t('all_products_title', 'Semua Produk')">
                 Semua Produk
             </h3>
-            <span class="text-xs text-zinc-400 font-medium" x-text="(homeData.product_grid?.data?.length || 30) + ' produk'">
+            <span class="text-xs text-zinc-400 font-medium" x-text="(homeData.product_grid?.data?.length || 30) + ' ' + t('products', 'produk')">
                 30 produk
             </span>
         </div>
@@ -623,9 +625,9 @@
                         <span class="text-[10px] text-zinc-400 font-normal" x-text="(prod.stock ? (prod.stock * 3 + 12) : 234) + 'x'">234x</span>
                         <button 
                             @click="addToCart(prod, 1)" 
-                            class="w-6 h-6 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center text-xs font-bold shadow-2xs transition active:scale-95"
-                            title="Tambah ke Keranjang">
-                            <svg class="w-3 h-3 stroke-current" viewBox="0 0 24 24" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            class="w-6 h-6 rounded-full bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
+                            :title="t('add_to_cart_tooltip', 'Tambah ke Keranjang')">
+                            <svg class="w-3 3 stroke-current" viewBox="0 0 24 24" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                     </div>
                 </div>

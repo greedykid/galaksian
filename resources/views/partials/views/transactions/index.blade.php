@@ -11,7 +11,7 @@
                             <button 
                                 @click="transactionSearchOpen = !transactionSearchOpen; if (transactionSearchOpen) $nextTick(() => $refs.transSearchInput?.focus())" 
                                 class="w-8 h-8 rounded-xl hover:bg-white/10 flex items-center justify-center text-white transition active:scale-95 cursor-pointer" 
-                                title="Cari Transaksi">
+                                :title="t('search_transactions_title', 'Cari Transaksi')">
                                 <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -19,9 +19,9 @@
                             </button>
                             <!-- Refresh Icon Only Button -->
                             <button 
-                                @click="fetchOrders(); showToast('Memperbarui transaksi...')" 
+                                @click="fetchOrders(); showToast(t('refreshing_trans_toast', 'Memperbarui transaksi...'))" 
                                 class="w-8 h-8 rounded-xl hover:bg-white/10 flex items-center justify-center text-white transition active:scale-95 cursor-pointer" 
-                                title="Segarkan Transaksi">
+                                :title="t('refresh_transactions_title', 'Segarkan Transaksi')">
                                 <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                                     <path d="M3 3v5h5"></path>
@@ -40,7 +40,7 @@
                                 type="text" 
                                 x-model="transactionSearchQuery" 
                                 @input.debounce.300ms="fetchOrders()"
-                                placeholder="Cari no. pesanan atau nama produk..." 
+                                :placeholder="t('search_trans_placeholder', 'Cari no. pesanan atau nama produk...')" 
                                 class="w-full pl-9 pr-8 py-2 rounded-xl bg-white text-zinc-900 text-xs placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-2xs">
                             <svg class="w-4 h-4 text-zinc-400 stroke-current fill-none absolute left-3 top-2.5" viewBox="0 0 24 24" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"></circle>
@@ -100,7 +100,7 @@
                                     <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                                 </div>
                                 <h4 class="font-bold text-xs text-zinc-800" x-text="t('no_orders', 'Tidak Ada Pesanan')">Tidak Ada Pesanan</h4>
-                                <p class="text-[11px] text-zinc-400" x-text="transactionTab === 'berlangsung' ? 'Belum ada transaksi yang sedang berjalan.' : (transactionTab === 'selesai' ? 'Belum ada transaksi yang selesai.' : 'Tidak ada transaksi yang dibatalkan.')"></p>
+                                <p class="text-[11px] text-zinc-400" x-text="transactionTab === 'berlangsung' ? t('no_ongoing_transactions', 'Belum ada transaksi yang sedang berjalan.') : (transactionTab === 'selesai' ? t('no_completed_transactions', 'Belum ada transaksi yang selesai.') : t('no_cancelled_transactions', 'Tidak ada transaksi yang dibatalkan.'))"></p>
                             </div>
                         </template>
 
@@ -139,7 +139,7 @@
                                         class="w-12 h-12 rounded-xl object-cover bg-zinc-50 border border-zinc-200/80 shrink-0 shadow-2xs" 
                                         alt="Product Thumbnail">
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="text-xs font-bold text-zinc-900 truncate" x-text="order.items && order.items.length > 0 ? (order.items[0]?.product_name || order.items[0]?.name || 'Produk Pesanan') : 'Produk Pesanan'"></h4>
+                                        <h4 class="text-xs font-bold text-zinc-900 truncate" x-text="order.items && order.items.length > 0 ? (order.items[0]?.product_name || order.items[0]?.name || t('ordered_product_fallback', 'Produk Pesanan')) : t('ordered_product_fallback', 'Produk Pesanan')"></h4>
                                         <p class="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-1 flex-wrap">
                                             <span x-text="(order.items && order.items.length > 0 ? order.items[0]?.qty : 1) + ' ' + t('items_unit', 'barang')"></span>
                                             <template x-if="order.items && order.items.length > 1">

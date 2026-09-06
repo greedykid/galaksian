@@ -55,7 +55,7 @@
         <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">
             <!-- Star Rating -->
             <div class="text-center space-y-1">
-                <p class="text-[11px] text-zinc-500 font-medium">Beri penilaian pengalaman jastip Anda:</p>
+                <p class="text-[11px] text-zinc-500 font-medium" x-text="t('rate_experience_prompt', 'Beri penilaian pengalaman jastip Anda:')">Beri penilaian pengalaman jastip Anda:</p>
                 <div class="flex items-center justify-center gap-2 py-1">
                     <template x-for="star in [1,2,3,4,5]" :key="star">
                         <button @click="reviewForm.rating = star" 
