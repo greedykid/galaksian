@@ -1,0 +1,1484 @@
+    <script>
+        function galaksianApp() {
+            return {
+                activeTab: 'home',
+                activeSubView: null, // null | 'brand-category' | 'checkout' | 'payment-instruction' | 'order-detail' | 'qris-payment'
+                
+                // Order Detail state
+                selectedOrderId: null,
+                selectedOrderDetail: null,
+                orderDetailLoading: false,
+                adminSelectedStatus: 'paid_product',
+                profileTab: 'biodata',
+
+                // QRIS View state (Figma reference)
+                showQrisInstructions: false,
+                isCheckingQris: false,
+                qrisSecondsRemaining: 2697, // 44:57 matching Figma screenshot
+                qrisTimerInterval: null,
+
+                // OOS (Barang Habis) Simulation & Resolution state
+                showOosModal: false,
+                oosChoice: 'replace', // 'refund' | 'replace'
+                oosSelectedItem: null,
+                oosReplacementProduct: null,
+                oosReplacementCandidates: [
+                    { id: 991, name: 'Calbee Jagabee Potato Crisps (Butter Shoyu)', price: 42000, image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80' },
+                    { id: 992, name: 'Meiji Black Chocolate Bar 120g Tokyo', price: 65000, image: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&fit=crop&q=80' },
+                    { id: 993, name: 'Tokyo Banana Custard Cream Cake (8 pcs)', price: 185000, image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&fit=crop&q=80' },
+                    { id: 994, name: 'Hada Labo Gokujyun Premium Lotion 170ml', price: 145000, image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&fit=crop&q=80' },
+                    { id: 995, name: 'Indomie Mi Goreng Spesial', price: 4500, image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80' }
+                ],
+                transactionTab: 'pending',
+                curatedTab: 'special',
+                selectedCountry: 'all',
+                currentLang: localStorage.getItem('galaksian_lang') || 'id',
+                langDropdownOpen: false,
+                
+                showNotifications: false,
+                activeProduct: null,
+                detailModalQty: 1,
+                showAddressModal: false,
+                showReviewModal: false,
+                showInvoiceDownloadModal: false,
+                selectedInvoiceOrder: null,
+
+                flashSaleCountdown: { h: '04', m: '18', s: '29' },
+                searchQuery: '',
+                waCsUrl: 'https://wa.me/6281200000001?text=Halo%20Admin%20Galaksian%2C%20saya%20butuh%20bantuan%20jastip',
+
+                toast: { show: false, message: '', type: 'success' },
+
+                isLoggedIn: false,
+                authToken: null,
+                currentUser: null,
+                authPhone: '081234567890',
+                authOtp: '',
+                otpStep: 'phone',
+                authLoading: false,
+
+                homeData: {
+                    banners: [],
+                    flash_sales: [],
+                    brands: [],
+                    categories: [],
+                    special_for_you: [],
+                    beli_lagi: [],
+                    best_sellers: [],
+                    promo_products: [],
+                    product_grid: { data: [] },
+                    active_trip: null
+                },
+
+                cartToken: '',
+                cart: { items: [], total_qty: 0, pricing: null, voucher_applied: null },
+                voucherCode: '',
+
+                selectedFilter: { type: 'kategori', name: '', slug: '', subtab: 'all' },
+
+                userAddresses: [],
+                defaultAddress: null,
+                addressForm: {
+                    recipient_name: '',
+                    phone: '',
+                    address: '',
+                    city: 'Jakarta Selatan',
+                    postal_code: '12190',
+                    delivery_note: 'leave_at_front_door',
+                    is_default: true
+                },
+
+                checkoutForm: {
+                    address_id: null,
+                    payment_method: 'qris',
+                    notes: ''
+                },
+                isSubmittingCheckout: false,
+
+                paymentResult: null,
+                isSimulatingPayment: false,
+                orders: [],
+
+                reviewForm: {
+                    orderId: null,
+                    productId: null,
+                    rating: 5,
+                    comment: ''
+                },
+
+                translations: window.GALAKSIAN_TRANSLATIONS,
+
+                setLanguage(lang) {
+                    if (lang !== 'id' && lang !== 'en') return;
+                    this.currentLang = lang;
+                    localStorage.setItem('galaksian_lang', lang);
+                    this.langDropdownOpen = false;
+                    document.documentElement.lang = lang;
+                    this.showToast(lang === 'id' ? 'Bahasa berhasil diubah ke Bahasa Indonesia.' : 'Language successfully changed to English.');
+                },
+
+                t(key, fallback = '') {
+                    const lang = this.currentLang;
+                    if (this.translations && this.translations[lang] && this.translations[lang][key] !== undefined) {
+                        return this.translations[lang][key];
+                    }
+                    if (this.translations && this.translations['id'] && this.translations['id'][key] !== undefined) {
+                        return this.translations['id'][key];
+                    }
+                    return fallback || key;
+                },
+
+                init() {
+                    this.currentLang = localStorage.getItem('galaksian_lang') || 'id';
+                    document.documentElement.lang = this.currentLang;
+                    this.cartToken = localStorage.getItem('galaksian_cart_token') || 'cart-' + Math.random().toString(36).substring(2, 12);
+                    localStorage.setItem('galaksian_cart_token', this.cartToken);
+
+                    this.authToken = localStorage.getItem('galaksian_token') || null;
+                    if (this.authToken) {
+                        this.isLoggedIn = true;
+                        this.fetchUserProfile();
+                    }
+
+                    this.startCountdown();
+                    this.fetchHome();
+                    this.fetchCart();
+                },
+
+                showToast(msg, type = 'success') {
+                    let translated = msg;
+                    if (this.translations && this.translations[this.currentLang]) {
+                        const dict = this.translations[this.currentLang];
+                        if (dict[msg]) {
+                            translated = dict[msg];
+                        } else if (this.currentLang === 'en') {
+                            if (msg.includes('Refund seharga barang')) {
+                                translated = msg.replace('Refund seharga barang', 'Refund for item price').replace('berhasil diajukan', 'successfully requested');
+                            } else if (msg.includes('Produk diganti! Selisih lunas otomatis dipotong dari saldo refund')) {
+                                translated = 'Product replaced! Difference automatically settled from refund balance.';
+                            } else if (msg.includes('Produk diganti! Invoice Tambahan diterbitkan:')) {
+                                translated = msg.replace('Produk diganti! Invoice Tambahan diterbitkan:', 'Product replaced! Additional invoice issued:');
+                            } else if (msg.includes('Produk diganti! Terbit Invoice Tambahan:')) {
+                                translated = msg.replace('Produk diganti! Terbit Invoice Tambahan:', 'Product replaced! Additional invoice issued:');
+                            } else if (msg.includes('Produk diganti ke')) {
+                                translated = msg.replace('Produk diganti ke', 'Product replaced with').replace('Kelebihan dana', 'Excess balance').replace('diajukan refund', 'refund requested');
+                            } else if (msg.includes('Produk berhasil diganti ke')) {
+                                translated = msg.replace('Produk berhasil diganti ke', 'Product successfully replaced with');
+                            } else if (msg.includes('Voucher ') && msg.includes('berhasil digunakan')) {
+                                translated = msg.replace('Voucher', 'Voucher').replace('berhasil digunakan.', 'successfully applied.');
+                            } else if (msg.includes('Masuk sebagai')) {
+                                translated = msg.replace('Masuk sebagai', 'Signed in as');
+                            } else if (msg.includes('Status order diperbarui:')) {
+                                translated = msg.replace('Status order diperbarui:', 'Order status updated:');
+                            } else if (msg.includes('Status berhasil diubah ke:')) {
+                                translated = msg.replace('Status berhasil diubah ke:', 'Status successfully changed to:');
+                            }
+                        }
+                    }
+                    this.toast.message = translated;
+                    this.toast.type = type;
+                    this.toast.show = true;
+                    setTimeout(() => { this.toast.show = false; }, 3000);
+                },
+
+                getHeaders() {
+                    const headers = {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Cart-Token': this.cartToken
+                    };
+                    if (this.authToken) {
+                        headers['Authorization'] = 'Bearer ' + this.authToken;
+                    }
+                    return headers;
+                },
+
+                goToTab(tab) {
+                    this.activeTab = tab;
+                    this.activeSubView = null;
+                    this.selectedOrderDetail = null;
+                    this.selectedOrderId = null;
+                    if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
+                    if (tab === 'cart') this.fetchCart();
+                    if (tab === 'transactions') {
+                        this.transactionTab = 'pending';
+                        this.fetchOrders();
+                    }
+                    if (tab === 'profile' && this.isLoggedIn) {
+                        this.fetchUserProfile();
+                        this.fetchAddresses();
+                    }
+                },
+
+                closeSubView() {
+                    this.activeSubView = null;
+                },
+
+                setCountry(c) {
+                    this.selectedCountry = c;
+                    this.fetchHome();
+                },
+
+                async fetchHome() {
+                    try {
+                        const url = this.selectedCountry === 'all' 
+                            ? '/api/v1/home' 
+                            : '/api/v1/home?country=' + this.selectedCountry;
+                        const res = await fetch(url, { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.homeData = json.data;
+                        }
+                    } catch (e) {
+                        console.error('Home load error:', e);
+                    }
+                },
+
+                async searchProducts() {
+                    if (!this.searchQuery.trim()) {
+                        this.fetchHome();
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/v1/products?q=' + encodeURIComponent(this.searchQuery), { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.homeData.product_grid.data = json.data;
+                            this.curatedTab = 'special';
+                        }
+                    } catch (e) {
+                        console.error('Search error:', e);
+                    }
+                },
+
+                getCuratedProducts() {
+                    if (this.curatedTab === 'special') return this.homeData.special_for_you || [];
+                    if (this.curatedTab === 'belilagi') return this.homeData.beli_lagi?.length ? this.homeData.beli_lagi : this.homeData.special_for_you;
+                    if (this.curatedTab === 'bestseller') return this.homeData.best_sellers || [];
+                    if (this.curatedTab === 'promo') return this.homeData.promo_products || [];
+                    return this.homeData.product_grid?.data || [];
+                },
+
+                openBrandCategoryView(type, name, slug) {
+                    this.selectedFilter.type = type;
+                    this.selectedFilter.name = name;
+                    this.selectedFilter.slug = slug;
+                    this.selectedFilter.subtab = 'all';
+                    this.activeSubView = 'brand-category';
+                },
+
+                getFilteredSubViewProducts() {
+                    let items = this.homeData.product_grid?.data || [];
+                    if (this.selectedFilter.type === 'brand') {
+                        items = items.filter(p => p.brand && p.brand.slug === this.selectedFilter.slug);
+                    }
+                    if (this.selectedFilter.subtab === 'cheapest') {
+                        return [...items].sort((a, b) => a.final_price - b.final_price);
+                    }
+                    if (this.selectedFilter.subtab === 'promo') {
+                        return items.filter(p => p.has_discount);
+                    }
+                    return items.length ? items : (this.homeData.special_for_you || []);
+                },
+
+                openProductDetail(prod) {
+                    this.activeProduct = prod;
+                    this.detailModalQty = 1;
+                },
+
+                getCartItemQty(productId) {
+                    if (!this.cart.items) return 0;
+                    const found = this.cart.items.find(i => i.product_id === productId || (i.product && i.product.id === productId));
+                    return found ? found.qty : 0;
+                },
+
+                async addToCart(prod, qty = 1) {
+                    try {
+                        const res = await fetch('/api/v1/cart/items', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ product_id: prod.id, qty: qty })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                            this.showToast('Item berhasil ditambahkan ke keranjang.');
+                        } else {
+                            this.showToast(json.message || 'Gagal menambahkan ke keranjang', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi server gagal', 'error');
+                    }
+                },
+
+                async changeCartQty(productId, delta) {
+                    const found = this.cart.items.find(i => i.product_id === productId || (i.product && i.product.id === productId));
+                    if (!found) return;
+                    const newQty = found.qty + delta;
+                    if (newQty <= 0) {
+                        this.removeCartItem(found.id);
+                    } else {
+                        this.updateCartItemQty(found.id, newQty);
+                    }
+                },
+
+                async updateCartItemQty(itemId, qty) {
+                    if (qty <= 0) {
+                        this.removeCartItem(itemId);
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/v1/cart/items/' + itemId, {
+                            method: 'PATCH',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ qty: qty })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                        }
+                    } catch (e) {
+                        console.error('Update qty error:', e);
+                    }
+                },
+
+                async removeCartItem(itemId) {
+                    try {
+                        const res = await fetch('/api/v1/cart/items/' + itemId, {
+                            method: 'DELETE',
+                            headers: this.getHeaders()
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                            this.showToast('Item telah dihapus.');
+                        }
+                    } catch (e) {
+                        console.error('Remove item error:', e);
+                    }
+                },
+
+                async fetchCart() {
+                    try {
+                        const res = await fetch('/api/v1/cart', { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                        }
+                    } catch (e) {
+                        console.error('Cart fetch error:', e);
+                    }
+                },
+
+                async applyVoucher() {
+                    if (!this.voucherCode.trim()) return;
+                    try {
+                        const res = await fetch('/api/v1/cart/voucher', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ code: this.voucherCode.trim() })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                            this.showToast('Voucher ' + this.voucherCode + ' berhasil digunakan.');
+                        } else {
+                            this.showToast(json.message || 'Voucher tidak valid', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal menerapkan voucher', 'error');
+                    }
+                },
+
+                async proceedToCheckout() {
+                    if (!this.isLoggedIn) {
+                        this.showToast('Silakan login untuk melanjutkan checkout.', 'error');
+                        this.goToTab('profile');
+                        return;
+                    }
+                    await this.fetchAddresses();
+                    if (this.defaultAddress) {
+                        this.checkoutForm.address_id = this.defaultAddress.id;
+                    } else if (this.userAddresses.length > 0) {
+                        this.checkoutForm.address_id = this.userAddresses[0].id;
+                    }
+                    this.activeSubView = 'checkout';
+                },
+
+                async submitCheckout() {
+                    if (!this.checkoutForm.address_id) {
+                        this.showToast('Pilih alamat pengiriman terlebih dahulu.', 'error');
+                        return;
+                    }
+                    this.isSubmittingCheckout = true;
+                    try {
+                        const payload = {
+                            address_id: this.checkoutForm.address_id,
+                            payment_method: this.checkoutForm.payment_method,
+                            notes: this.checkoutForm.notes || null,
+                            voucher_code: this.cart.voucher_applied?.code || null
+                        };
+                        const res = await fetch('/api/v1/checkout', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify(payload)
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            const newOrder = json.data.order;
+                            this.paymentResult = {
+                                order: newOrder,
+                                invoice: json.data.invoice,
+                                payment: json.data.payment,
+                                isPaid: false
+                            };
+                            this.selectedOrderId = newOrder.id;
+                            this.selectedOrderDetail = null;
+                            this.activeSubView = 'payment-instruction';
+                            this.fetchCart();
+                            this.fetchOrders();
+                            this.showToast('Pesanan dibuat. Silakan selesaikan pembayaran.');
+                        } else {
+                            this.showToast(json.message || 'Checkout gagal.', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Terjadi kesalahan saat checkout.', 'error');
+                    } finally {
+                        this.isSubmittingCheckout = false;
+                    }
+                },
+
+                
+                
+                // ================= OOS (BARANG HABIS) & INVOICE METHODS =================
+                getOosOldItemPrice() {
+                    if (!this.oosSelectedItem) return 0;
+                    const raw = this.oosSelectedItem.price ?? this.oosSelectedItem.unit_price;
+                    if (raw !== undefined && raw !== null && raw > 0) return Number(raw);
+                    if (this.oosSelectedItem.subtotal && this.oosSelectedItem.qty) {
+                        return Math.round(Number(this.oosSelectedItem.subtotal) / Number(this.oosSelectedItem.qty));
+                    }
+                    return Number(this.oosSelectedItem.subtotal) || 0;
+                },
+
+                triggerOosSimulation(item) {
+                    item.is_oos = true;
+                    this.openOosModal(item);
+                },
+
+                openOosModal(item) {
+                    this.oosSelectedItem = item;
+                    const price = Number(item.price ?? item.unit_price ?? (item.qty ? item.subtotal / item.qty : 0)) || 0;
+                    this.oosSelectedItem.price = price;
+                    this.oosSelectedItem.unit_price = price;
+                    this.oosSelectedItem.product_name = item.product_name || item.name || 'Produk Pesanan';
+                    this.oosSelectedItem.name = this.oosSelectedItem.product_name;
+
+                    this.oosReplacementProduct = this.oosReplacementCandidates[0];
+                    this.oosChoice = 'replace';
+                    this.showOosModal = true;
+                },
+
+                async resolveOosRefund() {
+                    if (!this.oosSelectedItem) return;
+                    const refundAmount = this.oosSelectedItem.subtotal || (this.getOosOldItemPrice() * (this.oosSelectedItem.qty || 1));
+                    const itemName = this.oosSelectedItem.product_name || this.oosSelectedItem.name || 'Produk Pesanan';
+
+                    try {
+                        const res = await fetch(`/api/v1/orders/${this.selectedOrderDetail.id}/items/${this.oosSelectedItem.id}/resolve-oos`, {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                resolution: 'refund',
+                                amount: refundAmount
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success && json.data) {
+                            this.selectedOrderDetail = json.data;
+                            if (this.oosSelectedItem) {
+                                this.oosSelectedItem.resolution = 'refunded';
+                                this.oosSelectedItem.refund_status = 'requested';
+                                this.oosSelectedItem.refund_amount = refundAmount;
+                            }
+                            this.showToast(`Refund seharga barang (${this.formatRupiah(refundAmount)}) berhasil diajukan.`);
+                        } else {
+                            this.oosSelectedItem.resolution = 'refunded';
+                            this.oosSelectedItem.refund_status = 'requested';
+                            this.oosSelectedItem.refund_amount = refundAmount;
+                            this.oosSelectedItem.is_oos = true;
+                            if (!this.selectedOrderDetail.status_histories) this.selectedOrderDetail.status_histories = [];
+                            this.selectedOrderDetail.status_histories.unshift({
+                                id: Date.now(),
+                                note: `Barang habis di toko JP (${itemName}). Pengembalian dana (partial refund) sebesar ${this.formatRupiah(refundAmount)} diajukan & diproses.`,
+                                created_at: new Date().toISOString()
+                            });
+                            this.showToast(`Refund seharga barang (${this.formatRupiah(refundAmount)}) berhasil diajukan.`);
+                        }
+                    } catch (e) {
+                        console.error('Refund API error:', e);
+                        this.oosSelectedItem.resolution = 'refunded';
+                        this.oosSelectedItem.refund_status = 'requested';
+                        this.oosSelectedItem.refund_amount = refundAmount;
+                        this.oosSelectedItem.is_oos = true;
+                        this.showToast(`Refund seharga barang (${this.formatRupiah(refundAmount)}) berhasil diajukan.`);
+                    }
+                    this.showOosModal = false;
+                },
+
+                async resolveOosReplacement() {
+                    if (!this.oosSelectedItem || !this.oosReplacementProduct) return;
+                    const oldName = this.oosSelectedItem.product_name || this.oosSelectedItem.name || 'Produk Pesanan';
+                    const oldPrice = this.getOosOldItemPrice();
+                    const newProduct = this.oosReplacementProduct;
+                    const priceDiff = newProduct.price - oldPrice;
+
+                    try {
+                        const res = await fetch(`/api/v1/orders/${this.selectedOrderDetail.id}/items/${this.oosSelectedItem.id}/resolve-oos`, {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                resolution: 'replace',
+                                replacement_name: newProduct.name,
+                                replacement_price: newProduct.price
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success && json.data) {
+                            this.selectedOrderDetail = json.data;
+                            if (priceDiff > 0) {
+                                const hasPaidOffset = json.data.invoices && json.data.invoices.some(i => i.type === 'additional' && i.status === 'paid');
+                                if (hasPaidOffset) {
+                                    this.showToast(`Produk diganti! Selisih lunas otomatis dipotong dari saldo refund.`);
+                                } else {
+                                    this.showToast(`Produk diganti! Invoice Tambahan diterbitkan: ${this.formatRupiah(priceDiff)}`);
+                                }
+                            } else if (priceDiff < 0) {
+                                const overpaid = Math.abs(priceDiff);
+                                if (this.selectedOrderDetail && this.selectedOrderDetail.items) {
+                                    const matchItem = this.selectedOrderDetail.items.find(it => it.id === this.oosSelectedItem.id);
+                                    if (matchItem) {
+                                        matchItem.refund_amount = overpaid;
+                                        matchItem.refund_status = 'requested';
+                                    }
+                                }
+                                this.showToast(`Produk diganti ke ${newProduct.name}! Kelebihan dana ${this.formatRupiah(overpaid)} diajukan refund.`);
+                            } else {
+                                this.showToast(`Produk berhasil diganti ke ${newProduct.name}.`);
+                            }
+                        } else {
+                            // Fallback in-memory
+                            const currentRefundBalance = this.getTotalRefundAmount();
+                            this.oosSelectedItem.product_name = `${newProduct.name} (Pengganti ${oldName})`;
+                            this.oosSelectedItem.name = this.oosSelectedItem.product_name;
+                            this.oosSelectedItem.price = newProduct.price;
+                            this.oosSelectedItem.unit_price = newProduct.price;
+                            this.oosSelectedItem.subtotal = newProduct.price * (this.oosSelectedItem.qty || 1);
+                            this.oosSelectedItem.resolution = 'replaced';
+                            this.oosSelectedItem.is_oos = false;
+
+                            if (!this.selectedOrderDetail.status_histories) {
+                                this.selectedOrderDetail.status_histories = [];
+                            }
+                            if (priceDiff > 0) {
+                                if (currentRefundBalance >= priceDiff) {
+                                    // Offset in memory
+                                    if (!this.selectedOrderDetail.invoices) this.selectedOrderDetail.invoices = [];
+                                    this.selectedOrderDetail.invoices.push({
+                                        id: Date.now(),
+                                        type: 'additional',
+                                        status: 'paid',
+                                        invoice_number: 'INV-ADD-' + Math.floor(Math.random() * 899999 + 100000),
+                                        amount: priceDiff,
+                                        description: `Tagihan Selisih Ganti Produk: ${newProduct.name} (Pengganti ${oldName}) - Lunas dipotong dari saldo refund`,
+                                    });
+                                    this.selectedOrderDetail.remaining_refund_total = currentRefundBalance - priceDiff;
+                                    this.selectedOrderDetail.status_histories.unshift({
+                                        id: Date.now(),
+                                        note: `Barang ${oldName} habis di JP. Diganti ke ${newProduct.name} (Selisih +${this.formatRupiah(priceDiff)}). Selisih lunas otomatis dipotong dari dana refund barang habis. Sisa refund: ${this.formatRupiah(currentRefundBalance - priceDiff)}.`,
+                                        created_at: new Date().toISOString()
+                                    });
+                                    this.showToast(`Produk diganti! Selisih lunas otomatis dipotong dari saldo refund.`);
+                                } else {
+                                    this.selectedOrderDetail.status_histories.unshift({
+                                        id: Date.now(),
+                                        note: `Barang ${oldName} habis di JP. Diganti ke ${newProduct.name} (Terbit Invoice Tambahan ${this.formatRupiah(priceDiff)}).`,
+                                        created_at: new Date().toISOString()
+                                    });
+                                    this.showToast(`Produk diganti! Terbit Invoice Tambahan: ${this.formatRupiah(priceDiff)}`);
+                                }
+                            } else if (priceDiff < 0) {
+                                const overpaid = Math.abs(priceDiff);
+                                this.oosSelectedItem.refund_amount = overpaid;
+                                this.oosSelectedItem.refund_status = 'requested';
+                                this.selectedOrderDetail.status_histories.unshift({
+                                    id: Date.now(),
+                                    note: `Barang ${oldName} habis di JP. Diganti ke ${newProduct.name}. Kelebihan pembayaran sebesar ${this.formatRupiah(overpaid)} otomatis diajukan refund kepada pembeli.`,
+                                    created_at: new Date().toISOString()
+                                });
+                                this.showToast(`Produk diganti ke ${newProduct.name}! Kelebihan dana ${this.formatRupiah(overpaid)} diajukan refund.`);
+                            } else {
+                                this.selectedOrderDetail.status_histories.unshift({
+                                    id: Date.now(),
+                                    note: `Barang ${oldName} habis di JP. Diganti ke ${newProduct.name} (Harga sama, tanpa penyesuaian biaya).`,
+                                    created_at: new Date().toISOString()
+                                });
+                                this.showToast(`Produk berhasil diganti ke ${newProduct.name}.`);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Replacement API error:', e);
+                        this.oosSelectedItem.product_name = `${newProduct.name} (Pengganti ${oldName})`;
+                        this.oosSelectedItem.resolution = 'replaced';
+                        this.oosSelectedItem.is_oos = false;
+                        if (priceDiff < 0) {
+                            this.oosSelectedItem.refund_amount = Math.abs(priceDiff);
+                            this.oosSelectedItem.refund_status = 'requested';
+                        }
+                    }
+
+                    this.showOosModal = false;
+                },
+
+                hasRefundItems() {
+                    return this.getTotalRefundAmount() > 0;
+                },
+
+                getTotalRefundAmount() {
+                    if (!this.selectedOrderDetail) return 0;
+                    if (this.selectedOrderDetail.remaining_refund_total !== undefined && this.selectedOrderDetail.remaining_refund_total !== null) {
+                        return this.selectedOrderDetail.remaining_refund_total;
+                    }
+                    if (this.selectedOrderDetail.refunds && this.selectedOrderDetail.refunds.length > 0) {
+                        const pending = this.selectedOrderDetail.refunds.filter(r => r.status === 'pending');
+                        return pending.reduce((sum, r) => sum + (r.amount || 0), 0);
+                    }
+                    if (!this.selectedOrderDetail.items) return 0;
+                    const total = this.selectedOrderDetail.items.reduce((sum, it) => {
+                        if (it.refund_amount && it.refund_amount > 0) return sum + it.refund_amount;
+                        if (it.resolution === 'refunded' || it.refund_status === 'requested') return sum + (it.subtotal || 0);
+                        return sum;
+                    }, 0);
+                    return total;
+                },
+
+                getWaRefundUrl(item = null) {
+                    const order = this.selectedOrderDetail;
+                    const orderNum = order ? order.order_number : '-';
+                    const custName = order?.address?.recipient_name || order?.address_snapshot?.recipient_name || this.userProfile?.name || 'Pelanggan';
+
+                    let refundAmountStr = '';
+                    let itemDetail = '';
+
+                    if (item) {
+                        const amt = item.refund_amount || item.subtotal || 0;
+                        refundAmountStr = this.formatRupiah(amt);
+                        itemDetail = '\n- Produk: ' + (item.product_name || item.name);
+                    } else {
+                        const total = this.getTotalRefundAmount();
+                        refundAmountStr = this.formatRupiah(total);
+                        const refundedItems = order?.items?.filter(it => (it.refund_amount && it.refund_amount > 0) || it.refund_status || it.resolution === 'refunded');
+                        if (refundedItems && refundedItems.length > 0) {
+                            itemDetail = '\n- Rincian Produk: ' + refundedItems.map(it => `${it.product_name || it.name} (Refund ${this.formatRupiah(it.refund_amount || it.subtotal || 0)})`).join(', ');
+                        }
+                    }
+
+                    const isEn = this.currentLang === 'en';
+                    const text = isEn ?
+                        `Hello Admin Galaksian,\n\nI would like to request a refund (price difference) for my order:\n- Order Number: ${orderNum}\n- Customer: ${custName}${itemDetail}\n- Total Refund Amount: ${refundAmountStr}\n\nPlease kindly process this refund to my bank account / e-wallet. Thank you!` :
+                        `Halo Admin Galaksian,\n\nSaya ingin meminta proses pengembalian dana (refund selisih harga produk) untuk pesanan saya:\n- No. Pesanan: ${orderNum}\n- Nama: ${custName}${itemDetail}\n- Total Selisih yang Direfund: ${refundAmountStr}\n\nMohon bantuannya untuk memproses refund tersebut ke rekening/e-wallet saya. Terima kasih!`;
+
+                    return 'https://wa.me/6281234567890?text=' + encodeURIComponent(text);
+                },
+
+                isProductInvoicePaid(order) {
+                    if (!order || !order.invoices) return false;
+                    const productInvoices = order.invoices.filter(i => i.type === 'product');
+                    if (productInvoices.length === 0) return false;
+                    return productInvoices.every(i => i.status === 'paid');
+                },
+
+                getShippingInvoice(order) {
+                    if (!order || !order.invoices) return null;
+                    return order.invoices.find(i => i.type === 'shipping');
+                },
+
+                getProductInvoices(order) {
+                    if (!order || !order.invoices) return [];
+                    return order.invoices.filter(i => i.type === 'product');
+                },
+
+                getAdditionalInvoices(order) {
+                    if (!order || !order.invoices) return [];
+                    return order.invoices.filter(i => i.type === 'additional');
+                },
+
+                getCurrentStep(status) {
+                    const orderOrder = [
+                        'pending_payment_product',
+                        'paid_product',
+                        'processing',
+                        'packing',
+                        'ready_for_delivery',
+                        'pending_payment_shipping',
+                        'shipping_paid',
+                        'delivering',
+                        'completed'
+                    ];
+                    const idx = orderOrder.indexOf(status);
+                    if (idx <= 1) return 1;
+                    if (idx === 2) return 2;
+                    if (idx === 3) return 3;
+                    if (idx <= 5) return 4;
+                    if (idx === 6 || idx === 7) return 5;
+                    if (idx >= 8) return 6;
+                    return 1;
+                },
+
+                isStepPassed(status, stepNum) {
+                    return this.getCurrentStep(status) >= stepNum;
+                },
+
+                isStepActive(status, stepNum) {
+                    return this.getCurrentStep(status) === stepNum;
+                },
+
+                // ================= TRANSACTION DETAIL HANDLERS =================
+                async openOrderDetail(orderId) {
+                    if (!orderId) return;
+                    this.selectedOrderId = orderId;
+                    this.selectedOrderDetail = null;
+                    this.activeTab = 'transactions';
+                    this.activeSubView = 'order-detail';
+                    this.orderDetailLoading = true;
+                    try {
+                        const res = await fetch('/api/v1/orders/' + orderId, { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success && json.data) {
+                            this.selectedOrderDetail = json.data;
+                            this.adminSelectedStatus = json.data.status;
+                        } else {
+                            this.showToast(json.message || 'Gagal memuat detail transaksi.');
+                        }
+                    } catch (e) {
+                        console.error('Fetch order detail error:', e);
+                        this.showToast('Gagal memuat detail transaksi.');
+                    } finally {
+                        this.orderDetailLoading = false;
+                    }
+                },
+
+                closeOrderDetail() {
+                    if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
+                    this.activeSubView = null;
+                    this.selectedOrderDetail = null;
+                    this.selectedOrderId = null;
+                },
+
+                // ================= QRIS PAYMENT METHODS =================
+                openQrisPayView() {
+                    this.activeSubView = 'qris-payment';
+                    this.showQrisInstructions = false;
+                    this.qrisSecondsRemaining = 2697; // 44:57 matching Figma screenshot
+                    if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
+                    this.qrisTimerInterval = setInterval(() => {
+                        if (this.qrisSecondsRemaining > 0) {
+                            this.qrisSecondsRemaining--;
+                        } else {
+                            clearInterval(this.qrisTimerInterval);
+                        }
+                    }, 1000);
+                },
+
+                closeQrisPayView() {
+                    if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
+                    if (this.selectedOrderId) {
+                        this.activeSubView = 'order-detail';
+                    } else {
+                        this.activeSubView = null;
+                    }
+                },
+
+                getQrisPayAmount() {
+                    if (!this.selectedOrderDetail) return 748000;
+                    if (this.selectedOrderDetail.invoices && this.selectedOrderDetail.invoices.length > 0) {
+                        const pending = this.selectedOrderDetail.invoices.find(inv => inv.status === 'pending');
+                        if (pending && pending.amount > 0) return pending.amount;
+                    }
+                    if (this.selectedOrderDetail.pricing && this.selectedOrderDetail.pricing.grand_total) {
+                        return this.selectedOrderDetail.pricing.grand_total;
+                    }
+                    if (this.selectedOrderDetail.pricing && this.selectedOrderDetail.pricing.product_total) {
+                        return this.selectedOrderDetail.pricing.product_total;
+                    }
+                    return 748000;
+                },
+
+                get qrisCountdownText() {
+                    const mins = Math.floor(this.qrisSecondsRemaining / 60);
+                    const secs = this.qrisSecondsRemaining % 60;
+                    return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                },
+
+                async checkQrisPaymentStatus() {
+                    this.isCheckingQris = true;
+                    try {
+                        if (!this.selectedOrderDetail) {
+                            await new Promise(r => setTimeout(r, 600));
+                            this.showToast('Menunggu pembayaran QRIS...');
+                            return;
+                        }
+
+                        const pendingInv = this.selectedOrderDetail.invoices ? this.selectedOrderDetail.invoices.find(inv => inv.status === 'pending') : null;
+                        if (pendingInv) {
+                            await this.simulatePaymentWebhook(pendingInv.invoice_number);
+                            this.showToast('Pembayaran QRIS berhasil dikonfirmasi!');
+                            await this.openOrderDetail(this.selectedOrderDetail.id);
+                        } else {
+                            await this.openOrderDetail(this.selectedOrderDetail.id);
+                            this.showToast('Status tagihan telah diperiksa dan diperbarui.');
+                        }
+                    } catch (e) {
+                        console.error('Check QRIS error:', e);
+                        this.showToast('Gagal memeriksa status pembayaran.');
+                    } finally {
+                        this.isCheckingQris = false;
+                    }
+                },
+
+                cancelQrisPayment() {
+                    if (confirm(this.currentLang === 'en' ? 'Are you sure you want to cancel the transaction / exit QRIS payment?' : 'Apakah Anda yakin ingin membatalkan transaksi / keluar dari laman pembayaran QRIS?')) {
+                        this.closeQrisPayView();
+                        this.showToast('Pembayaran QRIS ditutup.');
+                    }
+                },
+
+                async changeOrderStatus(orderId) {
+                    try {
+                        const loginRes = await fetch('/api/v1/admin/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ login: 'admin@galaksian.com', password: 'password' })
+                        });
+                        const loginJson = await loginRes.json();
+                        if (!loginJson.success) throw new Error('Admin login error');
+                        const adminToken = loginJson.data.token;
+
+                        const body = {
+                            status: this.adminSelectedStatus,
+                            note: 'Simulasi admin testing frontend detail transaksi'
+                        };
+                        if (this.adminSelectedStatus === 'ready_for_delivery') {
+                            body.shipping_jastip_amount = 25000;
+                            body.shipping_local_amount = 10000;
+                        }
+
+                        const patchRes = await fetch(`/api/v1/admin/orders/${orderId}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': 'Bearer ' + adminToken
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        const patchJson = await patchRes.json();
+                        if (patchJson.success) {
+                            this.showToast('Status berhasil diubah ke: ' + this.adminSelectedStatus);
+                            await this.openOrderDetail(orderId);
+                            await this.fetchOrders();
+                        } else {
+                            this.showToast(patchJson.message || 'Gagal update status admin.');
+                        }
+                    } catch (e) {
+                        console.error('Change status error:', e);
+                        this.showToast('Gagal update status admin.');
+                    }
+                },
+
+                formatDateTime(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                },
+
+                async simulatePaymentWebhook(invoiceNumber) {
+                    if (!invoiceNumber) return;
+                    this.isSimulatingPayment = true;
+                    try {
+                        const res = await fetch('/api/v1/webhooks/payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({
+                                event_id: 'sim-' + Date.now(),
+                                invoice_number: invoiceNumber,
+                                status: 'paid'
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            if (this.paymentResult) this.paymentResult.isPaid = true;
+                            this.showToast('Webhook berhasil. Status pembayaran LUNAS.');
+
+                            const targetOrderId = json.data?.order_id 
+                                || this.paymentResult?.order?.id 
+                                || this.selectedOrderDetail?.id 
+                                || this.selectedOrderId;
+
+                            if (targetOrderId) {
+                                this.selectedOrderId = targetOrderId;
+                                if (this.activeSubView === 'order-detail') {
+                                    await this.openOrderDetail(targetOrderId);
+                                }
+                            }
+                            await this.fetchOrders();
+                        } else {
+                            this.showToast(json.message || 'Webhook gagal diproses', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi webhook gagal', 'error');
+                    } finally {
+                        this.isSimulatingPayment = false;
+                    }
+                },
+
+                async fetchOrders() {
+                    if (!this.isLoggedIn) return;
+                    try {
+                        const res = await fetch('/api/v1/orders?type=' + this.transactionTab, { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.orders = json.data.data || [];
+                        }
+                    } catch (e) {
+                        console.error('Fetch orders error:', e);
+                    }
+                },
+
+                getShippingInvoice(order) {
+                    if (!order.invoices) return null;
+                    return order.invoices.find(inv => inv.type === 'shipping');
+                },
+
+                openInvoiceDownloadModal(order) {
+                    if (!order || !order.invoices || order.invoices.length === 0) {
+                        this.showToast(this.t('no_invoices_available', 'Tidak ada invoice yang tersedia untuk pesanan ini.'), 'error');
+                        return;
+                    }
+                    if (order.invoices.length === 1) {
+                        this.downloadInvoicePdf(order.id, order.invoices[0].id);
+                        return;
+                    }
+                    this.selectedInvoiceOrder = order;
+                    this.showInvoiceDownloadModal = true;
+                },
+
+                async downloadAllInvoices(order) {
+                    if (!order || !order.invoices || order.invoices.length === 0) return;
+                    this.showToast(this.t('downloading_all_invoices', 'Mengunduh seluruh invoice...'));
+                    for (const inv of order.invoices) {
+                        await this.downloadInvoicePdf(order.id, inv.id);
+                        await new Promise(r => setTimeout(r, 700));
+                    }
+                    this.showInvoiceDownloadModal = false;
+                    this.showToast(this.t('all_invoices_downloaded', 'Semua invoice berhasil diunduh.'));
+                },
+
+                getInvoiceTypeLabel(type) {
+                    switch (type) {
+                        case 'product':
+                            return this.t('product_invoice_badge', 'Invoice Produk');
+                        case 'additional':
+                            return this.t('additional_invoice_badge', 'Invoice Tambahan');
+                        case 'shipping':
+                            return this.t('shipping_invoice_badge', 'Invoice Ongkir');
+                        default:
+                            return (type || 'Invoice').toUpperCase();
+                    }
+                },
+
+                getInvoiceTypeBadgeClass(type) {
+                    switch (type) {
+                        case 'product':
+                            return 'bg-zinc-200 text-zinc-800 border border-zinc-300';
+                        case 'additional':
+                            return 'bg-amber-100 text-amber-900 border border-amber-200';
+                        case 'shipping':
+                            return 'bg-blue-100 text-blue-900 border border-blue-200';
+                        default:
+                            return 'bg-zinc-100 text-zinc-700 border border-zinc-200';
+                    }
+                },
+
+                async downloadInvoicePdf(orderId, invoiceId) {
+                    try {
+                        const res = await fetch(`/api/v1/orders/${orderId}/invoices/${invoiceId}/download`, {
+                            headers: this.getHeaders()
+                        });
+                        if (!res.ok) throw new Error('Download failed');
+                        const blob = await res.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Invoice-${orderId}-${invoiceId}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        this.showToast(this.t('invoice_download_success', 'Invoice PDF berhasil diunduh.'));
+                    } catch (e) {
+                        this.showToast(this.t('invoice_download_failed', 'Gagal mengunduh invoice PDF'), 'error');
+                    }
+                },
+
+                async adminSimulateStatus(orderId, newStatus, shippingAmount = null) {
+                    try {
+                        const loginRes = await fetch('/api/v1/admin/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ login: 'admin@galaksian.com', password: 'password' })
+                        });
+                        const loginJson = await loginRes.json();
+                        if (!loginJson.success) throw new Error('Admin auth error');
+                        const adminToken = loginJson.data.token;
+
+                        const body = { status: newStatus, note: 'Simulasi admin pengembang' };
+                        if (shippingAmount) {
+                            body.shipping_jastip_amount = shippingAmount - 10000;
+                            body.shipping_local_amount = 10000;
+                        }
+                        const patchRes = await fetch(`/api/v1/admin/orders/${orderId}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': 'Bearer ' + adminToken
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        const patchJson = await patchRes.json();
+                        if (patchJson.success) {
+                            this.showToast(`Status order diperbarui: ${newStatus}`);
+                            await this.openOrderDetail(orderId);
+                            await this.fetchOrders();
+                        } else {
+                            this.showToast(patchJson.message || 'Gagal update status admin', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Simulasi admin gagal', 'error');
+                    }
+                },
+
+                async reorderItems(order) {
+                    if (!order.items) return;
+                    for (const item of order.items) {
+                        await this.addToCart({ id: item.product_id }, item.qty);
+                    }
+                    this.showToast('Semua item telah dimasukkan kembali ke keranjang.');
+                    this.goToTab('cart');
+                },
+
+                openReviewModal(order) {
+                    this.reviewForm.orderId = order.id;
+                    this.reviewForm.productId = order.items[0]?.product_id || null;
+                    this.reviewForm.rating = 5;
+                    this.reviewForm.comment = '';
+                    this.showReviewModal = true;
+                },
+
+                async submitReview() {
+                    if (!this.reviewForm.productId) return;
+                    try {
+                        const res = await fetch(`/api/v1/orders/${this.reviewForm.orderId}/review`, {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                product_id: this.reviewForm.productId,
+                                rating: this.reviewForm.rating,
+                                comment: this.reviewForm.comment
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Ulasan Anda telah tersimpan.');
+                            this.showReviewModal = false;
+                        } else {
+                            this.showToast(json.message || 'Gagal mengirim ulasan', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi ulasan gagal', 'error');
+                    }
+                },
+
+                async fetchAddresses() {
+                    if (!this.isLoggedIn) return;
+                    try {
+                        const res = await fetch('/api/v1/addresses', { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.userAddresses = json.data || [];
+                            this.defaultAddress = this.userAddresses.find(a => a.is_default) || this.userAddresses[0] || null;
+                        }
+                    } catch (e) {
+                        console.error('Address fetch error:', e);
+                    }
+                },
+
+                openAddressModal() {
+                    this.addressForm = {
+                        recipient_name: this.currentUser?.name || '',
+                        phone: this.currentUser?.phone || '',
+                        address: '',
+                        city: 'Jakarta Selatan',
+                        postal_code: '12190',
+                        delivery_note: 'leave_at_front_door',
+                        is_default: this.userAddresses.length === 0
+                    };
+                    this.showAddressModal = true;
+                },
+
+                async saveAddress() {
+                    if (!this.addressForm.recipient_name || !this.addressForm.phone || !this.addressForm.address) {
+                        this.showToast('Mohon lengkapi semua data alamat.', 'error');
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/v1/addresses', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify(this.addressForm)
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Alamat berhasil disimpan.');
+                            this.showAddressModal = false;
+                            this.fetchAddresses();
+                        } else {
+                            this.showToast(json.message || 'Gagal menyimpan alamat', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi alamat gagal', 'error');
+                    }
+                },
+
+                async setDefaultAddress(addr) {
+                    try {
+                        const res = await fetch('/api/v1/addresses/' + addr.id, {
+                            method: 'PUT',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                recipient_name: addr.recipient_name,
+                                phone: addr.phone,
+                                address: addr.address,
+                                is_default: true
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Alamat utama diperbarui.');
+                            this.fetchAddresses();
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal mengatur alamat utama', 'error');
+                    }
+                },
+
+                async deleteAddress(id) {
+                    if (!confirm(this.currentLang === 'en' ? 'Delete this address from your saved list?' : 'Hapus alamat ini dari daftar?')) return;
+                    try {
+                        const res = await fetch('/api/v1/addresses/' + id, {
+                            method: 'DELETE',
+                            headers: this.getHeaders()
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Alamat telah dihapus.');
+                            this.fetchAddresses();
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal menghapus alamat', 'error');
+                    }
+                },
+
+                async quickLoginDemo() {
+                    this.authLoading = true;
+                    try {
+                        await fetch('/api/v1/auth/otp/request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ phone: '6281234567890' })
+                        });
+                        const res = await fetch('/api/v1/auth/otp/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ phone: '6281234567890', code: '123456' })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.authToken = json.data.token;
+                            this.currentUser = json.data.user;
+                            this.isLoggedIn = true;
+                            localStorage.setItem('galaksian_token', this.authToken);
+                            this.showToast('Masuk sebagai ' + this.currentUser.name);
+                            this.fetchCart();
+                            this.fetchAddresses();
+                        } else {
+                            this.showToast(json.message || 'Login gagal', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal melakukan login', 'error');
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async requestOtp() {
+                    if (!this.authPhone) return;
+                    this.authLoading = true;
+                    try {
+                        const res = await fetch('/api/v1/auth/otp/request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ phone: this.authPhone })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.otpStep = 'verify';
+                            this.showToast('Kode OTP terkirim (Demo: 123456)');
+                        } else {
+                            this.showToast(json.message || 'Gagal mengirim OTP', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi OTP gagal', 'error');
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async verifyOtp() {
+                    if (!this.authOtp) return;
+                    this.authLoading = true;
+                    try {
+                        const res = await fetch('/api/v1/auth/otp/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ phone: this.authPhone, code: this.authOtp })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.authToken = json.data.token;
+                            this.currentUser = json.data.user;
+                            this.isLoggedIn = true;
+                            localStorage.setItem('galaksian_token', this.authToken);
+                            this.showToast('Verifikasi sukses.');
+                            this.fetchCart();
+                            this.fetchAddresses();
+                        } else {
+                            this.showToast(json.message || 'OTP tidak cocok', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Verifikasi gagal', 'error');
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async fetchUserProfile() {
+                    try {
+                        const res = await fetch('/api/v1/me', { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.currentUser = json.data;
+                            this.fetchAddresses();
+                        } else {
+                            this.logout();
+                        }
+                    } catch (e) {
+                        console.error('Fetch me error:', e);
+                    }
+                },
+
+                async updateProfile() {
+                    try {
+                        const res = await fetch('/api/v1/me', {
+                            method: 'PUT',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                name: this.currentUser.name,
+                                email: this.currentUser.email
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Biodata telah diperbarui.');
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal memperbarui biodata', 'error');
+                    }
+                },
+
+                logout() {
+                    this.isLoggedIn = false;
+                    this.authToken = null;
+                    this.currentUser = null;
+                    this.otpStep = 'phone';
+                    this.authOtp = '';
+                    localStorage.removeItem('galaksian_token');
+                    this.showToast('Anda telah keluar.');
+                    this.goToTab('home');
+                },
+
+                formatRupiah(num) {
+                    if (num === null || num === undefined) return 'Rp 0';
+                    return 'Rp ' + Number(num).toLocaleString('id-ID');
+                },
+
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr);
+                    const locale = this.currentLang === 'en' ? 'en-US' : 'id-ID';
+                    return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+                },
+
+                                getOosButtonText() {
+                    const diff = (this.oosReplacementProduct?.price || 0) - this.getOosOldItemPrice();
+                    const refundTotal = this.getTotalRefundAmount();
+                    const isEn = this.currentLang === 'en';
+                    if (diff > 0) {
+                        if (refundTotal >= diff) {
+                            return isEn ? 'Replace Product (Settled via Refund Balance)' : 'Ganti Produk (Lunas Potong Saldo Refund)';
+                        }
+                        if (refundTotal > 0) {
+                            const remaining = diff - refundTotal;
+                            return isEn ? `Replace Product & Offset Refund (Remaining ${this.formatRupiah(remaining)})` : `Ganti Produk & Potong Refund (Sisa Bayar ${this.formatRupiah(remaining)})`;
+                        }
+                        return isEn ? 'Replace Product & Issue Additional Invoice' : 'Ganti Produk & Terbitkan Invoice Tambahan';
+                    } else if (diff < 0) {
+                        const overpaid = this.getOosOldItemPrice() - (this.oosReplacementProduct?.price || 0);
+                        return isEn ? `Replace Product & Claim Refund Diff (${this.formatRupiah(overpaid)})` : `Ganti Produk & Ajukan Refund Selisih (${this.formatRupiah(overpaid)})`;
+                    } else {
+                        return isEn ? 'Confirm Product Replacement' : 'Konfirmasi Ganti Produk';
+                    }
+                },
+
+                getDeliveryNoteLabel(note) {
+                    const isEn = this.currentLang === 'en';
+                    const dict = isEn ? {
+                        'leave_at_front_door': 'Front door',
+                        'contact_before_delivery': 'Call before delivery',
+                        'hand_to_receiver': 'Hand to receiver directly',
+                        'security_desk': 'Security desk',
+                        'other': 'Other'
+                    } : {
+                        'leave_at_front_door': 'Taruh di depan pintu',
+                        'contact_before_delivery': 'Hubungi sebelum antar',
+                        'hand_to_receiver': 'Serahkan langsung ke penerima',
+                        'security_desk': 'Titip di pos satpam',
+                        'other': 'Lainnya'
+                    };
+                    return dict[note] || note;
+                },
+
+                getOrderStatusColor(status) {
+                    const map = {
+                        'pending_payment_product': 'bg-amber-50 text-amber-800 border-amber-200',
+                        'paid_product': 'bg-blue-50 text-blue-800 border-blue-200',
+                        'processing': 'bg-zinc-100 text-zinc-800 border-zinc-200',
+                        'packing': 'bg-purple-50 text-purple-800 border-purple-200',
+                        'ready_for_delivery': 'bg-orange-50 text-orange-800 border-orange-200',
+                        'pending_payment_shipping': 'bg-amber-50 text-amber-800 border-amber-200',
+                        'shipping_paid': 'bg-cyan-50 text-cyan-800 border-cyan-200',
+                        'delivering': 'bg-teal-50 text-teal-800 border-teal-200',
+                        'completed': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                        'cancelled': 'bg-zinc-100 text-zinc-600 border-zinc-200',
+                        'refunded': 'bg-red-50 text-red-800 border-red-200'
+                    };
+                    return map[status] || 'bg-zinc-100 text-zinc-700 border-zinc-200';
+                },
+
+                getOrderStatusLabel(status) {
+                    const isEn = this.currentLang === 'en';
+                    const dict = isEn ? {
+                        'pending_payment_product': 'Awaiting Product Payment',
+                        'paid_product': 'Product Paid',
+                        'processing': 'Shopping in Japan',
+                        'packing': 'Packing in Progress',
+                        'ready_for_delivery': 'Ready to Ship (Shipping Fee)',
+                        'pending_payment_shipping': 'Awaiting Shipping Payment',
+                        'shipping_paid': 'Shipping Paid',
+                        'delivering': 'In Delivery',
+                        'completed': 'Order Completed',
+                        'cancelled': 'Cancelled',
+                        'refunded': 'Refunded'
+                    } : {
+                        'pending_payment_product': 'Menunggu Bayar Produk',
+                        'paid_product': 'Produk Lunas',
+                        'processing': 'Dibelanjakan di JP',
+                        'packing': 'Sedang Dipacking',
+                        'ready_for_delivery': 'Siap Kirim (Ongkir)',
+                        'pending_payment_shipping': 'Menunggu Bayar Ongkir',
+                        'shipping_paid': 'Ongkir Lunas',
+                        'delivering': 'Dalam Pengiriman',
+                        'completed': 'Pesanan Selesai',
+                        'cancelled': 'Dibatalkan',
+                        'refunded': 'Dana Dikembalikan'
+                    };
+                    return dict[status] || status;
+                },
+
+                isStepPassed(status, stepNum) {
+                    const orderOrder = [
+                        'pending_payment_product',
+                        'paid_product',
+                        'processing',
+                        'packing',
+                        'ready_for_delivery',
+                        'pending_payment_shipping',
+                        'shipping_paid',
+                        'delivering',
+                        'completed'
+                    ];
+                    const idx = orderOrder.indexOf(status);
+                    const currentStep = idx <= 1 ? 1 : idx === 2 ? 2 : idx === 3 ? 3 : idx <= 6 ? 4 : idx === 7 ? 5 : 6;
+                    return currentStep >= stepNum;
+                },
+
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text);
+                    this.showToast(this.t('copied_clipboard', 'Nomor berhasil disalin.'));
+                },
+
+                startCountdown() {
+                    let totalSeconds = 4 * 3600 + 18 * 60 + 29;
+                    setInterval(() => {
+                        if (totalSeconds <= 0) totalSeconds = 12 * 3600;
+                        totalSeconds--;
+                        const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                        const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                        const s = String(totalSeconds % 60).padStart(2, '0');
+                        this.flashSaleCountdown = { h, m, s };
+                    }, 1000);
+                },
+
+                getFallbackImage(prod) {
+                    if (!prod) return 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80';
+                    const name = prod.name ? prod.name.toLowerCase() : '';
+                    if (name.includes('indomie') || name.includes('mie')) {
+                        return 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('sambal') || name.includes('bumbu') || name.includes('rendang')) {
+                        return 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('meiji') || name.includes('chocolate') || name.includes('cokelat')) {
+                        return 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('sukro') || name.includes('kacang') || name.includes('calbee') || name.includes('potato') || name.includes('crisps')) {
+                        return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('skincare') || name.includes('beauty')) {
+                        return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&fit=crop&q=80';
+                    }
+                    return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
+                }
+            }
+        }
+    </script>
