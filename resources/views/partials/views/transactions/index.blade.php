@@ -2,31 +2,77 @@
             <!-- VIEW 3: TRANSAKSI (2 TABS: PENDING & SELESAI)              -->
             <!-- ========================================================= -->
             <div x-show="activeTab === 'transactions' && !activeSubView" class="space-y-4">
-                <!-- Header -->
-                <div class="px-4 pt-3 pb-2 border-b border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-base font-extrabold text-zinc-950 tracking-tight" x-text="t('transaction_history', 'Daftar Transaksi')">Daftar Transaksi</h2>
-                        <p class="text-[11px] text-zinc-500" x-text="t('transactions_subtitle', 'Pantau progres belanja jastip & status pengiriman')">Pantau progres belanja jastip & status pengiriman</p>
+                <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
+                <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 shadow-xs -mx-px w-[calc(100%+2px)]">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('transaction_history', 'Transaksi')">Transaksi</h1>
+                        <div class="flex items-center gap-1.5">
+                            <!-- Search Toggle Button -->
+                            <button 
+                                @click="transactionSearchOpen = !transactionSearchOpen; if (transactionSearchOpen) $nextTick(() => $refs.transSearchInput?.focus())" 
+                                class="w-8 h-8 rounded-xl hover:bg-white/10 flex items-center justify-center text-white transition active:scale-95 cursor-pointer" 
+                                title="Cari Transaksi">
+                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
+                            <!-- Refresh Icon Only Button -->
+                            <button 
+                                @click="fetchOrders(); showToast('Memperbarui transaksi...')" 
+                                class="w-8 h-8 rounded-xl hover:bg-white/10 flex items-center justify-center text-white transition active:scale-95 cursor-pointer" 
+                                title="Segarkan Transaksi">
+                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                    <path d="M3 3v5h5"></path>
+                                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                                    <path d="M16 16h5v5"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <button @click="fetchOrders()" class="text-xs font-semibold text-zinc-600 hover:text-zinc-950">
-                        Refresh
-                    </button>
+
+                    <!-- Collapsible Search Bar -->
+                    <div x-show="transactionSearchOpen" x-transition class="mt-2.5 pt-1" x-cloak>
+                        <div class="relative">
+                            <input 
+                                x-ref="transSearchInput"
+                                type="text" 
+                                x-model="transactionSearchQuery" 
+                                @input.debounce.300ms="fetchOrders()"
+                                placeholder="Cari no. pesanan atau nama produk..." 
+                                class="w-full pl-9 pr-8 py-2 rounded-xl bg-white text-zinc-900 text-xs placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-2xs">
+                            <svg class="w-4 h-4 text-zinc-400 stroke-current fill-none absolute left-3 top-2.5" viewBox="0 0 24 24" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <button x-show="transactionSearchQuery" @click="transactionSearchQuery = ''; fetchOrders()" class="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600">
+                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 2 STRICT TABS: PENDING & SELESAI -->
-                <div class="px-4">
-                    <div class="grid grid-cols-2 bg-zinc-100 p-0.5 rounded-xl text-xs font-bold text-center border border-zinc-200/60">
+                <!-- 3 STRICT TABS: BERLANGSUNG, SELESAI, DIBATALKAN -->
+                <div class="px-4 pt-1">
+                    <div class="grid grid-cols-3 bg-zinc-100 p-1 rounded-2xl text-xs font-bold text-center border border-zinc-200/70">
                         <button 
-                            @click="transactionTab = 'pending'; fetchOrders()" 
-                            :class="transactionTab === 'pending' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'"
-                            class="py-2 rounded-lg transition">
-                            <span x-text="t('tab_pending', 'Transaksi Pending')">Transaksi Pending</span>
+                            @click="transactionTab = 'berlangsung'; fetchOrders()" 
+                            :class="transactionTab === 'berlangsung' ? 'bg-white text-blue-600 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'"
+                            class="py-2 rounded-xl transition cursor-pointer">
+                            <span x-text="t('tab_ongoing', 'Berlangsung')">Berlangsung</span>
                         </button>
                         <button 
-                            @click="transactionTab = 'completed'; fetchOrders()" 
-                            :class="transactionTab === 'completed' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'"
-                            class="py-2 rounded-lg transition">
-                            <span x-text="t('tab_completed', 'Transaksi Selesai')">Transaksi Selesai</span>
+                            @click="transactionTab = 'selesai'; fetchOrders()" 
+                            :class="transactionTab === 'selesai' ? 'bg-white text-blue-600 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'"
+                            class="py-2 rounded-xl transition cursor-pointer">
+                            <span x-text="t('tab_completed', 'Selesai')">Selesai</span>
+                        </button>
+                        <button 
+                            @click="transactionTab = 'dibatalkan'; fetchOrders()" 
+                            :class="transactionTab === 'dibatalkan' ? 'bg-white text-blue-600 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'"
+                            class="py-2 rounded-xl transition cursor-pointer">
+                            <span x-text="t('tab_cancelled', 'Dibatalkan')">Dibatalkan</span>
                         </button>
                     </div>
                 </div>
@@ -48,18 +94,18 @@
                 <!-- Order Listing -->
                 <template x-if="isLoggedIn">
                     <div class="px-4 space-y-3 pb-6">
-                        <template x-if="orders.length === 0">
+                        <template x-if="getFilteredOrders().length === 0">
                             <div class="p-10 text-center space-y-2">
                                 <div class="w-10 h-10 rounded-full bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto">
                                     <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                                 </div>
                                 <h4 class="font-bold text-xs text-zinc-800" x-text="t('no_orders', 'Tidak Ada Pesanan')">Tidak Ada Pesanan</h4>
-                                <p class="text-[11px] text-zinc-400" x-text="transactionTab === 'pending' ? t('no_pending_orders', 'Belum ada transaksi yang sedang berjalan.') : t('no_completed_orders', 'Belum ada transaksi yang selesai.')"></p>
+                                <p class="text-[11px] text-zinc-400" x-text="transactionTab === 'berlangsung' ? 'Belum ada transaksi yang sedang berjalan.' : (transactionTab === 'selesai' ? 'Belum ada transaksi yang selesai.' : 'Tidak ada transaksi yang dibatalkan.')"></p>
                             </div>
                         </template>
 
                         <!-- Order Card: Simple, Elegant, Modern E-Commerce Standard -->
-                        <template x-for="order in orders" :key="order.id">
+                        <template x-for="order in getFilteredOrders()" :key="order.id">
                             <div 
                                 @click="openOrderDetail(order.id)" 
                                 class="bg-white border border-zinc-200 hover:border-zinc-300 active:border-zinc-400 rounded-2xl p-4 space-y-3 shadow-2xs hover:shadow-xs transition cursor-pointer group active:scale-[0.99]">

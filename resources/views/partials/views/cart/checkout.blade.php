@@ -1,26 +1,26 @@
 <!-- ========================================================= -->
 <!-- SUB-VIEW: CHECKOUT (REFERENCE DESIGN IMPLEMENTATION)      -->
 <!-- ========================================================= -->
-<div x-show="activeSubView === 'checkout'" class="bg-[#FAF8F3] min-h-screen">
+<div x-show="activeSubView === 'checkout'" class="bg-white min-h-screen">
     
-    <!-- 1. Dedicated Top Header (Matching media_1788725847851.png) -->
-    <div class="sticky top-0 z-30 bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between shadow-2xs -mx-px w-[calc(100%+2px)]">
-        <div class="flex items-center gap-3">
-            <button @click="closeSubView()" class="w-9 h-9 border border-zinc-950 rounded-xl flex items-center justify-center text-zinc-950 hover:bg-zinc-100 transition shrink-0" title="Kembali">
-                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
+    <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
+        <div class="flex items-center gap-2">
+            <button @click="closeSubView()" class="p-1 -ml-1 text-white hover:text-white/80 transition flex items-center gap-1.5" title="Kembali">
+                <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
             </button>
-            <h2 class="text-base font-extrabold text-zinc-950 tracking-tight" x-text="t('checkout_title', 'Checkout')">Checkout</h2>
+            <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('checkout_title', 'Checkout')">Checkout</h1>
         </div>
-        <span class="px-3 py-1 bg-blue-100/70 text-[#1657FF] font-bold text-xs rounded-full tabular shadow-2xs" x-text="(cart.total_qty || 0) + ' item'"></span>
+        <span class="px-3 py-1 bg-white/20 text-white font-bold text-xs rounded-full tabular shadow-2xs" x-text="(cart.total_qty || 0) + ' item'"></span>
     </div>
 
-    <!-- Main Content Container with Warm Canvas and Structured Black Outline Cards -->
+    <!-- Main Content Container with Soft, Modern Border Cards -->
     <div class="p-4 space-y-3 pb-28">
         
         <!-- CARD 1: TUJUAN PENGIRIMAN -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 space-y-3 shadow-2xs">
             <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('shipping_destination', 'Tujuan Pengiriman')">Tujuan Pengiriman</h3>
             
             <!-- Warning Notice Banner (Khusus gedung, hanya bisa diantar sampai lobby) -->
@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <!-- Rounded Edit Pencil Button -->
-                <button @click="openAddressModal()" class="w-8 h-8 rounded-xl border border-zinc-300 hover:border-zinc-900 flex items-center justify-center text-zinc-700 hover:text-zinc-950 transition shrink-0" title="Ubah Alamat">
+                <button @click="openAddressModal()" class="w-8 h-8 rounded-xl border border-zinc-200 hover:border-zinc-400 bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition shrink-0" title="Ubah Alamat">
                     <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                     </svg>
@@ -63,7 +63,7 @@
         </div>
 
         <!-- CARD 2: PENGIRIMAN JASTIP EKSPEDISI -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 flex items-center justify-between shadow-2xs">
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 flex items-center justify-between shadow-2xs">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">
                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -81,8 +81,8 @@
             </button>
         </div>
 
-        <!-- CARD 3: DAFTAR PRODUK (Matching media_1788725847851.png) -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+        <!-- CARD 3: DAFTAR PRODUK -->
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 space-y-3 shadow-2xs">
             <div class="flex justify-between items-center">
                 <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('ordered_products', 'Daftar Produk')">Daftar Produk</h3>
                 <span class="text-xs text-zinc-400 tabular" x-text="(cart.total_qty || 0) + ' item'"></span>
@@ -124,8 +124,8 @@
             </div>
         </div>
 
-        <!-- CARD 4: PROMO & VOUCHER JASTIP (Matching media_1788725847851.png & media_1788725880610.png) -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+        <!-- CARD 4: PROMO & VOUCHER JASTIP -->
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 space-y-3 shadow-2xs">
             <div class="flex items-center gap-1.5">
                 <svg class="w-4 h-4 text-[#1657FF] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
@@ -134,25 +134,33 @@
                 <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('promo_voucher_title', 'Promo & Voucher Jastip')">Promo & Voucher Jastip</h3>
             </div>
 
-            <!-- Voucher Option 1 -->
-            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-[#1657FF] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
-                        <line x1="19" y1="5" x2="5" y2="19"></line>
-                        <circle cx="6.5" cy="6.5" r="2.5"></circle>
-                        <circle cx="17.5" cy="17.5" r="2.5"></circle>
-                    </svg>
+            <!-- Voucher Option 1 (GALAKSIAN10) -->
+            <div class="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
+                            <line x1="19" y1="5" x2="5" y2="19"></line>
+                            <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                            <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-zinc-900">Diskon Jastip 10% (GALAKSIAN10)</h4>
+                        <p class="text-[10px] text-zinc-500">Min. belanja Rp200rb · Semua produk</p>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="font-bold text-xs text-zinc-900">Diskon Jastip + Bebas Ongkir</h4>
-                    <p class="text-[10px] text-zinc-500">Masukkan kode promo di bawah</p>
-                </div>
+                <button 
+                    @click="handleVoucherAction('GALAKSIAN10')" 
+                    :class="getVoucherState('GALAKSIAN10') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
+                    class="px-3.5 py-1.5 font-extrabold text-xs rounded-xl shadow-2xs transition active:scale-95 shrink-0 cursor-pointer">
+                    <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? 'Dipakai' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'Pakai' : 'Klaim')"></span>
+                </button>
             </div>
 
-            <!-- Voucher Option 2 (Cashback) -->
-            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex items-center justify-between gap-2">
+            <!-- Voucher Option 2 (NEWUSER15) -->
+            <div class="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
                             <rect x="3" y="8" width="18" height="4" rx="1"></rect>
                             <path d="M12 8v13"></path>
@@ -160,12 +168,15 @@
                         </svg>
                     </div>
                     <div>
-                        <h4 class="font-bold text-xs text-zinc-900">Cashback Jastip Rp15.000</h4>
+                        <h4 class="font-bold text-xs text-zinc-900">Cashback Jastip Rp15.000 (NEWUSER15)</h4>
                         <p class="text-[10px] text-zinc-500">Berlaku untuk pengguna baru</p>
                     </div>
                 </div>
-                <button @click="applyPromoCode('NEWUSER15')" class="px-3.5 py-1 bg-[#1657FF] hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-2xs transition active:scale-95">
-                    Klaim
+                <button 
+                    @click="handleVoucherAction('NEWUSER15')" 
+                    :class="getVoucherState('NEWUSER15') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('NEWUSER15') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
+                    class="px-3.5 py-1.5 font-extrabold text-xs rounded-xl shadow-2xs transition active:scale-95 shrink-0 cursor-pointer">
+                    <span x-text="getVoucherState('NEWUSER15') === 'applied' ? 'Dipakai' : (getVoucherState('NEWUSER15') === 'claimed' ? 'Pakai' : 'Klaim')"></span>
                 </button>
             </div>
 
@@ -175,28 +186,52 @@
                     type="text" 
                     x-model="voucherCode" 
                     placeholder="Kode promo..." 
-                    class="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-xs placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 font-mono uppercase"
+                    class="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-xs placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-600 font-mono uppercase"
                 >
                 <button 
                     @click="applyVoucher()" 
-                    class="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs rounded-xl transition shadow-2xs">
+                    class="px-4 py-2 bg-[#1657FF] hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-2xs cursor-pointer">
                     Pakai
                 </button>
             </div>
 
             <!-- Clickable Helper Chips -->
             <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 flex-wrap">
-                <span>Coba:</span>
-                <button @click="applyPromoCode('GALAKSIAN10')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">GALAKSIAN10</button>
+                <span>Coba klaim:</span>
+                <button @click="handleVoucherAction('GALAKSIAN10')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">GALAKSIAN10</button>
                 <span>·</span>
-                <button @click="applyPromoCode('HEMAT5')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">HEMAT5</button>
+                <button @click="handleVoucherAction('HEMAT5')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">HEMAT5</button>
                 <span>·</span>
-                <button @click="applyPromoCode('NEWUSER15')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">NEWUSER15</button>
+                <button @click="handleVoucherAction('NEWUSER15')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">NEWUSER15</button>
             </div>
         </div>
 
-        <!-- CARD 5: METODE PEMBAYARAN (Matching media_1788725880610.png) -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-2.5 shadow-2xs">
+        <!-- OPTIONAL CARD: BINGKISAN & GREETING CARD SUMMARY (If active) -->
+        <template x-if="giftOptionEnabled">
+            <div class="bg-blue-50/70 border border-blue-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
+                <div class="w-9 h-9 rounded-xl bg-[#1657FF] text-amber-300 flex items-center justify-center shrink-0 shadow-xs">
+                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                        <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+                        <path d="M12 8v13"></path>
+                        <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
+                        <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0 text-xs">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-blue-950">Kirim sebagai Bingkisan</h4>
+                        <span class="text-[10px] font-extrabold text-[#1657FF] bg-blue-100 px-2 py-0.2 rounded-full">+Rp 10.000</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-600 mt-0.5" x-text="giftCardTo ? ('Untuk: ' + giftCardTo + (giftCardFrom ? ' · Dari: ' + giftCardFrom : '')) : 'Kemasan khusus & kartu ucapan'"></p>
+                    <template x-if="giftCardMessage">
+                        <p class="text-[10px] text-zinc-500 italic mt-1 bg-white/80 p-1.5 rounded-lg border border-blue-100" x-text="'&ldquo;' + giftCardMessage + '&rdquo;'"></p>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- CARD 5: METODE PEMBAYARAN -->
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 space-y-2.5 shadow-2xs">
             <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-[#1657FF] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="3" y1="21" x2="21" y2="21"></line>
@@ -288,11 +323,11 @@
             </div>
         </div>
 
-        <!-- CARD 6: RINCIAN PEMBAYARAN (Matching media_1788725880610.png) -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-2 text-xs shadow-2xs">
+        <!-- CARD 6: RINCIAN PEMBAYARAN -->
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3.5 space-y-2 text-xs shadow-2xs">
             <h3 class="font-extrabold text-xs text-zinc-950 mb-1" x-text="t('payment_breakdown_title', 'Rincian Pembayaran')">Rincian Pembayaran</h3>
 
-            <!-- Total Harga Barang (2 Item) -->
+            <!-- Total Harga Barang -->
             <div class="flex justify-between items-center text-zinc-600">
                 <span x-text="'Total Harga Barang (' + (cart.total_qty || 0) + ' Item)'"></span>
                 <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.subtotal || 0)"></span>
@@ -303,6 +338,25 @@
                 <span x-text="t('jastip_handling_fee', 'Biaya Jastip & Handling')">Biaya Jastip & Handling</span>
                 <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
             </div>
+
+            <!-- Biaya Bingkisan & Kartu Ucapan (If enabled) -->
+            <template x-if="giftOptionEnabled">
+                <div class="flex justify-between items-center text-zinc-600">
+                    <div>
+                        <span class="block font-medium text-zinc-800">Biaya Bingkisan & Kartu</span>
+                        <span class="text-[10px] text-zinc-400 block" x-text="giftCardTo ? ('Untuk: ' + giftCardTo) : 'Kemasan khusus & ucapan'"></span>
+                    </div>
+                    <span class="font-bold text-zinc-900 tabular">+ Rp 10.000</span>
+                </div>
+            </template>
+
+            <!-- Diskon Voucher (If any) -->
+            <template x-if="cart.pricing?.voucher_discount > 0">
+                <div class="flex justify-between items-center text-[#00D06C]">
+                    <span>Diskon Voucher</span>
+                    <span class="font-bold tabular" x-text="'- ' + formatRupiah(cart.pricing.voucher_discount)"></span>
+                </div>
+            </template>
 
             <!-- Asuransi Pengiriman -->
             <div class="flex justify-between items-center text-zinc-600">
@@ -319,14 +373,14 @@
             <!-- Divider Line -->
             <div class="border-t border-zinc-100 pt-2 mt-2 flex justify-between items-baseline">
                 <span class="font-extrabold text-xs text-zinc-900">Total Tagihan</span>
-                <span class="text-base font-black text-[#1657FF] tabular" x-text="formatRupiah((cart.pricing?.product_total || 0) + (isInsuranceChecked ? 2000 : 0))"></span>
+                <span class="text-base font-black text-[#1657FF] tabular" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0) + (isInsuranceChecked ? 2000 : 0))"></span>
             </div>
 
             <span class="text-[10px] text-zinc-400 block" x-text="t('shipping_excluded_notice_checkout', '*Belum termasuk ongkos kirim')">*Belum termasuk ongkos kirim</span>
         </div>
 
-        <!-- CARD 7: ASURANSI PENGIRIMAN TOGGLE (Matching media_1788725880610.png) -->
-        <div class="bg-white rounded-2xl border border-zinc-900 p-3 flex items-center justify-between shadow-2xs">
+        <!-- CARD 7: ASURANSI PENGIRIMAN TOGGLE -->
+        <div class="bg-white rounded-2xl border border-zinc-200/90 p-3 flex items-center justify-between shadow-2xs">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">
                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

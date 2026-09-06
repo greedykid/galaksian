@@ -34,17 +34,19 @@ class OrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $type = $request->query('type', 'pending'); // 'pending' or 'completed'
+        $type = $request->query('type', 'berlangsung');
 
         $query = Order::where('user_id', $user->id);
 
-        if ($type === 'completed') {
+        if ($type === 'selesai' || $type === 'completed') {
+            $query->where('status', OrderStatus::COMPLETED);
+        } elseif ($type === 'dibatalkan' || $type === 'cancelled') {
             $query->whereIn('status', [
-                OrderStatus::COMPLETED,
                 OrderStatus::CANCELLED,
                 OrderStatus::REFUNDED,
             ]);
         } else {
+            // Default: berlangsung / pending
             $query->whereIn('status', [
                 OrderStatus::PENDING_PAYMENT_PRODUCT,
                 OrderStatus::PAID_PRODUCT,
@@ -58,7 +60,16 @@ class OrderController extends Controller
             ]);
         }
 
-        $orders = $query->with(['items', 'invoices'])->orderByDesc('id')->paginate(10);
+        if ($search = trim((string) $request->query('search'))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('product_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $orders = $query->with(['items', 'invoices'])->orderByDesc('id')->paginate(15);
 
         return $this->successResponse(
             OrderResource::collection($orders)->response()->getData(true),

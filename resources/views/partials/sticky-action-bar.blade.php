@@ -11,7 +11,7 @@
             x-cloak>
             <div class="flex flex-col">
                 <span class="text-[10px] text-zinc-400 font-medium" x-text="t('total_payment_label', 'Total Pembayaran')">Total Pembayaran</span>
-                <span class="text-lg font-black text-zinc-950 tabular tracking-tight leading-tight" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
+                <span class="text-lg font-black text-zinc-950 tabular tracking-tight leading-tight" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0))"></span>
                 <span class="text-[10px] text-zinc-400 leading-tight" x-text="t('not_including_shipping', 'Belum termasuk ongkir')">Belum termasuk ongkir</span>
             </div>
             <button 
@@ -31,7 +31,7 @@
             x-cloak>
             <div class="flex flex-col">
                 <span class="text-[10px] text-zinc-400 font-medium" x-text="t('total_bill_label', 'Total Tagihan')">Total Tagihan</span>
-                <span class="text-lg font-black text-[#1657FF] tabular tracking-tight leading-tight" x-text="formatRupiah((cart.pricing?.product_total || 0) + (isInsuranceChecked ? 2000 : 0))"></span>
+                <span class="text-lg font-black text-[#1657FF] tabular tracking-tight leading-tight" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0) + (isInsuranceChecked ? 2000 : 0))"></span>
                 <span class="text-[10px] text-zinc-400 leading-tight" x-text="t('not_including_shipping', 'Belum termasuk ongkir')">Belum termasuk ongkir</span>
             </div>
             <button 

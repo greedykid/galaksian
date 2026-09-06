@@ -29,7 +29,7 @@
                     { id: 994, name: 'Hada Labo Gokujyun Premium Lotion 170ml', price: 145000, image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&fit=crop&q=80' },
                     { id: 995, name: 'Indomie Mi Goreng Spesial', price: 4500, image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80' }
                 ],
-                transactionTab: 'pending',
+                transactionTab: 'berlangsung',
                 curatedTab: 'special',
                 heroSlide: 0,
                 heroInterval: null,
@@ -116,10 +116,29 @@
                 checkoutFormNotesManual: '',
                 isInsuranceChecked: true,
                 giftOptionEnabled: false,
+                giftCardFrom: '',
+                giftCardTo: '',
+                giftCardMessage: '',
+                voucherStates: {
+                    'GALAKSIAN10': 'unclaimed',
+                    'NEWUSER15': 'unclaimed',
+                    'HEMAT5': 'unclaimed',
+                    'POTONGAN15K': 'unclaimed'
+                },
                 itemNotes: {},
                 editingNoteItemId: null,
                 tempNoteText: '',
                 isSubmittingCheckout: false,
+
+                transactionSearchOpen: false,
+                transactionSearchQuery: '',
+                addressSearchQuery: '',
+                profileKtp: '3171012505870003',
+                profileEditModal: false,
+                profileEditField: '',
+                profileEditLabel: '',
+                profileEditValue: '',
+                editingAddressId: null,
 
                 paymentResult: null,
                 isSimulatingPayment: false,
@@ -638,6 +657,7 @@
                         const json = await res.json();
                         if (json.success) {
                             this.cart = json.data;
+                            this.voucherStates[this.voucherCode.trim()] = 'applied';
                             this.showToast('Voucher ' + this.voucherCode + ' berhasil digunakan.');
                         } else {
                             this.showToast(json.message || 'Voucher tidak valid', 'error');
@@ -647,9 +667,43 @@
                     }
                 },
 
+                removeVoucher() {
+                    const currentCode = this.cart?.voucher_applied?.code;
+                    if (currentCode) {
+                        this.voucherStates[currentCode] = 'claimed';
+                    }
+                    this.cart.voucher_applied = null;
+                    if (this.cart.pricing) {
+                        this.cart.pricing.voucher_discount = 0;
+                        this.cart.pricing.product_total = (this.cart.pricing.subtotal || 0) + (this.cart.pricing.handling_fee || 5000);
+                    }
+                    this.voucherCode = '';
+                    this.showToast('Voucher dibatalkan.');
+                },
+
+                getVoucherState(code) {
+                    if (this.cart?.voucher_applied?.code === code) return 'applied';
+                    return this.voucherStates[code] || 'unclaimed';
+                },
+
+                async handleVoucherAction(code) {
+                    const state = this.getVoucherState(code);
+                    if (state === 'unclaimed') {
+                        this.voucherStates[code] = 'claimed';
+                        this.showToast('Voucher ' + code + ' berhasil diklaim!');
+                    } else if (state === 'claimed') {
+                        this.voucherCode = code;
+                        await this.applyVoucher();
+                        if (this.cart?.voucher_applied?.code === code) {
+                            this.voucherStates[code] = 'applied';
+                        }
+                    } else if (state === 'applied') {
+                        this.removeVoucher();
+                    }
+                },
+
                 applyPromoCode(code) {
-                    this.voucherCode = code;
-                    this.applyVoucher();
+                    this.handleVoucherAction(code);
                 },
 
                 openItemNote(item) {
@@ -677,7 +731,10 @@
                 syncCheckoutNotes() {
                     const parts = [];
                     if (this.giftOptionEnabled) {
-                        parts.push('[Kirim sebagai Bingkisan: Ya]');
+                        const from = this.giftCardFrom ? ` Dari: ${this.giftCardFrom.trim()}` : '';
+                        const to = this.giftCardTo ? ` Untuk: ${this.giftCardTo.trim()}` : '';
+                        const msg = this.giftCardMessage ? ` Pesan: "${this.giftCardMessage.trim()}"` : '';
+                        parts.push(`[Bingkisan & Kartu Ucapan (+Rp 10.000)${from}${to}${msg}]`);
                     }
                     for (const [id, note] of Object.entries(this.itemNotes)) {
                         if (note && note.trim()) {
@@ -1247,7 +1304,11 @@
                 async fetchOrders() {
                     if (!this.isLoggedIn) return;
                     try {
-                        const res = await fetch('/api/v1/orders?type=' + this.transactionTab, { headers: this.getHeaders() });
+                        let url = '/api/v1/orders?type=' + this.transactionTab;
+                        if (this.transactionSearchQuery && this.transactionSearchQuery.trim()) {
+                            url += '&search=' + encodeURIComponent(this.transactionSearchQuery.trim());
+                        }
+                        const res = await fetch(url, { headers: this.getHeaders() });
                         const json = await res.json();
                         if (json.success) {
                             this.orders = json.data.data || [];
@@ -1255,6 +1316,17 @@
                     } catch (e) {
                         console.error('Fetch orders error:', e);
                     }
+                },
+
+                getFilteredOrders() {
+                    if (!this.orders) return [];
+                    const q = (this.transactionSearchQuery || '').toLowerCase().trim();
+                    if (!q) return this.orders;
+                    return this.orders.filter(order => {
+                        const num = (order.order_number || '').toLowerCase();
+                        const itemMatch = order.items?.some(i => (i.product_name || i.name || '').toLowerCase().includes(q));
+                        return num.includes(q) || itemMatch;
+                    });
                 },
 
                 getShippingInvoice(order) {
@@ -1425,17 +1497,44 @@
                     }
                 },
 
-                openAddressModal() {
-                    this.addressForm = {
-                        recipient_name: this.currentUser?.name || '',
-                        phone: this.currentUser?.phone || '',
-                        address: '',
-                        city: 'Jakarta Selatan',
-                        postal_code: '12190',
-                        delivery_note: 'leave_at_front_door',
-                        is_default: this.userAddresses.length === 0
-                    };
+                openAddressModal(addr = null) {
+                    if (addr) {
+                        this.editingAddressId = addr.id;
+                        this.addressForm = {
+                            recipient_name: addr.recipient_name,
+                            phone: addr.phone,
+                            address: addr.address,
+                            city: addr.city || 'Jakarta Selatan',
+                            postal_code: addr.postal_code || '12190',
+                            delivery_note: addr.delivery_note || 'leave_at_front_door',
+                            is_default: !!addr.is_default
+                        };
+                    } else {
+                        this.editingAddressId = null;
+                        this.addressForm = {
+                            recipient_name: this.currentUser?.name || '',
+                            phone: this.currentUser?.phone || '',
+                            address: '',
+                            city: 'Jakarta Selatan',
+                            postal_code: '12190',
+                            delivery_note: 'leave_at_front_door',
+                            is_default: this.userAddresses.length === 0
+                        };
+                    }
                     this.showAddressModal = true;
+                },
+
+                getFilteredAddresses() {
+                    if (!this.userAddresses) return [];
+                    const q = (this.addressSearchQuery || '').toLowerCase().trim();
+                    if (!q) return this.userAddresses;
+                    return this.userAddresses.filter(a => {
+                        const name = (a.recipient_name || '').toLowerCase();
+                        const addr = (a.address || '').toLowerCase();
+                        const city = (a.city || '').toLowerCase();
+                        const phone = (a.phone || '').toLowerCase();
+                        return name.includes(q) || addr.includes(q) || city.includes(q) || phone.includes(q);
+                    });
                 },
 
                 async saveAddress() {
@@ -1444,15 +1543,18 @@
                         return;
                     }
                     try {
-                        const res = await fetch('/api/v1/addresses', {
-                            method: 'POST',
+                        const url = this.editingAddressId ? ('/api/v1/addresses/' + this.editingAddressId) : '/api/v1/addresses';
+                        const method = this.editingAddressId ? 'PUT' : 'POST';
+                        const res = await fetch(url, {
+                            method: method,
                             headers: this.getHeaders(),
                             body: JSON.stringify(this.addressForm)
                         });
                         const json = await res.json();
                         if (json.success) {
-                            this.showToast('Alamat berhasil disimpan.');
+                            this.showToast(this.editingAddressId ? 'Alamat berhasil diperbarui.' : 'Alamat berhasil disimpan.');
                             this.showAddressModal = false;
+                            this.editingAddressId = null;
                             this.fetchAddresses();
                         } else {
                             this.showToast(json.message || 'Gagal menyimpan alamat', 'error');
@@ -1590,6 +1692,9 @@
                         const json = await res.json();
                         if (json.success) {
                             this.currentUser = json.data;
+                            if (json.data.identity_number) {
+                                this.profileKtp = json.data.identity_number;
+                            }
                             this.fetchAddresses();
                         } else {
                             this.logout();
@@ -1599,14 +1704,56 @@
                     }
                 },
 
+                openEditProfileField(field, label, currentValue) {
+                    this.profileEditField = field;
+                    this.profileEditLabel = label;
+                    this.profileEditValue = currentValue || '';
+                    this.profileEditModal = true;
+                },
+
+                async saveProfileField() {
+                    if (!this.currentUser) return;
+                    if (this.profileEditField === 'name') {
+                        this.currentUser.name = this.profileEditValue;
+                    } else if (this.profileEditField === 'email') {
+                        this.currentUser.email = this.profileEditValue;
+                    } else if (this.profileEditField === 'phone') {
+                        this.currentUser.phone = this.profileEditValue;
+                    } else if (this.profileEditField === 'identity_number') {
+                        this.profileKtp = this.profileEditValue;
+                    }
+                    this.profileEditModal = false;
+                    await this.updateProfile();
+                },
+
+                changePasswordPrompt() {
+                    const newPass = prompt(this.currentLang === 'en' ? 'Enter your new password:' : 'Masukkan kata sandi baru:');
+                    if (newPass && newPass.length >= 6) {
+                        fetch('/api/v1/me', {
+                            method: 'PUT',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ password: newPass })
+                        }).then(r => r.json()).then(res => {
+                            if (res.success) {
+                                this.showToast('Kata sandi berhasil diubah.');
+                            } else {
+                                this.showToast(res.message || 'Gagal mengubah kata sandi', 'error');
+                            }
+                        }).catch(() => this.showToast('Gagal mengubah kata sandi', 'error'));
+                    } else if (newPass) {
+                        this.showToast('Kata sandi minimal 6 karakter.', 'error');
+                    }
+                },
+
                 async updateProfile() {
                     try {
                         const res = await fetch('/api/v1/me', {
                             method: 'PUT',
                             headers: this.getHeaders(),
                             body: JSON.stringify({
-                                name: this.currentUser.name,
-                                email: this.currentUser.email
+                                name: this.currentUser?.name,
+                                email: this.currentUser?.email,
+                                identity_number: this.profileKtp
                             })
                         });
                         const json = await res.json();
