@@ -64,8 +64,14 @@
                         <template x-for="item in cart.items" :key="item.id">
                             <div class="bg-white border border-zinc-200 rounded-xl p-3 flex gap-3">
                                 <!-- Thumbnail -->
-                                <div class="w-16 h-16 rounded-lg bg-zinc-50 flex-shrink-0 overflow-hidden border border-zinc-100">
+                                <div class="w-16 h-16 rounded-lg bg-zinc-50 flex-shrink-0 overflow-hidden border border-zinc-100 relative">
                                     <img :src="item.product.primary_image || getFallbackImage(item.product)" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80'">
+                                    <!-- Discount Badge on thumbnail -->
+                                    <template x-if="item.has_discount || (item.discount_price && item.discount_price < item.price)">
+                                        <span class="absolute top-1 left-1 bg-[#00D06C] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full shadow-2xs">
+                                            <span x-text="'-' + (item.discount_percentage || Math.round((1 - ((item.unit_price || item.discount_price) / item.price)) * 100)) + '%'"></span>
+                                        </span>
+                                    </template>
                                 </div>
                                 <!-- Details -->
                                 <div class="flex-1 flex flex-col justify-between">
@@ -77,7 +83,24 @@
                                                 x-text="item.product.availability_type === 'ready_stock' ? 'Ready Stock' : 'Open PO'">
                                             </span>
                                             <h4 class="text-xs font-semibold text-zinc-900 line-clamp-1" x-text="item.product.name"></h4>
-                                            <span class="text-xs font-bold text-zinc-950 tabular" x-text="formatRupiah(item.price)"></span>
+                                            
+                                            <!-- Price & Discount Display -->
+                                            <div class="mt-0.5 flex items-baseline gap-1.5 flex-wrap">
+                                                <!-- Current Unit Price (After Discount) -->
+                                                <span class="text-xs font-extrabold text-zinc-950 tabular" 
+                                                      x-text="formatRupiah(item.unit_price || item.product?.final_price || item.discount_price || item.price)">
+                                                </span>
+                                                
+                                                <!-- Original Strikethrough & Percentage Pill if Discounted -->
+                                                <template x-if="item.has_discount || (item.discount_price && item.discount_price < item.price)">
+                                                    <div class="inline-flex items-center gap-1">
+                                                        <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(item.price || item.product?.price)"></span>
+                                                        <span class="bg-[#00D06C]/15 text-[#00A862] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono" 
+                                                              x-text="'-' + (item.discount_percentage || Math.round((1 - ((item.unit_price || item.discount_price) / item.price)) * 100)) + '%'">
+                                                        </span>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                         <!-- Delete -->
                                         <button @click="removeCartItem(item.id)" class="text-zinc-400 hover:text-red-600 p-1">
@@ -89,9 +112,9 @@
                                     <div class="flex justify-between items-center mt-2 pt-1 border-t border-zinc-100">
                                         <span class="text-[10px] text-zinc-400">Subtotal: <span class="font-semibold text-zinc-800 tabular" x-text="formatRupiah(item.subtotal)"></span></span>
                                         <div class="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-lg p-0.5">
-                                            <button @click="updateCartItemQty(item.id, item.qty - 1)" class="w-5 h-5 bg-white border border-zinc-200 rounded text-xs font-bold text-zinc-700 flex items-center justify-center">-</button>
-                                            <span class="text-xs font-bold px-1 text-zinc-900 tabular" x-text="item.qty"></span>
-                                            <button @click="updateCartItemQty(item.id, item.qty + 1)" class="w-5 h-5 bg-[#E60012] rounded text-xs font-bold text-white flex items-center justify-center">+</button>
+                                            <button @click="updateCartItemQty(item.id, item.qty - 1)" class="w-5 h-5 bg-white border border-zinc-200 rounded text-xs font-bold text-zinc-700 flex items-center justify-center hover:bg-zinc-100">-</button>
+                                            <span class="text-xs font-bold px-1.5 text-zinc-900 tabular" x-text="item.qty"></span>
+                                            <button @click="updateCartItemQty(item.id, item.qty + 1)" class="w-5 h-5 bg-[#1657FF] hover:bg-blue-700 rounded text-xs font-bold text-white flex items-center justify-center transition-colors">+</button>
                                         </div>
                                     </div>
                                 </div>

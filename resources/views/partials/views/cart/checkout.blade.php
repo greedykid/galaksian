@@ -53,10 +53,15 @@
                         <h3 class="font-bold text-xs text-zinc-950" x-text="t('ordered_products', 'Produk yang Dipesan')">Produk yang Dipesan</h3>
                         <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
                             <template x-for="item in cart.items" :key="item.id">
-                                <div class="flex justify-between items-center text-xs py-1 border-b border-zinc-100 last:border-none">
+                                <div class="flex justify-between items-center text-xs py-1.5 border-b border-zinc-100 last:border-none">
                                     <div class="flex-1 pr-2">
                                         <p class="font-medium text-zinc-800 line-clamp-1" x-text="item.product?.name || item.product_name || item.name || 'Produk'"></p>
-                                        <span class="text-[11px] text-zinc-400 tabular" x-text="item.qty + ' x ' + formatRupiah(item.unit_price || item.price || item.product?.final_price || item.product?.price || (item.qty ? item.subtotal / item.qty : 0))"></span>
+                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                            <span class="text-[11px] text-zinc-500 tabular" x-text="item.qty + ' x ' + formatRupiah(item.unit_price || item.product?.final_price || item.discount_price || item.price || (item.qty ? item.subtotal / item.qty : 0))"></span>
+                                            <template x-if="item.has_discount || (item.discount_price && item.discount_price < item.price)">
+                                                <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(item.price || item.product?.price)"></span>
+                                            </template>
+                                        </div>
                                     </div>
                                     <span class="font-semibold text-zinc-900 tabular" x-text="formatRupiah(item.subtotal)"></span>
                                 </div>

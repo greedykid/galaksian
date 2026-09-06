@@ -10,6 +10,10 @@ class CartItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $product = $this->product;
+        $hasDiscount = $product && $product->discount_price !== null && $product->discount_price > 0 && $product->discount_price < $product->price;
+        $discountPercentage = ($hasDiscount && $product->price > 0)
+            ? (int) round((1 - ($product->discount_price / $product->price)) * 100)
+            : 0;
 
         return [
             'id' => $this->id,
@@ -23,6 +27,8 @@ class CartItemResource extends JsonResource
             'price' => $product?->price ?? 0,
             'discount_price' => $product?->discount_price,
             'unit_price' => $product?->final_price ?? 0,
+            'has_discount' => $hasDiscount,
+            'discount_percentage' => $discountPercentage,
             'subtotal' => ($product?->final_price ?? 0) * $this->qty,
             'stock' => $product?->stock ?? 0,
             'availability_type' => $product?->availability_type?->value,
@@ -37,6 +43,8 @@ class CartItemResource extends JsonResource
                 'discount_price' => $product?->discount_price,
                 'final_price' => $product?->final_price ?? 0,
                 'unit_price' => $product?->final_price ?? 0,
+                'has_discount' => $hasDiscount,
+                'discount_percentage' => $discountPercentage,
                 'stock' => $product?->stock ?? 0,
                 'availability_type' => $product?->availability_type?->value,
             ],
