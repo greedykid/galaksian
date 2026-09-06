@@ -109,23 +109,25 @@
         <!-- Authenticated View (Matching media_1788727527247.png) -->
         <template x-if="isLoggedIn && currentUser">
             <div>
-                <!-- Blue Hero Area with Circular Sky Avatar and Edit Badge -->
-                <div class="bg-[#1657FF] pt-4 pb-8 px-4 text-center">
+                <!-- Blue Hero Area with Circular Sky Avatar and Edit Badge (Edge-to-edge flush) -->
+                <div class="bg-[#1657FF] pt-4 pb-8 px-4 text-center -mx-px w-[calc(100%+2px)]">
                     <!-- Circular Avatar with Green Pencil Edit Badge -->
                     <div class="relative w-20 h-20 rounded-full border-2 border-white/80 overflow-visible mx-auto shadow-md">
                         <img 
-                            src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&fit=crop&q=80" 
+                            :src="getProfileAvatar()" 
                             alt="Avatar Profil" 
                             class="w-full h-full object-cover rounded-full">
-                        <!-- Green Pencil Edit Badge -->
+                        <!-- Green Pencil Edit Badge (Changes Profile Photo) -->
                         <button 
-                            @click="openEditProfileField('name', 'Nama Lengkap', currentUser?.name)"
+                            @click="openChangeAvatar()"
                             class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#00D06C] border-2 border-[#1657FF] flex items-center justify-center text-white cursor-pointer shadow-2xs hover:scale-105 active:scale-95 transition"
                             title="Ubah Foto Profil">
                             <svg class="w-3 h-3 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
                         </button>
+                        <!-- Hidden File Input for Avatar Upload -->
+                        <input type="file" x-ref="avatarFileInput" @change="handleAvatarUpload($event)" accept="image/*" class="hidden">
                     </div>
 
                     <!-- User Name & Email -->
@@ -133,65 +135,209 @@
                     <p class="text-xs text-white/80 font-medium mt-0.5" x-text="currentUser?.email || 'budi.santoso@email.com'">budi.santoso@email.com</p>
                 </div>
 
-                <!-- White Card Container with Rounded Top Corners -->
-                <div class="bg-white rounded-t-[32px] -mt-5 pt-6 pb-28 px-5 space-y-3.5 shadow-md min-h-[460px]">
+                <!-- White Card Container with Rounded Top Corners (No cut-off bottom shadow, fills down smoothly) -->
+                <div class="bg-white rounded-t-[32px] -mt-5 pt-6 pb-32 px-5 space-y-3.5 shadow-none min-h-[calc(100vh-220px)] -mx-px w-[calc(100%+2px)]">
                     
                     <!-- FIELD 1: NAMA LENGKAP -->
                     <div>
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NAMA LENGKAP</label>
-                        <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
-                            <span class="text-xs font-bold text-zinc-900 flex-1 truncate" x-text="currentUser?.name || 'Budi Santoso'"></span>
-                            <button @click="openEditProfileField('name', 'Nama Lengkap', currentUser?.name)" class="text-zinc-400 hover:text-zinc-700 transition p-1" title="Ubah Nama">
-                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- View Mode -->
+                        <template x-if="inlineEditingField !== 'name'">
+                            <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
+                                <span class="text-xs font-bold text-zinc-900 flex-1 truncate" x-text="currentUser?.name || 'Budi Santoso'"></span>
+                                <button @click="startInlineEdit('name', currentUser?.name || 'Budi Santoso')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nama">
+                                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <!-- Inline Edit Mode -->
+                        <template x-if="inlineEditingField === 'name'">
+                            <div class="bg-white border-2 border-[#1657FF] rounded-2xl px-3 py-1.5 flex items-center gap-2 shadow-xs">
+                                <input 
+                                    x-ref="inlineInput_name"
+                                    type="text" 
+                                    x-model="inlineEditValue" 
+                                    @keydown.enter.prevent="saveInlineEdit('name')"
+                                    @keydown.escape.prevent="cancelInlineEdit()"
+                                    class="text-xs font-bold text-zinc-900 flex-1 focus:outline-none bg-transparent py-1 px-1"
+                                    placeholder="Masukkan nama lengkap">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button 
+                                        @click="saveInlineEdit('name')" 
+                                        :disabled="inlineEditLoading"
+                                        class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
+                                        title="Simpan">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="cancelInlineEdit()" 
+                                        class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
+                                        title="Batal">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- FIELD 2: ALAMAT EMAIL -->
                     <div>
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">ALAMAT EMAIL</label>
-                        <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
-                            <span class="text-xs font-medium text-zinc-800 flex-1 truncate" x-text="currentUser?.email || 'budi.santoso@email.com'"></span>
-                            <button @click="openEditProfileField('email', 'Alamat Email', currentUser?.email)" class="text-zinc-400 hover:text-zinc-700 transition p-1" title="Ubah Email">
-                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- View Mode -->
+                        <template x-if="inlineEditingField !== 'email'">
+                            <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
+                                <span class="text-xs font-medium text-zinc-800 flex-1 truncate" x-text="currentUser?.email || 'budi@example.com'"></span>
+                                <button @click="startInlineEdit('email', currentUser?.email || 'budi@example.com')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Email">
+                                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <!-- Inline Edit Mode -->
+                        <template x-if="inlineEditingField === 'email'">
+                            <div class="bg-white border-2 border-[#1657FF] rounded-2xl px-3 py-1.5 flex items-center gap-2 shadow-xs">
+                                <input 
+                                    x-ref="inlineInput_email"
+                                    type="email" 
+                                    x-model="inlineEditValue" 
+                                    @keydown.enter.prevent="saveInlineEdit('email')"
+                                    @keydown.escape.prevent="cancelInlineEdit()"
+                                    class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent py-1 px-1"
+                                    placeholder="nama@email.com">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button 
+                                        @click="saveInlineEdit('email')" 
+                                        :disabled="inlineEditLoading"
+                                        class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
+                                        title="Simpan">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="cancelInlineEdit()" 
+                                        class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
+                                        title="Batal">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- FIELD 3: NO. WHATSAPP AKTIF -->
                     <div>
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NO. WHATSAPP AKTIF</label>
-                        <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
-                            <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="currentUser?.phone ? ('+' + currentUser.phone.replace(/^\+/, '')) : '+62 812-3456-7890'"></span>
-                            <button @click="openEditProfileField('phone', 'No. WhatsApp Aktif', currentUser?.phone)" class="text-zinc-400 hover:text-zinc-700 transition p-1" title="Ubah Nomor WhatsApp">
-                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- View Mode -->
+                        <template x-if="inlineEditingField !== 'phone'">
+                            <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
+                                <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="currentUser?.phone ? ('+' + currentUser.phone.replace(/^\+/, '')) : '+62 812-3456-7890'"></span>
+                                <button @click="startInlineEdit('phone', currentUser?.phone || '081234567890')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nomor WhatsApp">
+                                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <!-- Inline Edit Mode -->
+                        <template x-if="inlineEditingField === 'phone'">
+                            <div class="bg-white border-2 border-[#1657FF] rounded-2xl px-3 py-1.5 flex items-center gap-2 shadow-xs">
+                                <input 
+                                    x-ref="inlineInput_phone"
+                                    type="tel" 
+                                    x-model="inlineEditValue" 
+                                    @keydown.enter.prevent="saveInlineEdit('phone')"
+                                    @keydown.escape.prevent="cancelInlineEdit()"
+                                    class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent font-mono py-1 px-1"
+                                    placeholder="081234567890">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button 
+                                        @click="saveInlineEdit('phone')" 
+                                        :disabled="inlineEditLoading"
+                                        class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
+                                        title="Simpan">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="cancelInlineEdit()" 
+                                        class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
+                                        title="Batal">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- FIELD 4: NO. KTP / ID -->
                     <div>
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block mb-1">NO. KTP / ID</label>
-                        <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
-                            <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="profileKtp || '3171012505870003'"></span>
-                            <button @click="openEditProfileField('identity_number', 'No. KTP / ID', profileKtp)" class="text-zinc-400 hover:text-zinc-700 transition p-1" title="Ubah Nomor KTP">
-                                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- View Mode -->
+                        <template x-if="inlineEditingField !== 'identity_number'">
+                            <div class="bg-white border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xs">
+                                <span class="text-xs font-medium text-zinc-800 flex-1 truncate font-mono" x-text="profileKtp || currentUser?.identity_number || '3171012505870003'"></span>
+                                <button @click="startInlineEdit('identity_number', profileKtp || currentUser?.identity_number || '3171012505870003')" class="text-zinc-400 hover:text-zinc-700 transition p-1 cursor-pointer" title="Ubah Nomor KTP">
+                                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <!-- Inline Edit Mode -->
+                        <template x-if="inlineEditingField === 'identity_number'">
+                            <div class="bg-white border-2 border-[#1657FF] rounded-2xl px-3 py-1.5 flex items-center gap-2 shadow-xs">
+                                <input 
+                                    x-ref="inlineInput_identity_number"
+                                    type="text" 
+                                    x-model="inlineEditValue" 
+                                    @keydown.enter.prevent="saveInlineEdit('identity_number')"
+                                    @keydown.escape.prevent="cancelInlineEdit()"
+                                    class="text-xs font-medium text-zinc-800 flex-1 focus:outline-none bg-transparent font-mono py-1 px-1"
+                                    placeholder="16 digit NIK/KTP">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button 
+                                        @click="saveInlineEdit('identity_number')" 
+                                        :disabled="inlineEditLoading"
+                                        class="w-7 h-7 rounded-xl bg-[#00D06C] hover:bg-[#00B85F] text-white flex items-center justify-center transition cursor-pointer shadow-2xs" 
+                                        title="Simpan">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="cancelInlineEdit()" 
+                                        class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition cursor-pointer" 
+                                        title="Batal">
+                                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- ACTION BUTTON 1: GANTI PASSWORD -->
                     <div class="pt-1">
                         <button 
-                            @click="changePasswordPrompt()" 
+                            @click="openChangePasswordModal()" 
                             class="bg-zinc-50/70 border border-zinc-200/90 rounded-2xl px-4 py-3 flex items-center justify-between w-full hover:bg-zinc-100 transition cursor-pointer shadow-2xs active:scale-[0.99]">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-xl bg-amber-100/90 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
@@ -228,7 +374,7 @@
     </div>
 
     <!-- SUB-TAB 2: DAFTAR ALAMAT (Matching media_1788725880610.png / media_1788727535492.png) -->
-    <div x-show="profileTab === 'alamat'" class="bg-zinc-50/50 min-h-screen px-4 py-4 space-y-3 pb-28">
+    <div x-show="profileTab === 'alamat'" class="bg-zinc-50/50 min-h-screen px-4 py-4 space-y-3 pb-32 -mx-px w-[calc(100%+2px)]">
         
         <!-- Search Input Bar (Rounded Pill with Magnifying Glass) -->
         <div class="bg-white border border-zinc-200 rounded-full px-4 py-2.5 flex items-center gap-2.5 shadow-2xs">
@@ -321,27 +467,132 @@
 
     </div>
 
-    <!-- MODAL: EDIT PROFILE FIELD (NAME, EMAIL, PHONE, KTP) -->
-    <div x-show="profileEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs" x-transition>
-        <div @click.away="profileEditModal = false" class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="font-extrabold text-sm text-zinc-900" x-text="'Ubah ' + profileEditLabel"></h3>
-                <button @click="profileEditModal = false" class="text-zinc-400 hover:text-zinc-600 p-1">
+    <!-- BOTTOM SHEET: GANTI PASSWORD (SWIPEABLE MODAL WITH GRAB HANDLE) -->
+    <div 
+        x-show="changePasswordModal" 
+        class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak>
+        
+        <!-- Backdrop click to close -->
+        <div class="absolute inset-0" @click="closeChangePasswordModal()"></div>
+
+        <!-- Bottom Sheet Container with Drag Handle -->
+        <div 
+            @click.stop
+            x-show="changePasswordModal"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="translate-y-full"
+            x-transition:enter-end="translate-y-0"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="translate-y-0"
+            x-transition:leave-end="translate-y-full"
+            :style="sheetDraggingModal === 'changePasswordModal' ? 'transform: translateY(' + Math.max(0, sheetDragOffset) + 'px)' : ''"
+            class="relative w-full max-w-[430px] bg-white rounded-t-3xl shadow-2xl p-5 space-y-4 pb-8 max-h-[85vh] overflow-y-auto no-scrollbar z-10 border-t border-zinc-200">
+            
+            <!-- Swipeable grab handle per user requirement -->
+            <div class="pt-1 pb-2 flex justify-center cursor-grab active:cursor-grabbing touch-none select-none"
+                 @touchstart="startSheetDrag($event, 'changePasswordModal')"
+                 @mousedown="startSheetDrag($event, 'changePasswordModal')">
+                <div class="w-12 h-1.5 bg-zinc-300 rounded-full"></div>
+            </div>
+
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-zinc-900" x-text="t('change_password', 'Ganti Password')">Ganti Password</h3>
+                        <p class="text-[11px] text-zinc-500">Perbarui kata sandi akun Anda</p>
+                    </div>
+                </div>
+                <button @click="closeChangePasswordModal()" class="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-full hover:bg-zinc-100 transition cursor-pointer">
                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <div>
-                <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1" x-text="profileEditLabel"></label>
-                <input 
-                    type="text" 
-                    x-model="profileEditValue" 
-                    @keydown.enter="saveProfileField()"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="flex justify-end gap-2 pt-1">
-                <button @click="profileEditModal = false" class="px-4 py-2 rounded-xl text-zinc-600 hover:bg-zinc-100 text-xs font-semibold cursor-pointer">Batal</button>
-                <button @click="saveProfileField()" class="px-5 py-2 bg-[#1657FF] hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-2xs cursor-pointer">Simpan</button>
-            </div>
+
+            <form @submit.prevent="submitChangePassword()" class="space-y-3.5">
+                <!-- Password Lama -->
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Password Lama</label>
+                    <div class="relative">
+                        <input 
+                            :type="showCurrentPassword ? 'text' : 'password'" 
+                            x-model="currentPassword" 
+                            placeholder="Masukkan password lama"
+                            class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
+                        <button type="button" @click="showCurrentPassword = !showCurrentPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
+                            <svg x-show="!showCurrentPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg x-show="showCurrentPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Password Baru (min 8 karakter) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Password Baru</label>
+                        <span class="text-[10px] text-blue-600 font-medium">Min. 8 karakter</span>
+                    </div>
+                    <div class="relative">
+                        <input 
+                            :type="showNewPassword ? 'text' : 'password'" 
+                            x-model="newPassword" 
+                            minlength="8"
+                            required
+                            placeholder="Minimal 8 karakter"
+                            class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
+                        <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
+                            <svg x-show="!showNewPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg x-show="showNewPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Konfirmasi Password Baru -->
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Konfirmasi Password Baru</label>
+                    <div class="relative">
+                        <input 
+                            :type="showConfirmPassword ? 'text' : 'password'" 
+                            x-model="confirmPassword" 
+                            minlength="8"
+                            required
+                            placeholder="Ketik ulang password baru"
+                            class="w-full bg-zinc-50 border border-zinc-200/90 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#1657FF] focus:bg-white transition pr-10">
+                        <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
+                            <svg x-show="!showConfirmPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg x-show="showConfirmPassword" class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi -->
+                <div class="pt-2 flex items-center gap-2">
+                    <button 
+                        type="button" 
+                        @click="closeChangePasswordModal()" 
+                        class="w-1/3 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs rounded-xl transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button 
+                        type="submit" 
+                        :disabled="changePasswordLoading"
+                        class="w-2/3 py-2.5 bg-[#1657FF] hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center gap-2">
+                        <span x-show="!changePasswordLoading">Simpan Password Baru</span>
+                        <span x-show="changePasswordLoading">Menyimpan...</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

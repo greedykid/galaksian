@@ -1,7 +1,7 @@
 <!-- ========================================================= -->
 <!-- VIEW 2: KERANJANG (CART - REFERENCE DESIGN IMPLEMENTATION) -->
 <!-- ========================================================= -->
-<div x-show="activeTab === 'cart' && !activeSubView" class="space-y-3 bg-white min-h-screen">
+<div x-show="activeTab === 'cart' && !activeSubView" class="bg-white min-h-screen">
     
     <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
     <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
@@ -14,8 +14,8 @@
         <span class="bg-[#00D06C] text-white font-bold text-xs px-2.5 py-0.5 rounded-full shadow-2xs tabular" x-text="(cart.total_qty || 0) + ' item'"></span>
     </div>
 
-    <!-- 2. Alamat Pengiriman Card -->
-    <div class="bg-white border-b border-zinc-100 px-4 py-3 flex items-center justify-between gap-3">
+    <!-- 2. Alamat Pengiriman Card (Seamless Edge-to-edge) -->
+    <div class="bg-white border-b border-zinc-100 px-4 py-3 flex items-center justify-between gap-3 -mx-px w-[calc(100%+2px)]">
         <div class="flex items-center gap-3 min-w-0">
             <!-- Blue Pin Icon in Circle -->
             <div class="w-9 h-9 rounded-full bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">

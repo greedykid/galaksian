@@ -134,11 +134,19 @@
                 transactionSearchQuery: '',
                 addressSearchQuery: '',
                 profileKtp: '3171012505870003',
-                profileEditModal: false,
-                profileEditField: '',
-                profileEditLabel: '',
-                profileEditValue: '',
+                inlineEditingField: null,
+                inlineEditValue: '',
+                inlineEditLoading: false,
                 editingAddressId: null,
+
+                changePasswordModal: false,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+                showCurrentPassword: false,
+                showNewPassword: false,
+                showConfirmPassword: false,
+                changePasswordLoading: false,
 
                 paymentResult: null,
                 isSimulatingPayment: false,
@@ -248,7 +256,7 @@
                     if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
                     if (tab === 'cart') this.fetchCart();
                     if (tab === 'transactions') {
-                        this.transactionTab = 'pending';
+                        this.transactionTab = 'berlangsung';
                         this.fetchOrders();
                     }
                     if (tab === 'profile' && this.isLoggedIn) {
@@ -1704,65 +1712,165 @@
                     }
                 },
 
-                openEditProfileField(field, label, currentValue) {
-                    this.profileEditField = field;
-                    this.profileEditLabel = label;
-                    this.profileEditValue = currentValue || '';
-                    this.profileEditModal = true;
+                startInlineEdit(field, currentValue) {
+                    this.inlineEditingField = field;
+                    this.inlineEditValue = currentValue || '';
+                    this.$nextTick(() => {
+                        const inputEl = this.$refs['inlineInput_' + field];
+                        if (inputEl) {
+                            inputEl.focus();
+                            inputEl.select();
+                        }
+                    });
                 },
 
-                async saveProfileField() {
+                cancelInlineEdit() {
+                    this.inlineEditingField = null;
+                    this.inlineEditValue = '';
+                },
+
+                async saveInlineEdit(field) {
                     if (!this.currentUser) return;
-                    if (this.profileEditField === 'name') {
-                        this.currentUser.name = this.profileEditValue;
-                    } else if (this.profileEditField === 'email') {
-                        this.currentUser.email = this.profileEditValue;
-                    } else if (this.profileEditField === 'phone') {
-                        this.currentUser.phone = this.profileEditValue;
-                    } else if (this.profileEditField === 'identity_number') {
-                        this.profileKtp = this.profileEditValue;
+                    const val = (this.inlineEditValue || '').trim();
+                    if (!val && field !== 'identity_number') {
+                        this.showToast('Kolom ini tidak boleh kosong.', 'error');
+                        return;
                     }
-                    this.profileEditModal = false;
-                    await this.updateProfile();
-                },
-
-                changePasswordPrompt() {
-                    const newPass = prompt(this.currentLang === 'en' ? 'Enter your new password:' : 'Masukkan kata sandi baru:');
-                    if (newPass && newPass.length >= 6) {
-                        fetch('/api/v1/me', {
-                            method: 'PUT',
-                            headers: this.getHeaders(),
-                            body: JSON.stringify({ password: newPass })
-                        }).then(r => r.json()).then(res => {
-                            if (res.success) {
-                                this.showToast('Kata sandi berhasil diubah.');
-                            } else {
-                                this.showToast(res.message || 'Gagal mengubah kata sandi', 'error');
-                            }
-                        }).catch(() => this.showToast('Gagal mengubah kata sandi', 'error'));
-                    } else if (newPass) {
-                        this.showToast('Kata sandi minimal 6 karakter.', 'error');
-                    }
-                },
-
-                async updateProfile() {
+                    this.inlineEditLoading = true;
                     try {
+                        const payload = {};
+                        if (field === 'name') {
+                            this.currentUser.name = val;
+                            payload.name = val;
+                        } else if (field === 'email') {
+                            this.currentUser.email = val;
+                            payload.email = val;
+                        } else if (field === 'phone') {
+                            this.currentUser.phone = val;
+                            payload.phone = val;
+                        } else if (field === 'identity_number') {
+                            this.profileKtp = val;
+                            this.currentUser.identity_number = val;
+                            payload.identity_number = val;
+                        }
+
                         const res = await fetch('/api/v1/me', {
                             method: 'PUT',
                             headers: this.getHeaders(),
+                            body: JSON.stringify(payload)
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            if (json.data) {
+                                this.currentUser = { ...this.currentUser, ...json.data };
+                                if (json.data.identity_number) this.profileKtp = json.data.identity_number;
+                            }
+                            localStorage.setItem('galaksian_user', JSON.stringify(this.currentUser));
+                            this.showToast('Biodata berhasil diperbarui.');
+                            this.inlineEditingField = null;
+                            this.inlineEditValue = '';
+                        } else {
+                            this.showToast(json.message || 'Gagal memperbarui biodata.', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Gagal memperbarui biodata.', 'error');
+                    } finally {
+                        this.inlineEditLoading = false;
+                    }
+                },
+
+                openChangePasswordModal() {
+                    this.currentPassword = '';
+                    this.newPassword = '';
+                    this.confirmPassword = '';
+                    this.showCurrentPassword = false;
+                    this.showNewPassword = false;
+                    this.showConfirmPassword = false;
+                    this.changePasswordModal = true;
+                },
+
+                closeChangePasswordModal() {
+                    this.changePasswordModal = false;
+                    this.currentPassword = '';
+                    this.newPassword = '';
+                    this.confirmPassword = '';
+                },
+
+                async submitChangePassword() {
+                    if (!this.newPassword || this.newPassword.length < 8) {
+                        this.showToast('Password baru minimal 8 karakter.', 'error');
+                        return;
+                    }
+                    if (this.newPassword !== this.confirmPassword) {
+                        this.showToast('Konfirmasi password baru tidak cocok.', 'error');
+                        return;
+                    }
+                    this.changePasswordLoading = true;
+                    try {
+                        const res = await fetch('/api/v1/change-password', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
                             body: JSON.stringify({
-                                name: this.currentUser?.name,
-                                email: this.currentUser?.email,
-                                identity_number: this.profileKtp
+                                current_password: this.currentPassword,
+                                password: this.newPassword,
+                                password_confirmation: this.confirmPassword
                             })
                         });
                         const json = await res.json();
                         if (json.success) {
-                            this.showToast('Biodata telah diperbarui.');
+                            this.showToast('Password berhasil diperbarui.');
+                            this.closeChangePasswordModal();
+                        } else {
+                            this.showToast(json.message || 'Gagal mengubah password.', 'error');
                         }
                     } catch (e) {
-                        this.showToast('Gagal memperbarui biodata', 'error');
+                        this.showToast('Gagal mengubah password.', 'error');
+                    } finally {
+                        this.changePasswordLoading = false;
                     }
+                },
+
+                openChangeAvatar() {
+                    this.$refs.avatarFileInput?.click();
+                },
+
+                async handleAvatarUpload(event) {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 3 * 1024 * 1024) {
+                        this.showToast('Ukuran gambar maksimal 3MB.', 'error');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const base64Url = e.target.result;
+                        await this.saveAvatar(base64Url);
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                async saveAvatar(url) {
+                    if (!this.currentUser) return;
+                    this.currentUser.avatar_url = url;
+                    localStorage.setItem('galaksian_user_avatar', url);
+                    localStorage.setItem('galaksian_user', JSON.stringify(this.currentUser));
+                    try {
+                        await fetch('/api/v1/me', {
+                            method: 'PUT',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ avatar_url: url })
+                        });
+                        this.showToast('Foto profil berhasil diperbarui.');
+                    } catch (e) {
+                        this.showToast('Foto profil berhasil disimpan.');
+                    }
+                },
+
+                getProfileAvatar() {
+                    if (this.currentUser?.avatar_url) return this.currentUser.avatar_url;
+                    const local = localStorage.getItem('galaksian_user_avatar');
+                    if (local) return local;
+                    return 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&fit=crop&q=80';
                 },
 
                 logout() {

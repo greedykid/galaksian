@@ -77,10 +77,55 @@ class AuthTest extends TestCase
             ->putJson('/api/v1/me', [
                 'name' => 'John Updated',
                 'language' => 'en',
+                'identity_number' => '3171012505870003',
+                'avatar_url' => 'https://example.com/avatar.jpg',
             ]);
 
         $updateResponse->assertStatus(200)
             ->assertJsonPath('data.name', 'John Updated')
-            ->assertJsonPath('data.language', 'en');
+            ->assertJsonPath('data.language', 'en')
+            ->assertJsonPath('data.identity_number', '3171012505870003')
+            ->assertJsonPath('data.avatar_url', 'https://example.com/avatar.jpg');
+    }
+
+    public function test_change_password_requires_min_8_characters_and_confirmation(): void
+    {
+        $user = User::create([
+            'name' => 'Jane Doe',
+            'phone' => '628111111111',
+            'role' => UserRole::USER,
+        ]);
+
+        $token = $user->createToken('test')->plainTextToken;
+
+        // Less than 8 chars
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/change-password', [
+                'password' => 'short',
+                'password_confirmation' => 'short',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['password']);
+
+        // Confirmation mismatch
+        $responseMismatch = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/change-password', [
+                'password' => 'newpassword123',
+                'password_confirmation' => 'mismatched123',
+            ]);
+
+        $responseMismatch->assertStatus(422)
+            ->assertJsonValidationErrors(['password']);
+
+        // Success with valid 8+ chars confirmed
+        $responseOk = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/change-password', [
+                'password' => 'secret12345',
+                'password_confirmation' => 'secret12345',
+            ]);
+
+        $responseOk->assertStatus(200)
+            ->assertJson(['success' => true]);
     }
 }

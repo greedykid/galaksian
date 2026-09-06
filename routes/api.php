@@ -23,6 +23,7 @@ Route::prefix('v1')->middleware(['localize'])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::put('/me', [AuthController::class, 'updateProfile']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
     });
 
     // Home

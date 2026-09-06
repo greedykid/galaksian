@@ -17,10 +17,12 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$userId],
-            'language' => ['nullable', 'string', 'in:id,en'],
-            'identity_number' => ['nullable', 'string', 'max:50'],
-            'password' => ['nullable', 'string', 'min:6'],
+            'email' => ['sometimes', 'nullable', 'email', 'max:255', 'unique:users,email,'.$userId],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:25', 'unique:users,phone,'.$userId],
+            'avatar_url' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'language' => ['sometimes', 'nullable', 'string', 'in:id,en'],
+            'identity_number' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'password' => ['sometimes', 'nullable', 'string', 'min:6'],
         ];
     }
 }
