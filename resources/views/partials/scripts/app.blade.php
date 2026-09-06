@@ -123,12 +123,18 @@
                 giftCardFrom: '',
                 giftCardTo: '',
                 giftCardMessage: '',
-                voucherStates: {
-                    'GALAKSIAN10': 'unclaimed',
-                    'NEWUSER15': 'unclaimed',
-                    'HEMAT5': 'unclaimed',
-                    'POTONGAN15K': 'unclaimed'
-                },
+                voucherStates: (() => {
+                    try {
+                        const saved = localStorage.getItem('galaksian_voucher_states');
+                        if (saved) return JSON.parse(saved);
+                    } catch (e) {}
+                    return {
+                        'GALAKSIAN10': 'unclaimed',
+                        'NEWUSER15': 'unclaimed',
+                        'HEMAT5': 'unclaimed',
+                        'POTONGAN15K': 'unclaimed'
+                    };
+                })(),
                 itemNotes: {},
                 editingNoteItemId: null,
                 tempNoteText: '',
@@ -197,10 +203,28 @@
                         this.fetchUserProfile();
                     }
 
+                    // Restore voucher states & applied voucher from localStorage
+                    try {
+                        const savedStates = localStorage.getItem('galaksian_voucher_states');
+                        if (savedStates) {
+                            this.voucherStates = Object.assign({
+                                'GALAKSIAN10': 'unclaimed',
+                                'NEWUSER15': 'unclaimed',
+                                'HEMAT5': 'unclaimed',
+                                'POTONGAN15K': 'unclaimed'
+                            }, JSON.parse(savedStates));
+                        }
+                    } catch (e) {}
+
+                    const savedVoucherCode = localStorage.getItem('galaksian_applied_voucher');
+                    if (savedVoucherCode) {
+                        this.voucherCode = savedVoucherCode;
+                    }
+
                     this.startCountdown();
                     this.startHeroCarousel();
                     this.fetchHome();
-                    this.fetchCart();
+                    this.fetchCart(savedVoucherCode);
                     this.initScrollListener();
                 },
 
@@ -757,12 +781,33 @@
                     }
                 },
 
-                async fetchCart() {
+                saveVoucherStates() {
                     try {
-                        const res = await fetch('/api/v1/cart', { headers: this.getHeaders() });
+                        localStorage.setItem('galaksian_voucher_states', JSON.stringify(this.voucherStates));
+                    } catch (e) {
+                        console.error('Failed to save voucher states to localStorage', e);
+                    }
+                },
+
+                async fetchCart(appliedVoucherCode = null) {
+                    try {
+                        const code = appliedVoucherCode || this.cart?.voucher_applied?.code || localStorage.getItem('galaksian_applied_voucher');
+                        const url = code ? `/api/v1/cart?voucher_code=${encodeURIComponent(code)}` : '/api/v1/cart';
+                        const res = await fetch(url, { headers: this.getHeaders() });
                         const json = await res.json();
                         if (json.success) {
                             this.cart = json.data;
+                            if (this.cart.voucher_applied?.code) {
+                                const activeCode = this.cart.voucher_applied.code;
+                                this.voucherStates[activeCode] = 'applied';
+                                this.voucherCode = activeCode;
+                                localStorage.setItem('galaksian_applied_voucher', activeCode);
+                                this.saveVoucherStates();
+                            } else if (code && this.voucherStates[code] === 'applied') {
+                                this.voucherStates[code] = 'claimed';
+                                localStorage.removeItem('galaksian_applied_voucher');
+                                this.saveVoucherStates();
+                            }
                         }
                     } catch (e) {
                         console.error('Cart fetch error:', e);
@@ -771,17 +816,26 @@
 
                 async applyVoucher() {
                     if (!this.voucherCode.trim()) return;
+                    const code = this.voucherCode.trim().toUpperCase();
                     try {
                         const res = await fetch('/api/v1/cart/voucher', {
                             method: 'POST',
                             headers: this.getHeaders(),
-                            body: JSON.stringify({ code: this.voucherCode.trim() })
+                            body: JSON.stringify({ code: code })
                         });
                         const json = await res.json();
                         if (json.success) {
                             this.cart = json.data;
-                            this.voucherStates[this.voucherCode.trim()] = 'applied';
-                            this.showToast('Voucher ' + this.voucherCode + ' berhasil digunakan.');
+                            for (const k in this.voucherStates) {
+                                if (this.voucherStates[k] === 'applied' && k !== code) {
+                                    this.voucherStates[k] = 'claimed';
+                                }
+                            }
+                            this.voucherStates[code] = 'applied';
+                            this.voucherCode = code;
+                            localStorage.setItem('galaksian_applied_voucher', code);
+                            this.saveVoucherStates();
+                            this.showToast('Voucher ' + code + ' berhasil digunakan.');
                         } else {
                             this.showToast(json.message || 'Voucher tidak valid', 'error');
                         }
@@ -791,10 +845,12 @@
                 },
 
                 removeVoucher() {
-                    const currentCode = this.cart?.voucher_applied?.code;
+                    const currentCode = this.cart?.voucher_applied?.code || localStorage.getItem('galaksian_applied_voucher');
                     if (currentCode) {
                         this.voucherStates[currentCode] = 'claimed';
+                        this.saveVoucherStates();
                     }
+                    localStorage.removeItem('galaksian_applied_voucher');
                     this.cart.voucher_applied = null;
                     if (this.cart.pricing) {
                         this.cart.pricing.voucher_discount = 0;
@@ -806,6 +862,8 @@
 
                 getVoucherState(code) {
                     if (this.cart?.voucher_applied?.code === code) return 'applied';
+                    const savedApplied = localStorage.getItem('galaksian_applied_voucher');
+                    if (savedApplied === code && this.cart?.voucher_applied?.code) return 'applied';
                     return this.voucherStates[code] || 'unclaimed';
                 },
 
@@ -813,12 +871,15 @@
                     const state = this.getVoucherState(code);
                     if (state === 'unclaimed') {
                         this.voucherStates[code] = 'claimed';
-                        this.showToast('Voucher ' + code + ' berhasil diklaim!');
+                        this.saveVoucherStates();
+                        this.showToast('Voucher ' + code + ' berhasil diklaim! Siap digunakan.');
                     } else if (state === 'claimed') {
                         this.voucherCode = code;
                         await this.applyVoucher();
                         if (this.cart?.voucher_applied?.code === code) {
                             this.voucherStates[code] = 'applied';
+                            localStorage.setItem('galaksian_applied_voucher', code);
+                            this.saveVoucherStates();
                         }
                     } else if (state === 'applied') {
                         this.removeVoucher();
@@ -917,6 +978,16 @@
                             this.selectedOrderId = newOrder.id;
                             this.selectedOrderDetail = null;
                             this.activeSubView = 'payment-instruction';
+
+                            // Clear applied voucher after successful checkout order creation
+                            if (this.cart?.voucher_applied?.code) {
+                                const usedCode = this.cart.voucher_applied.code;
+                                delete this.voucherStates[usedCode];
+                                this.saveVoucherStates();
+                            }
+                            localStorage.removeItem('galaksian_applied_voucher');
+                            this.voucherCode = '';
+
                             this.fetchCart();
                             this.fetchOrders();
                             this.showToast('Pesanan dibuat. Silakan selesaikan pembayaran.');

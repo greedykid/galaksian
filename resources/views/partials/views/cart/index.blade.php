@@ -216,7 +216,7 @@
                     <span class="w-1 h-3.5 bg-[#1657FF] rounded-full inline-block"></span>
                     <h3 class="font-extrabold text-xs text-zinc-900 tracking-tight" x-text="t('promo_voucher_title', 'Promo & Voucher Jastip')">Promo & Voucher Jastip</h3>
                 </div>
-                <span class="bg-[#00D06C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs" x-text="cart.voucher_applied ? '1 Dipilih' : '1 Dipilih'">1 Dipilih</span>
+                <span class="bg-[#00D06C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs" x-text="cart.voucher_applied ? '1 Dipakai' : (Object.values(voucherStates).filter(s => s === 'claimed').length ? Object.values(voucherStates).filter(s => s === 'claimed').length + ' Siap Pakai' : 'Tersedia')">Tersedia</span>
             </div>
 
             <!-- Card 1: Diskon Jastip 20% + Bebas Ongkir (Yellow Border Card) -->
