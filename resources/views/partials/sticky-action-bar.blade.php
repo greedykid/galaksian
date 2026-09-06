@@ -4,7 +4,7 @@
         <!-- 1. Cart Sticky Action Bar (Total & Lanjut ke Pembayaran) -->
         <div 
             x-show="activeTab === 'cart' && !activeSubView && cart && cart.items && cart.items.length > 0"
-            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-zinc-200/90 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-x border-zinc-200 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 translate-y-2"
             x-transition:enter-end="opacity-100 translate-y-0"
@@ -24,7 +24,7 @@
         <!-- 2. Checkout Sticky Action Bar (Total & Bayar Sekarang) -->
         <div 
             x-show="activeSubView === 'checkout'"
-            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-zinc-200/90 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-x border-zinc-200 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 translate-y-2"
             x-transition:enter-end="opacity-100 translate-y-0"

@@ -4,7 +4,7 @@
 <div x-show="activeTab === 'home' && !activeSubView" class="space-y-4 pb-8">
     
     <!-- ================= 1. ROYAL BLUE HERO & SEARCH SECTION ================= -->
-    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-4 shadow-sm">
+    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-4 shadow-sm -mx-px w-[calc(100%+2px)]">
         <!-- Search Bar Capsule -->
         <div class="mb-3.5">
             <div class="relative flex items-center bg-white rounded-full p-1 pl-3.5 shadow-sm">

@@ -1,5 +1,7 @@
 <!-- ================= TOP APP BAR (FIXED ROCK-SOLID) ================= -->
-        <header class="fixed top-0 inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-[#1657FF] text-white border-b border-[#1657FF] shadow-xs">
+        <header 
+            :class="(activeTab === 'home' && !activeSubView) ? 'shadow-none border-b-0' : 'shadow-xs border-b border-[#1657FF]'"
+            class="fixed top-0 inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-[#1657FF] text-white">
             <div class="px-4 py-2.5 flex items-center justify-between">
                 <!-- Brand Identity -->
                 <button @click="goToTab('home')" class="flex items-center gap-2 text-left group">

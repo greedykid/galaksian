@@ -3,7 +3,7 @@
             <!-- ========================================================= -->
             <div x-show="activeSubView === 'qris-payment'" class="pb-12 bg-zinc-50 min-h-[85vh]">
                 <!-- Blue Top Hero Container -->
-                <div class="bg-[#1657FF] text-white pt-3 pb-12 px-4 space-y-4">
+                <div class="bg-[#1657FF] text-white pt-3 pb-12 px-4 space-y-4 -mx-px w-[calc(100%+2px)]">
                     <!-- Top App Bar Navigation -->
                     <div class="flex items-center justify-between">
                         <button @click="closeQrisPayView()" class="p-2 -ml-2 text-white/90 hover:text-white transition rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center">
