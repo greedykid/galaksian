@@ -32,7 +32,7 @@
 
                 <!-- Loaded Detail Content -->
                 <template x-if="!orderDetailLoading && selectedOrderDetail">
-                    <div class="px-4 space-y-3 pb-8 w-full max-w-full overflow-x-hidden box-border">
+                    <div class="px-4 space-y-3 pb-36 w-full max-w-full overflow-x-hidden box-border">
                         <!-- Card 1: Order Status Header -->
                         <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-2.5 shadow-xs">
                             <div class="flex justify-between items-start">

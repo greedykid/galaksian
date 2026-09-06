@@ -2075,6 +2075,17 @@
                     return 'Rp ' + Number(num).toLocaleString('id-ID');
                 },
 
+                getCartTotalAmount() {
+                    if (this.cart?.pricing?.product_total !== undefined && this.cart?.pricing?.product_total !== null) {
+                        return Number(this.cart.pricing.product_total) + (this.giftOptionEnabled ? 10000 : 0);
+                    }
+                    if (this.cart?.items?.length) {
+                        const sum = this.cart.items.reduce((acc, it) => acc + ((it.unit_price || it.price || 0) * (it.qty || 1)), 0);
+                        return sum + (this.giftOptionEnabled ? 10000 : 0);
+                    }
+                    return 0;
+                },
+
                 formatDate(dateStr) {
                     if (!dateStr) return '';
                     const d = new Date(dateStr);
