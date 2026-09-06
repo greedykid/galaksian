@@ -32,12 +32,15 @@
                 transactionTab: 'pending',
                 curatedTab: 'special',
                 catalogFilter: 'all',
+                heroSlide: 0,
+                heroInterval: null,
                 selectedCountry: 'all',
                 currentLang: localStorage.getItem('galaksian_lang') || 'id',
                 langDropdownOpen: false,
                 
                 showNotifications: false,
                 activeProduct: null,
+                showProductDetailModal: false,
                 detailModalQty: 1,
                 showAddressModal: false,
                 showReviewModal: false,
@@ -142,6 +145,7 @@
                     }
 
                     this.startCountdown();
+                    this.startHeroCarousel();
                     this.fetchHome();
                     this.fetchCart();
                 },
@@ -282,9 +286,35 @@
                     return items.length ? items : (this.homeData.special_for_you || []);
                 },
 
+                startHeroCarousel() {
+                    if (this.heroInterval) clearInterval(this.heroInterval);
+                    this.heroInterval = setInterval(() => {
+                        this.heroSlide = (this.heroSlide + 1) % 3;
+                    }, 4000);
+                },
+
+                pauseHeroCarousel() {
+                    if (this.heroInterval) clearInterval(this.heroInterval);
+                },
+
+                setHeroSlide(idx) {
+                    this.heroSlide = idx;
+                    this.startHeroCarousel();
+                },
+
                 openProductDetail(prod) {
                     this.activeProduct = prod;
                     this.detailModalQty = 1;
+                    this.showProductDetailModal = true;
+                },
+
+                closeProductDetailModal() {
+                    this.showProductDetailModal = false;
+                    setTimeout(() => {
+                        if (!this.showProductDetailModal) {
+                            this.activeProduct = null;
+                        }
+                    }, 320);
                 },
 
                 getCartItemQty(productId) {

@@ -4,7 +4,7 @@
 <div x-show="activeTab === 'home' && !activeSubView" class="space-y-4 pb-8">
     
     <!-- ================= 1. ROYAL BLUE HERO & SEARCH SECTION ================= -->
-    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-4 rounded-b-[24px] shadow-sm">
+    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-4 shadow-sm">
         <!-- Search Bar Capsule -->
         <div class="mb-3.5">
             <div class="relative flex items-center bg-white rounded-full p-1 pl-3.5 shadow-sm">
@@ -29,44 +29,120 @@
             </div>
         </div>
 
-        <!-- Tokyo Summer Hero Banner -->
-        <div class="relative flex items-center justify-between min-h-[135px]">
-            <div class="max-w-[215px] z-10">
-                <span class="text-[10px] font-bold tracking-widest text-white/85 uppercase block">GALAKSIAN JASTIP</span>
-                <h2 class="text-xl font-black text-white leading-tight mt-0.5">Koleksi Tokyo<br>Summer</h2>
-                <p class="text-[11px] text-white/90 font-medium mt-1 leading-snug">Fashion terbaru langsung dari Tokyo</p>
-                <button 
-                    @click="openBrandCategoryView('kategori', 'Tokyo Summer Collection', 'tokyo-summer')"
-                    class="mt-3 px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full shadow-md transition active:scale-95 inline-flex items-center gap-1">
-                    Explore Koleksi
-                </button>
-            </div>
+        <!-- Tokyo Summer Hero Carousel (Auto-sliding) -->
+        <div class="relative overflow-hidden min-h-[140px]" @mouseenter="pauseHeroCarousel()" @mouseleave="startHeroCarousel()">
+            <div 
+                class="flex transition-transform duration-500 ease-in-out" 
+                :style="'transform: translateX(-' + (heroSlide * 100) + '%)'">
+                
+                <!-- Slide 0: Tokyo Summer -->
+                <div class="w-full shrink-0 flex items-center justify-between min-h-[135px]">
+                    <div class="max-w-[215px] z-10">
+                        <span class="text-[10px] font-bold tracking-widest text-white/85 uppercase block">GALAKSIAN JASTIP</span>
+                        <h2 class="text-xl font-black text-white leading-tight mt-0.5">Koleksi Tokyo<br>Summer</h2>
+                        <p class="text-[11px] text-white/90 font-medium mt-1 leading-snug">Fashion terbaru langsung dari Tokyo</p>
+                        <button 
+                            @click="openBrandCategoryView('kategori', 'Tokyo Summer Collection', 'tokyo-summer')"
+                            class="mt-3 px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full shadow-md transition active:scale-95 inline-flex items-center gap-1">
+                            Explore Koleksi
+                        </button>
+                    </div>
 
-            <!-- Right Vector Graphic: Soft Circular Overlay + Vector Shopping Bags (Clean SVG, No Emoji) -->
-            <div class="relative shrink-0 flex items-center justify-center w-28 h-28">
-                <div class="w-26 h-26 rounded-full bg-white/15 absolute"></div>
-                <!-- Stylized Shopping Bags SVG -->
-                <svg class="w-22 h-22 relative z-10 drop-shadow-sm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Purple Back Bag -->
-                    <rect x="22" y="32" width="38" height="46" rx="4" fill="#8B5CF6" stroke="#1E1B4B" stroke-width="3"/>
-                    <path d="M33 32V24C33 19.5 37 16 41 16C45 16 49 19.5 49 24V32" stroke="#FBBF24" stroke-width="3.5" stroke-linecap="round"/>
-                    <!-- Teal Front Bag -->
-                    <rect x="42" y="40" width="36" height="38" rx="4" fill="#06B6D4" stroke="#1E1B4B" stroke-width="3"/>
-                    <path d="M52 40V33C52 29.5 55 26.5 60 26.5C65 26.5 68 29.5 68 33V40" stroke="#FBBF24" stroke-width="3.5" stroke-linecap="round"/>
-                    <!-- Accent Highlights -->
-                    <path d="M47 48H72" stroke="white" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
-                    <!-- Small green gift tag -->
-                    <circle cx="60" cy="58" r="6" fill="#00D06C" stroke="#1E1B4B" stroke-width="2"/>
-                    <path d="M57.5 58L59.5 60L62.5 56.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                    <!-- Right Graphic: Vector Shopping Bags -->
+                    <div class="relative shrink-0 flex items-center justify-center w-28 h-28">
+                        <div class="w-26 h-26 rounded-full bg-white/15 absolute"></div>
+                        <svg class="w-22 h-22 relative z-10 drop-shadow-sm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="22" y="32" width="38" height="46" rx="4" fill="#8B5CF6" stroke="#1E1B4B" stroke-width="3"/>
+                            <path d="M33 32V24C33 19.5 37 16 41 16C45 16 49 19.5 49 24V32" stroke="#FBBF24" stroke-width="3.5" stroke-linecap="round"/>
+                            <rect x="42" y="40" width="36" height="38" rx="4" fill="#06B6D4" stroke="#1E1B4B" stroke-width="3"/>
+                            <path d="M52 40V33C52 29.5 55 26.5 60 26.5C65 26.5 68 29.5 68 33V40" stroke="#FBBF24" stroke-width="3.5" stroke-linecap="round"/>
+                            <path d="M47 48H72" stroke="white" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
+                            <circle cx="60" cy="58" r="6" fill="#00D06C" stroke="#1E1B4B" stroke-width="2"/>
+                            <path d="M57.5 58L59.5 60L62.5 56.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Slide 1: Kuliner & Snack Autentik -->
+                <div class="w-full shrink-0 flex items-center justify-between min-h-[135px]">
+                    <div class="max-w-[215px] z-10">
+                        <span class="text-[10px] font-bold tracking-widest text-amber-300 uppercase block">FLASH SALE MINGGUAN</span>
+                        <h2 class="text-xl font-black text-white leading-tight mt-0.5">Snack & Kuliner<br>Autentik Tokyo</h2>
+                        <p class="text-[11px] text-white/90 font-medium mt-1 leading-snug">Camilan manis, ramen & bumbu impor</p>
+                        <button 
+                            @click="openBrandCategoryView('kategori', 'Snack & Cemilan', 'snack-cemilan')"
+                            class="mt-3 px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full shadow-md transition active:scale-95 inline-flex items-center gap-1">
+                            Lihat Promo
+                        </button>
+                    </div>
+
+                    <!-- Right Graphic: Bento Box / Japanese Treats Vector SVG -->
+                    <div class="relative shrink-0 flex items-center justify-center w-28 h-28">
+                        <div class="w-26 h-26 rounded-full bg-white/15 absolute"></div>
+                        <svg class="w-22 h-22 relative z-10 drop-shadow-sm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="20" y="34" width="60" height="42" rx="6" fill="#F97316" stroke="#1E1B4B" stroke-width="3"/>
+                            <path d="M20 54H80" stroke="#1E1B4B" stroke-width="2.5"/>
+                            <path d="M50 54V76" stroke="#1E1B4B" stroke-width="2.5"/>
+                            <polygon points="35,40 25,50 45,50" fill="#FFFFFF" stroke="#1E1B4B" stroke-width="2"/>
+                            <rect x="32" y="47" width="6" height="3" fill="#18181B"/>
+                            <circle cx="65" cy="44" r="5" fill="#22C55E" stroke="#1E1B4B" stroke-width="2"/>
+                            <circle cx="55" cy="46" r="4" fill="#EAB308" stroke="#1E1B4B" stroke-width="2"/>
+                            <rect x="58" y="60" width="14" height="12" rx="3" fill="#FEF08A" stroke="#1E1B4B" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Jastip Cepat Tokyo - Jakarta -->
+                <div class="w-full shrink-0 flex items-center justify-between min-h-[135px]">
+                    <div class="max-w-[215px] z-10">
+                        <span class="text-[10px] font-bold tracking-widest text-emerald-300 uppercase block">TITIP APA SAJA</span>
+                        <h2 class="text-xl font-black text-white leading-tight mt-0.5">Jastip Cepat<br>Tokyo - Jakarta</h2>
+                        <p class="text-[11px] text-white/90 font-medium mt-1 leading-snug">Bebas titip barang impian dari Jepang</p>
+                        <a 
+                            :href="waCsUrl" target="_blank"
+                            class="mt-3 px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full shadow-md transition active:scale-95 inline-flex items-center gap-1">
+                            Titip Sekarang
+                        </a>
+                    </div>
+
+                    <!-- Right Graphic: Travel Luggage Vector SVG -->
+                    <div class="relative shrink-0 flex items-center justify-center w-28 h-28">
+                        <div class="w-26 h-26 rounded-full bg-white/15 absolute"></div>
+                        <svg class="w-22 h-22 relative z-10 drop-shadow-sm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="30" y="32" width="40" height="48" rx="5" fill="#38BDF8" stroke="#1E1B4B" stroke-width="3"/>
+                            <circle cx="38" cy="82" r="3" fill="#18181B"/>
+                            <circle cx="62" cy="82" r="3" fill="#18181B"/>
+                            <path d="M42 32V20H58V32" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 46H70M30 64H70" stroke="#1E1B4B" stroke-width="2.5"/>
+                            <circle cx="50" cy="55" r="5" fill="#00D06C" stroke="#1E1B4B" stroke-width="2"/>
+                            <path d="M48 55L50 57L53 53" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <!-- Carousel Dots Indicator -->
+        <!-- Carousel Dots Indicator (Interactive & Animated) -->
         <div class="flex items-center justify-center gap-1.5 mt-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
-            <span class="w-4 h-1.5 rounded-full bg-[#00D06C]"></span>
+            <button 
+                @click="setHeroSlide(0)" 
+                :class="heroSlide === 0 ? 'w-4 h-1.5 bg-[#00D06C]' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'"
+                class="rounded-full transition-all duration-300 focus:outline-none"
+                aria-label="Slide 1">
+            </button>
+            <button 
+                @click="setHeroSlide(1)" 
+                :class="heroSlide === 1 ? 'w-4 h-1.5 bg-[#00D06C]' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'"
+                class="rounded-full transition-all duration-300 focus:outline-none"
+                aria-label="Slide 2">
+            </button>
+            <button 
+                @click="setHeroSlide(2)" 
+                :class="heroSlide === 2 ? 'w-4 h-1.5 bg-[#00D06C]' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'"
+                class="rounded-full transition-all duration-300 focus:outline-none"
+                aria-label="Slide 3">
+            </button>
         </div>
     </div>
 
