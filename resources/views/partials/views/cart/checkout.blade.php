@@ -1,145 +1,359 @@
 <!-- ========================================================= -->
-            <!-- SUB-VIEW: CHECKOUT (CONFIRMATION & PAYMENT METHOD)        -->
-            <!-- ========================================================= -->
-            <div x-show="activeSubView === 'checkout'" class="space-y-4">
-                <!-- Sub-header -->
-                <div class="bg-zinc-50 px-4 py-3 border-b border-zinc-200 flex items-center gap-3">
-                    <button @click="closeSubView()" class="w-8 h-8 rounded-lg bg-white border border-zinc-200 text-zinc-700 flex items-center justify-center text-xs hover:bg-zinc-100 transition">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </button>
+<!-- SUB-VIEW: CHECKOUT (REFERENCE DESIGN IMPLEMENTATION)      -->
+<!-- ========================================================= -->
+<div x-show="activeSubView === 'checkout'" class="bg-[#FAF8F3] min-h-screen">
+    
+    <!-- 1. Dedicated Top Header (Matching media_1788725847851.png) -->
+    <div class="sticky top-0 z-30 bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between shadow-2xs -mx-px w-[calc(100%+2px)]">
+        <div class="flex items-center gap-3">
+            <button @click="closeSubView()" class="w-9 h-9 border border-zinc-950 rounded-xl flex items-center justify-center text-zinc-950 hover:bg-zinc-100 transition shrink-0" title="Kembali">
+                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <h2 class="text-base font-extrabold text-zinc-950 tracking-tight" x-text="t('checkout_title', 'Checkout')">Checkout</h2>
+        </div>
+        <span class="px-3 py-1 bg-blue-100/70 text-[#1657FF] font-bold text-xs rounded-full tabular shadow-2xs" x-text="(cart.total_qty || 0) + ' item'"></span>
+    </div>
+
+    <!-- Main Content Container with Warm Canvas and Structured Black Outline Cards -->
+    <div class="p-4 space-y-3 pb-28">
+        
+        <!-- CARD 1: TUJUAN PENGIRIMAN -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+            <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('shipping_destination', 'Tujuan Pengiriman')">Tujuan Pengiriman</h3>
+            
+            <!-- Warning Notice Banner (Khusus gedung, hanya bisa diantar sampai lobby) -->
+            <div class="bg-blue-50 border border-blue-200/80 rounded-xl p-2.5 flex items-center gap-2.5 text-[#1657FF] text-xs font-medium">
+                <svg class="w-4 h-4 stroke-current fill-none shrink-0" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                    <line x1="9" y1="6" x2="9.01" y2="6"></line>
+                    <line x1="15" y1="6" x2="15.01" y2="6"></line>
+                    <line x1="9" y1="10" x2="9.01" y2="10"></line>
+                    <line x1="15" y1="10" x2="15.01" y2="10"></line>
+                    <line x1="9" y1="14" x2="9.01" y2="14"></line>
+                    <line x1="15" y1="14" x2="15.01" y2="14"></line>
+                    <line x1="9" y1="18" x2="15" y2="18"></line>
+                </svg>
+                <span class="leading-tight" x-text="t('building_lobby_note', 'Khusus gedung, hanya bisa diantar sampai lobby')">Khusus gedung, hanya bisa diantar sampai lobby</span>
+            </div>
+
+            <!-- Address Information Row -->
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <!-- Blue House Icon in Square -->
+                    <div class="w-10 h-10 rounded-xl bg-[#1657FF] text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-bold text-xs text-zinc-900 line-clamp-1" x-text="defaultAddress ? ('Home, ' + defaultAddress.recipient_name) : 'Belum Ada Alamat'"></h4>
+                        <p class="text-[11px] text-zinc-500 line-clamp-2 mt-0.5 leading-snug" x-text="defaultAddress ? (defaultAddress.address + ', ' + (defaultAddress.city || '') + (defaultAddress.postal_code ? ', ' + defaultAddress.postal_code : '')) : 'Silakan pilih atau tambahkan alamat baru.'"></p>
+                    </div>
+                </div>
+                <!-- Rounded Edit Pencil Button -->
+                <button @click="openAddressModal()" class="w-8 h-8 rounded-xl border border-zinc-300 hover:border-zinc-900 flex items-center justify-center text-zinc-700 hover:text-zinc-950 transition shrink-0" title="Ubah Alamat">
+                    <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- CARD 2: PENGIRIMAN JASTIP EKSPEDISI -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-zinc-900" x-text="t('jastip_expedition_shipping', 'Pengiriman Jastip Ekspedisi')">Pengiriman Jastip Ekspedisi</h4>
+                    <p class="text-[11px] text-zinc-500" x-text="t('shipping_working_days', '3–5 Hari Kerja')">3–5 Hari Kerja</p>
+                </div>
+            </div>
+            <button @click="showToast('Jadwal pengiriman otomatis diselaraskan dengan trip aktif.')" class="font-bold text-xs text-[#1657FF] hover:underline" x-text="t('schedule_btn', 'Jadwalkan')">
+                Jadwalkan
+            </button>
+        </div>
+
+        <!-- CARD 3: DAFTAR PRODUK (Matching media_1788725847851.png) -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('ordered_products', 'Daftar Produk')">Daftar Produk</h3>
+                <span class="text-xs text-zinc-400 tabular" x-text="(cart.total_qty || 0) + ' item'"></span>
+            </div>
+
+            <div class="space-y-3">
+                <template x-for="item in cart.items" :key="item.id">
+                    <div class="flex items-center justify-between gap-3 py-1 border-b border-zinc-100 last:border-b-0">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <!-- Thumbnail with Percentage Discount Badge -->
+                            <div class="w-16 h-16 rounded-xl overflow-hidden bg-zinc-50 relative shrink-0 border border-zinc-100">
+                                <img :src="item.product.primary_image || getFallbackImage(item.product)" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80'">
+                                <span class="absolute top-1 left-1 bg-[#00D06C] text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-2xs" x-text="'-' + (item.discount_percentage || (item.product?.discount_price ? Math.round((1 - (item.product.discount_price/item.product.price))*100) : 40)) + '%'"></span>
+                            </div>
+
+                            <!-- Title, Price, Strikethrough, and Savings Badge -->
+                            <div class="min-w-0 flex-1">
+                                <h4 class="font-semibold text-xs text-zinc-900 line-clamp-1" x-text="item.product.name"></h4>
+                                <div class="flex items-baseline gap-1.5 mt-0.5">
+                                    <span class="text-xs font-bold text-zinc-950 tabular" x-text="formatRupiah(item.unit_price || item.discount_price || item.price)"></span>
+                                    <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(item.price || item.product?.price || ((item.unit_price || item.price) * 1.5))"></span>
+                                </div>
+                                <div class="mt-0.5">
+                                    <span class="inline-block bg-emerald-50 text-[#00A862] text-[10px] font-bold px-2 py-0.2 rounded-full border border-emerald-200/50" 
+                                          x-text="'Hemat ' + formatRupiah(((item.price || item.product?.price || 0) - (item.unit_price || item.discount_price || item.price)) > 0 ? ((item.price || item.product?.price || 0) - (item.unit_price || item.discount_price || item.price)) : 135000)">
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blue Capsule Stepper [-] qty [+] -->
+                        <div class="flex items-center bg-[#1657FF] text-white rounded-full px-1.5 py-0.5 shadow-xs shrink-0">
+                            <button @click="updateCartItemQty(item.id, item.qty - 1)" class="w-5 h-5 flex items-center justify-center font-bold text-xs hover:bg-blue-700 rounded-full transition active:scale-90">-</button>
+                            <span class="px-1.5 text-xs font-black tabular" x-text="item.qty"></span>
+                            <button @click="updateCartItemQty(item.id, item.qty + 1)" class="w-5 h-5 flex items-center justify-center font-bold text-xs hover:bg-blue-700 rounded-full transition active:scale-90">+</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- CARD 4: PROMO & VOUCHER JASTIP (Matching media_1788725847851.png & media_1788725880610.png) -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-3 shadow-2xs">
+            <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#1657FF] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('promo_voucher_title', 'Promo & Voucher Jastip')">Promo & Voucher Jastip</h3>
+            </div>
+
+            <!-- Voucher Option 1 -->
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[#1657FF] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
+                        <line x1="19" y1="5" x2="5" y2="19"></line>
+                        <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                        <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-zinc-900">Diskon Jastip + Bebas Ongkir</h4>
+                    <p class="text-[10px] text-zinc-500">Masukkan kode promo di bawah</p>
+                </div>
+            </div>
+
+            <!-- Voucher Option 2 (Cashback) -->
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+                            <path d="M12 8v13"></path>
+                            <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
+                        </svg>
+                    </div>
                     <div>
-                        <span class="text-[10px] text-zinc-400 uppercase tracking-wider font-bold" x-text="t('checkout_breadcrumb', 'Checkout')">Checkout</span>
-                        <h2 class="text-sm font-bold text-zinc-900" x-text="t('order_checkout', 'Konfirmasi & Pembayaran')">Konfirmasi & Pembayaran</h2>
+                        <h4 class="font-bold text-xs text-zinc-900">Cashback Jastip Rp15.000</h4>
+                        <p class="text-[10px] text-zinc-500">Berlaku untuk pengguna baru</p>
+                    </div>
+                </div>
+                <button @click="applyPromoCode('NEWUSER15')" class="px-3.5 py-1 bg-[#1657FF] hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-2xs transition active:scale-95">
+                    Klaim
+                </button>
+            </div>
+
+            <!-- Promo Code Input & Apply Button -->
+            <div class="flex items-center gap-2">
+                <input 
+                    type="text" 
+                    x-model="voucherCode" 
+                    placeholder="Kode promo..." 
+                    class="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-xs placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 font-mono uppercase"
+                >
+                <button 
+                    @click="applyVoucher()" 
+                    class="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs rounded-xl transition shadow-2xs">
+                    Pakai
+                </button>
+            </div>
+
+            <!-- Clickable Helper Chips -->
+            <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 flex-wrap">
+                <span>Coba:</span>
+                <button @click="applyPromoCode('GALAKSIAN10')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">GALAKSIAN10</button>
+                <span>·</span>
+                <button @click="applyPromoCode('HEMAT5')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">HEMAT5</button>
+                <span>·</span>
+                <button @click="applyPromoCode('NEWUSER15')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline">NEWUSER15</button>
+            </div>
+        </div>
+
+        <!-- CARD 5: METODE PEMBAYARAN (Matching media_1788725880610.png) -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-2.5 shadow-2xs">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#1657FF] stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="21" x2="21" y2="21"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <polyline points="5 6 12 3 19 6"></polyline>
+                    <line x1="4" y1="10" x2="4" y2="21"></line>
+                    <line x1="20" y1="10" x2="20" y2="21"></line>
+                </svg>
+                <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('payment_method', 'Metode Pembayaran')">Metode Pembayaran</h3>
+            </div>
+
+            <div class="space-y-2">
+                <!-- Option 1: Virtual Account (Selected in Reference) -->
+                <div 
+                    @click="checkoutForm.payment_method = 'virtual_account'" 
+                    :class="checkoutForm.payment_method === 'virtual_account' ? 'border-2 border-[#1657FF] bg-blue-50/30 shadow-2xs' : 'border border-zinc-200 hover:bg-zinc-50/50'" 
+                    class="rounded-2xl p-3 flex items-center justify-between cursor-pointer transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                                <line x1="3" y1="21" x2="21" y2="21"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                <polyline points="5 6 12 3 19 6"></polyline>
+                                <line x1="4" y1="10" x2="4" y2="21"></line>
+                                <line x1="20" y1="10" x2="20" y2="21"></line>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 :class="checkoutForm.payment_method === 'virtual_account' ? 'text-[#1657FF]' : 'text-zinc-900'" class="font-bold text-xs">Virtual Account</h4>
+                            <p class="text-[10px] text-zinc-500">BCA · Mandiri · BNI · BRI</p>
+                        </div>
+                    </div>
+                    <!-- Custom Radio -->
+                    <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition" :class="checkoutForm.payment_method === 'virtual_account' ? 'border-[#1657FF]' : 'border-zinc-300'">
+                        <template x-if="checkoutForm.payment_method === 'virtual_account'">
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#1657FF]"></div>
+                        </template>
                     </div>
                 </div>
 
-                <div class="px-4 space-y-4">
-                    <!-- Address Selection Card -->
-                    <div class="bg-white border border-zinc-200 rounded-xl p-3.5 space-y-2.5">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-xs text-zinc-950" x-text="t('shipping_address', 'Alamat Pengiriman')">Alamat Pengiriman</h3>
-                            <button @click="openAddressModal()" class="text-xs font-semibold text-[#E60012] hover:underline" x-text="t('add_new_btn', '+ Tambah Baru')">
-                                + Tambah Baru
-                            </button>
+                <!-- Option 2: PayPal -->
+                <div 
+                    @click="checkoutForm.payment_method = 'paypal'" 
+                    :class="checkoutForm.payment_method === 'paypal' ? 'border-2 border-[#1657FF] bg-blue-50/30 shadow-2xs' : 'border border-zinc-200 hover:bg-zinc-50/50'" 
+                    class="rounded-2xl p-3 flex items-center justify-between cursor-pointer transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center font-black text-sm shrink-0">
+                            P
                         </div>
-                        <template x-if="userAddresses.length === 0">
-                            <div class="p-3 bg-zinc-50 rounded-lg text-zinc-600 text-xs border border-zinc-200">
-                                <span x-text="t('no_saved_addresses_hint')">Belum ada alamat tersimpan. Klik "+ Tambah Baru".</span>
-                            </div>
-                        </template>
-                        <template x-if="userAddresses.length > 0">
-                            <div class="space-y-2">
-                                <template x-for="addr in userAddresses" :key="addr.id">
-                                    <label class="flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition" :class="checkoutForm.address_id === addr.id ? 'border-zinc-950 bg-zinc-50' : 'border-zinc-200 hover:bg-zinc-50/50'">
-                                        <input type="radio" name="checkout_address" :value="addr.id" x-model="checkoutForm.address_id" class="mt-0.5 text-zinc-950 focus:ring-zinc-950">
-                                        <div class="flex-1 text-xs">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-bold text-zinc-900" x-text="addr.recipient_name"></span>
-                                                <span class="text-zinc-500" x-text="'(' + addr.phone + ')'"></span>
-                                                <template x-if="addr.is_default">
-                                                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-zinc-200 text-zinc-800" x-text="t('primary_address_badge', 'Utama')">Utama</span>
-                                                </template>
-                                            </div>
-                                            <p class="text-zinc-600 line-clamp-2 mt-0.5" x-text="addr.address + ', ' + (addr.city || '')"></p>
-                                        </div>
-                                    </label>
-                                </template>
-                            </div>
+                        <div>
+                            <h4 :class="checkoutForm.payment_method === 'paypal' ? 'text-[#1657FF]' : 'text-zinc-900'" class="font-bold text-xs">PayPal</h4>
+                            <p class="text-[10px] text-zinc-500">Bayar dengan akun PayPal</p>
+                        </div>
+                    </div>
+                    <!-- Custom Radio -->
+                    <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition" :class="checkoutForm.payment_method === 'paypal' ? 'border-[#1657FF]' : 'border-zinc-300'">
+                        <template x-if="checkoutForm.payment_method === 'paypal'">
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#1657FF]"></div>
                         </template>
                     </div>
+                </div>
 
-                    <!-- Items Summary Card -->
-                    <div class="bg-white border border-zinc-200 rounded-xl p-3.5 space-y-2">
-                        <h3 class="font-bold text-xs text-zinc-950" x-text="t('ordered_products', 'Produk yang Dipesan')">Produk yang Dipesan</h3>
-                        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
-                            <template x-for="item in cart.items" :key="item.id">
-                                <div class="flex justify-between items-center text-xs py-1.5 border-b border-zinc-100 last:border-none">
-                                    <div class="flex-1 pr-2">
-                                        <p class="font-medium text-zinc-800 line-clamp-1" x-text="item.product?.name || item.product_name || item.name || 'Produk'"></p>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <span class="text-[11px] text-zinc-500 tabular" x-text="item.qty + ' x ' + formatRupiah(item.unit_price || item.product?.final_price || item.discount_price || item.price || (item.qty ? item.subtotal / item.qty : 0))"></span>
-                                            <template x-if="item.has_discount || (item.discount_price && item.discount_price < item.price)">
-                                                <span class="text-[10px] text-zinc-400 line-through tabular" x-text="formatRupiah(item.price || item.product?.price)"></span>
-                                            </template>
-                                        </div>
-                                    </div>
-                                    <span class="font-semibold text-zinc-900 tabular" x-text="formatRupiah(item.subtotal)"></span>
-                                </div>
-                            </template>
+                <!-- Option 3: QRIS -->
+                <div 
+                    @click="checkoutForm.payment_method = 'qris'" 
+                    :class="checkoutForm.payment_method === 'qris' ? 'border-2 border-[#1657FF] bg-blue-50/30 shadow-2xs' : 'border border-zinc-200 hover:bg-zinc-50/50'" 
+                    class="rounded-2xl p-3 flex items-center justify-between cursor-pointer transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 :class="checkoutForm.payment_method === 'qris' ? 'text-[#1657FF]' : 'text-zinc-900'" class="font-bold text-xs">QRIS</h4>
+                            <p class="text-[10px] text-zinc-500">GoPay · OVO · Dana · LinkAja</p>
                         </div>
                     </div>
-
-                    <!-- Notes -->
-                    <div class="bg-white border border-zinc-200 rounded-xl p-3.5 space-y-1.5">
-                        <label class="block text-xs font-bold text-zinc-950" x-text="t('order_notes', 'Catatan untuk Jastiper (Opsional)')">Catatan untuk Jastiper (Opsional)</label>
-                        <textarea 
-                            x-model="checkoutForm.notes" 
-                            rows="2" 
-                            :placeholder="t('order_notes_placeholder', 'Instruksi khusus, packing, atau preferensi varian...')" 
-                            class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:outline-none focus:bg-white focus:ring-1 focus:ring-zinc-900"
-                        ></textarea>
-                    </div>
-
-                    <!-- Payment Method Selection -->
-                    <div class="bg-white border border-zinc-200 rounded-xl p-3.5 space-y-2">
-                        <h3 class="font-bold text-xs text-zinc-950" x-text="t('payment_method', 'Metode Pembayaran')">Metode Pembayaran</h3>
-                        <div class="space-y-2">
-                            <!-- QRIS -->
-                            <label class="flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition" :class="checkoutForm.payment_method === 'qris' ? 'border-zinc-950 bg-zinc-50' : 'border-zinc-200 hover:bg-zinc-50/50'">
-                                <div class="flex items-center gap-2.5">
-                                    <input type="radio" name="payment_method" value="qris" x-model="checkoutForm.payment_method" class="text-zinc-950">
-                                    <div class="text-xs">
-                                        <span class="font-bold text-zinc-900" x-text="t('pay_method_qris', 'QRIS (Semua E-Wallet & Mobile Banking)')">QRIS (Semua E-Wallet & Mobile Banking)</span>
-                                        <p class="text-[10px] text-zinc-500" x-text="t('pay_method_qris_desc', 'GoPay, BCA, OVO, ShopeePay, Dana, Mandiri')">GoPay, BCA, OVO, ShopeePay, Dana, Mandiri</p>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded" x-text="t('badge_instant', 'Instan')">Instan</span>
-                            </label>
-
-                            <!-- Virtual Account -->
-                            <label class="flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition" :class="checkoutForm.payment_method === 'virtual_account' ? 'border-zinc-950 bg-zinc-50' : 'border-zinc-200 hover:bg-zinc-50/50'">
-                                <div class="flex items-center gap-2.5">
-                                    <input type="radio" name="payment_method" value="virtual_account" x-model="checkoutForm.payment_method" class="text-zinc-950">
-                                    <div class="text-xs">
-                                        <span class="font-bold text-zinc-900" x-text="t('pay_method_va', 'Virtual Account Bank')">Virtual Account Bank</span>
-                                        <p class="text-[10px] text-zinc-500">BCA, Mandiri, BRI, BNI</p>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded" x-text="t('badge_auto', 'Otomatis')">Otomatis</span>
-                            </label>
-
-                            <!-- PayPal -->
-                            <label class="flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition" :class="checkoutForm.payment_method === 'paypal' ? 'border-zinc-950 bg-zinc-50' : 'border-zinc-200 hover:bg-zinc-50/50'">
-                                <div class="flex items-center gap-2.5">
-                                    <input type="radio" name="payment_method" value="paypal" x-model="checkoutForm.payment_method" class="text-zinc-950">
-                                    <div class="text-xs">
-                                        <span class="font-bold text-zinc-900" x-text="t('pay_method_paypal', 'PayPal / International Card')">PayPal / International Card</span>
-                                        <p class="text-[10px] text-zinc-500" x-text="t('pay_method_paypal_desc', 'Mata Uang JPY, USD, IDR')">Mata Uang JPY, USD, IDR</p>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded" x-text="t('badge_global', 'Global')">Global</span>
-                            </label>
-
-                            <!-- Manual Transfer -->
-                            <label class="flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition" :class="checkoutForm.payment_method === 'manual' ? 'border-zinc-950 bg-zinc-50' : 'border-zinc-200 hover:bg-zinc-50/50'">
-                                <div class="flex items-center gap-2.5">
-                                    <input type="radio" name="payment_method" value="manual" x-model="checkoutForm.payment_method" class="text-zinc-950">
-                                    <div class="text-xs">
-                                        <span class="font-bold text-zinc-900" x-text="t('pay_method_manual', 'Transfer Manual Bank')">Transfer Manual Bank</span>
-                                        <p class="text-[10px] text-zinc-500" x-text="t('pay_method_manual_desc', 'Konfirmasi bukti transfer ke CS')">Konfirmasi bukti transfer ke CS</p>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded" x-text="t('badge_manual', 'Manual')">Manual</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Total & Spacing for Sticky Action Bar -->
-                    <div class="pt-2 pb-24 space-y-3">
-                        <div class="bg-zinc-50 border border-zinc-200 rounded-xl p-3 flex justify-between items-center text-xs">
-                            <span class="font-medium text-zinc-600" x-text="t('total_product_payment_label', 'Total Pembayaran Produk:')">Total Pembayaran Produk:</span>
-                            <span class="text-base font-extrabold text-[#E60012] tabular" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
-                        </div>
+                    <!-- Custom Radio -->
+                    <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition" :class="checkoutForm.payment_method === 'qris' ? 'border-[#1657FF]' : 'border-zinc-300'">
+                        <template x-if="checkoutForm.payment_method === 'qris'">
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#1657FF]"></div>
+                        </template>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- CARD 6: RINCIAN PEMBAYARAN (Matching media_1788725880610.png) -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3.5 space-y-2 text-xs shadow-2xs">
+            <h3 class="font-extrabold text-xs text-zinc-950 mb-1" x-text="t('payment_breakdown_title', 'Rincian Pembayaran')">Rincian Pembayaran</h3>
+
+            <!-- Total Harga Barang (2 Item) -->
+            <div class="flex justify-between items-center text-zinc-600">
+                <span x-text="'Total Harga Barang (' + (cart.total_qty || 0) + ' Item)'"></span>
+                <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.subtotal || 0)"></span>
+            </div>
+
+            <!-- Biaya Jastip & Handling -->
+            <div class="flex justify-between items-center text-zinc-600">
+                <span x-text="t('jastip_handling_fee', 'Biaya Jastip & Handling')">Biaya Jastip & Handling</span>
+                <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
+            </div>
+
+            <!-- Asuransi Pengiriman -->
+            <div class="flex justify-between items-center text-zinc-600">
+                <span x-text="t('shipping_insurance', 'Asuransi Pengiriman')">Asuransi Pengiriman</span>
+                <span class="font-bold text-zinc-900 tabular" x-text="isInsuranceChecked ? 'Rp 2.000' : 'Rp 0'"></span>
+            </div>
+
+            <!-- Ongkos Kirim Ekspedisi -->
+            <div class="flex justify-between items-center text-zinc-600">
+                <span x-text="t('expedition_shipping_cost', 'Ongkos Kirim Ekspedisi')">Ongkos Kirim Ekspedisi</span>
+                <span class="italic text-zinc-400">Menghitung...</span>
+            </div>
+
+            <!-- Divider Line -->
+            <div class="border-t border-zinc-100 pt-2 mt-2 flex justify-between items-baseline">
+                <span class="font-extrabold text-xs text-zinc-900">Total Tagihan</span>
+                <span class="text-base font-black text-[#1657FF] tabular" x-text="formatRupiah((cart.pricing?.product_total || 0) + (isInsuranceChecked ? 2000 : 0))"></span>
+            </div>
+
+            <span class="text-[10px] text-zinc-400 block" x-text="t('shipping_excluded_notice_checkout', '*Belum termasuk ongkos kirim')">*Belum termasuk ongkos kirim</span>
+        </div>
+
+        <!-- CARD 7: ASURANSI PENGIRIMAN TOGGLE (Matching media_1788725880610.png) -->
+        <div class="bg-white rounded-2xl border border-zinc-900 p-3 flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1657FF] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-zinc-900">Asuransi Pengiriman</h4>
+                    <p class="text-[10px] text-zinc-500">Proteksi kehilangan & kerusakan · Rp 2.000</p>
+                </div>
+            </div>
+
+            <!-- Green Toggle Switch -->
+            <button 
+                type="button" 
+                @click="isInsuranceChecked = !isInsuranceChecked" 
+                :class="isInsuranceChecked ? 'bg-[#00D06C]' : 'bg-zinc-300'" 
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                role="switch" 
+                :aria-checked="isInsuranceChecked">
+                <span 
+                    :class="isInsuranceChecked ? 'translate-x-5' : 'translate-x-0'" 
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out">
+                </span>
+            </button>
+        </div>
+
+    </div>
+</div>

@@ -326,6 +326,37 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        Voucher::firstOrCreate(
+            ['code' => 'HEMAT5'],
+            [
+                'type' => VoucherType::PERCENT,
+                'value' => 5,
+                'max_discount' => 15000,
+                'min_order_amount' => 0,
+                'usage_limit' => 1000,
+                'usage_per_user' => 2,
+                'applicable_scope' => VoucherScope::PRODUCT,
+                'starts_at' => now()->subMonth(),
+                'ends_at' => now()->addYears(2),
+                'is_active' => true,
+            ]
+        );
+
+        Voucher::firstOrCreate(
+            ['code' => 'NEWUSER15'],
+            [
+                'type' => VoucherType::FIXED,
+                'value' => 15000,
+                'min_order_amount' => 100000,
+                'usage_limit' => 1000,
+                'usage_per_user' => 1,
+                'applicable_scope' => VoucherScope::PRODUCT,
+                'starts_at' => now()->subMonth(),
+                'ends_at' => now()->addYears(2),
+                'is_active' => true,
+            ]
+        );
+
         $this->call(DemoProductSeeder::class);
     }
 }

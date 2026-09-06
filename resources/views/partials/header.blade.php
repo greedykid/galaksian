@@ -1,10 +1,10 @@
 <!-- ================= TOP APP BAR (FIXED ROCK-SOLID) ================= -->
         <header 
-            :class="(activeTab === 'home' && !activeSubView) ? 'shadow-none border-b-0' : 'shadow-xs border-b border-[#1657FF]'"
-            class="fixed top-0 inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-[#1657FF] text-white">
+            x-show="activeTab === 'home' && !activeSubView"
+            class="fixed top-0 inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-[#1657FF] text-white shadow-none border-b-0"
+            x-cloak>
     <!-- ================= HOME TAB STICKY CONTAINER ================= -->
-    <template x-if="activeTab === 'home' && !activeSubView">
-        <div class="relative overflow-hidden">
+    <div class="relative overflow-hidden">
             <!-- STATE A: STANDARD NAVBAR + STICKY SEARCH BAR CAPSULE -->
             <div 
                 x-show="!isPastKatalog || searchQuery.trim().length > 0 || stickySearchExpanded"
@@ -200,95 +200,7 @@
                 </div>
             </div>
         </div>
-    </template>
 
-    <!-- ================= OTHER TABS & SUBVIEWS NAVBAR ================= -->
-    <template x-if="activeTab !== 'home' || activeSubView">
-        <div class="px-4 py-2.5 flex items-center justify-between">
-            <!-- Brand Identity -->
-            <button @click="goToTab('home')" class="flex items-center gap-2 text-left group">
-                <div class="w-7 h-7 rounded-lg bg-[#00D06C] text-white flex items-center justify-center font-black text-xs tracking-wider transition shadow-xs group-hover:bg-[#00B85F]">
-                    G
-                </div>
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-extrabold text-[15px] tracking-tight text-white">GALAKSIAN</span>
-                    </div>
-                    <!-- Adaptive Subtitle for Consistent Context -->
-                    <template x-if="activeTab === 'cart' && !activeSubView">
-                        <p class="text-[11px] text-white/90 font-medium" x-text="t('shopping_cart', 'Keranjang Belanja') + ' • ' + (cart.total_qty || 0) + ' item'"></p>
-                    </template>
-                    <template x-if="activeTab === 'transactions' && !activeSubView">
-                        <p class="text-[11px] text-white/90 font-medium" x-text="t('transaction_history', 'Daftar Transaksi')"></p>
-                    </template>
-                    <template x-if="activeTab === 'profile' && !activeSubView">
-                        <p class="text-[11px] text-white/90 font-medium" x-text="t('my_profile', 'Profil Akun')"></p>
-                    </template>
-                    <template x-if="activeSubView">
-                        <p class="text-[11px] text-white/90 font-medium" x-text="t('app_tagline', 'Jastip Indonesia — Jepang')"></p>
-                    </template>
-                </div>
-            </button>
-
-            <!-- Navigation Actions: CS, Language Selector, Notifications -->
-            <div class="flex items-center gap-1.5">
-                <!-- Customer Service Headphone Button -->
-                <a :href="waCsUrl" target="_blank" :title="t('contact_wa_cs_title', 'Hubungi WhatsApp CS')" 
-                    class="w-8 h-8 rounded-lg flex items-center justify-center text-white border border-white/20 bg-white/10 hover:bg-white/20 transition">
-                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
-                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
-                    </svg>
-                </a>
-
-                <!-- Global Language Selector Dropdown -->
-                <div class="relative" @click.away="langDropdownOpen = false">
-                    <button 
-                        @click="langDropdownOpen = !langDropdownOpen" 
-                        type="button"
-                        class="h-8 px-2 rounded-lg flex items-center gap-1 bg-white/10 hover:bg-white/20 border border-white/20 text-white transition select-none min-h-[32px]"
-                        :title="currentLang === 'id' ? 'Ubah Bahasa Aplikasi' : 'Change App Language'"
-                        aria-label="Language selector">
-                        <span class="text-[11px] font-bold tracking-tight text-white" x-text="currentLang.toUpperCase()"></span>
-                        <svg class="w-3 h-3 text-white/80 transition-transform duration-150" :class="langDropdownOpen ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Notification Bell -->
-                <button @click="showNotifications = !showNotifications" 
-                    class="w-8 h-8 rounded-lg flex items-center justify-center transition relative text-white border border-white/20 bg-white/10 hover:bg-white/20">
-                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <span class="absolute -top-1 -right-1.5 w-4 h-4 bg-[#00D06C] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs">3</span>
-                </button>
-            </div>
-        </div>
-    </template>
-
-            <!-- Secondary Sticky Nav: Detail Transaksi Header (Seamless ZERO gap integration) -->
-            <div x-show="activeSubView === 'order-detail'" class="px-4 py-2 border-t border-white/20 bg-[#1657FF] text-white flex items-center justify-between">
-                <button @click="closeOrderDetail()" class="text-xs font-bold text-white flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-white/15 hover:bg-white/25 transition min-h-[38px]">
-                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    <span x-text="t('back_btn', 'Kembali')">Kembali</span>
-                </button>
-                <div class="text-center">
-                    <h2 class="text-sm font-extrabold text-white" x-text="t('order_detail_title', 'Detail Transaksi')">Detail Transaksi</h2>
-                    <span class="text-[10px] font-mono text-white/80 block" x-text="selectedOrderDetail ? selectedOrderDetail.order_number : ''"></span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <button @click="openQrisPayView()" class="px-3 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-xs min-h-[38px]" :title="t('open_qris_pay', 'Buka Pembayaran QRIS')">
-                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        <span>QR Pay</span>
-                    </button>
-                    <button @click="if (selectedOrderId) openOrderDetail(selectedOrderId)" class="text-xs font-semibold text-white/80 hover:text-white p-2 min-h-[38px] min-w-[36px] flex items-center justify-center" title="Refresh">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-                    </button>
-                </div>
-            </div>
 
             <!-- Global Language Dropdown Menu (Only ID and EN) -->
             <div 

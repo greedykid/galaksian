@@ -1,7 +1,27 @@
 <!-- ========================================================= -->
             <!-- SUBVIEW: DETAIL TRANSAKSI (ANTISLOP EXECUTIVE GRADE)      -->
             <!-- ========================================================= -->
-            <div x-show="activeSubView === 'order-detail'" class="space-y-4 w-full max-w-full pt-1">
+            <div x-show="activeSubView === 'order-detail'" class="space-y-4 w-full max-w-full">
+                <!-- Sticky Top Header for Detail Transaksi -->
+                <div class="sticky top-0 z-30 px-4 py-2.5 bg-[#1657FF] text-white flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
+                    <button @click="closeOrderDetail()" class="text-xs font-bold text-white flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-white/15 hover:bg-white/25 transition min-h-[38px]">
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        <span x-text="t('back_btn', 'Kembali')">Kembali</span>
+                    </button>
+                    <div class="text-center">
+                        <h2 class="text-sm font-extrabold text-white" x-text="t('order_detail_title', 'Detail Transaksi')">Detail Transaksi</h2>
+                        <span class="text-[10px] font-mono text-white/80 block" x-text="selectedOrderDetail ? selectedOrderDetail.order_number : ''"></span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button @click="openQrisPayView()" class="px-3 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-xs min-h-[38px]" :title="t('open_qris_pay', 'Buka Pembayaran QRIS')">
+                            <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                            <span>QR Pay</span>
+                        </button>
+                        <button @click="if (selectedOrderId) openOrderDetail(selectedOrderId)" class="text-xs font-semibold text-white/80 hover:text-white p-2 min-h-[38px] min-w-[36px] flex items-center justify-center" title="Refresh">
+                            <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        </button>
+                    </div>
+                </div>
                 <!-- Loading State -->
                 <template x-if="orderDetailLoading">
                     <div class="px-4 py-16 text-center space-y-3">

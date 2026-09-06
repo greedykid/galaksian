@@ -110,9 +110,15 @@
 
                 checkoutForm: {
                     address_id: null,
-                    payment_method: 'qris',
+                    payment_method: 'virtual_account',
                     notes: ''
                 },
+                checkoutFormNotesManual: '',
+                isInsuranceChecked: true,
+                giftOptionEnabled: false,
+                itemNotes: {},
+                editingNoteItemId: null,
+                tempNoteText: '',
                 isSubmittingCheckout: false,
 
                 paymentResult: null,
@@ -639,6 +645,51 @@
                     } catch (e) {
                         this.showToast('Gagal menerapkan voucher', 'error');
                     }
+                },
+
+                applyPromoCode(code) {
+                    this.voucherCode = code;
+                    this.applyVoucher();
+                },
+
+                openItemNote(item) {
+                    this.editingNoteItemId = item.id;
+                    this.tempNoteText = this.itemNotes[item.id] || '';
+                },
+
+                saveItemNote(itemId) {
+                    const text = (this.tempNoteText || '').trim();
+                    if (text) {
+                        this.itemNotes[itemId] = text;
+                    } else {
+                        delete this.itemNotes[itemId];
+                    }
+                    this.editingNoteItemId = null;
+                    this.syncCheckoutNotes();
+                    this.showToast('Catatan produk disimpan.');
+                },
+
+                cancelItemNote() {
+                    this.editingNoteItemId = null;
+                    this.tempNoteText = '';
+                },
+
+                syncCheckoutNotes() {
+                    const parts = [];
+                    if (this.giftOptionEnabled) {
+                        parts.push('[Kirim sebagai Bingkisan: Ya]');
+                    }
+                    for (const [id, note] of Object.entries(this.itemNotes)) {
+                        if (note && note.trim()) {
+                            const item = this.cart?.items?.find(i => i.id == id);
+                            const name = item?.product?.name || ('Item #' + id);
+                            parts.push(`[${name}: ${note.trim()}]`);
+                        }
+                    }
+                    if (this.checkoutFormNotesManual && this.checkoutFormNotesManual.trim()) {
+                        parts.push(this.checkoutFormNotesManual.trim());
+                    }
+                    this.checkoutForm.notes = parts.join(' ');
                 },
 
                 async proceedToCheckout() {

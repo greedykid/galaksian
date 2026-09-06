@@ -1,7 +1,7 @@
 <!-- ========================================================= -->
         <!-- STICKY BOTTOM NAVIGATION BAR (FIXED & RESILIENT)          -->
         <!-- ========================================================= -->
-        <nav class="fixed bottom-0 inset-x-0 mx-auto z-40 w-full max-w-[430px] bg-white border-t border-x border-zinc-200 px-3 py-2 flex items-center justify-around shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+        <nav x-show="!activeSubView" class="fixed bottom-0 inset-x-0 mx-auto z-40 w-full max-w-[430px] bg-white border-t border-x border-zinc-200 px-3 py-2 flex items-center justify-around shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" x-cloak>
             <!-- 1. Home / Beranda -->
             <button 
                 @click="goToTab('home')" 
