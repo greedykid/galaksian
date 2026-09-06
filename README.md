@@ -15,6 +15,7 @@ Galaksian adalah platform e-commerce dan Jastip (Jasa Titip) mobile-web antara I
 ## 📖 Dokumentasi Lengkap
 Dokumentasi teknis yang mudah dibaca dan dipahami telah disiapkan:
 - 📘 **[Panduan Lengkap Backend Galaksian](docs/BACKEND_GUIDE.md)**: Penjelasan arsitektur, rumus hitungan harga, alur webhook idempotent, siklus status pesanan, dan katalog endpoint API.
+- 📊 **[Diagram Arsitektur & Alur Mermaid](docs/BACKEND_DIAGRAMS.md)**: Visualisasi flowchart arsitektur, alur jastip 2 tahap, dan ERD database.
 - 📋 **[Panduan Developer & AI Agent (AGENTS.md)](AGENTS.md)**: Prinsip arsitektur, aturan testing, dan standar kode.
 - 📑 **[Spesifikasi Teknis Lengkap (BACKEND_CONTEXT.md)](docs/BACKEND_CONTEXT.md)**: Konteks spesifikasi menyeluruh.
 

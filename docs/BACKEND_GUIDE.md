@@ -1,7 +1,8 @@
 # 🚀 Panduan Lengkap Backend Galaksian (Jastip Jepang–Indonesia)
 
 > **Dokumen Resmi Arsitektur & Alur Bisnis Backend**  
-> Ditulis untuk developer, tech lead, dan AI agent agar dapat memahami seluruh sistem backend Galaksian secara cepat, jelas, dan tanpa kebingungan.
+> Ditulis untuk developer, tech lead, dan AI agent agar dapat memahami seluruh sistem backend Galaksian secara cepat, jelas, dan tanpa kebingungan.  
+> 📊 **Untuk versi diagram visual lengkap (Mermaid)**: Lihat [Diagram Arsitektur & Alur Mermaid](BACKEND_DIAGRAMS.md).
 
 ---
 
