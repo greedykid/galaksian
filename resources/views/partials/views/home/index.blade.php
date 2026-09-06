@@ -3,51 +3,8 @@
 <!-- ========================================================= -->
 <div x-show="activeTab === 'home' && !activeSubView" class="space-y-4 pb-8">
     
-    <!-- ================= 1. ROYAL BLUE HERO & SEARCH SECTION ================= -->
-    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-4 shadow-sm -mx-px w-[calc(100%+2px)]">
-        <!-- Search Bar Capsule -->
-        <div class="mb-3.5">
-            <div class="relative flex items-center bg-white rounded-full p-1 pl-3.5 shadow-sm">
-                <!-- Magnifying Glass Icon -->
-                <svg class="w-4 h-4 text-zinc-400 shrink-0 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input 
-                    type="text" 
-                    x-model="searchQuery" 
-                    @input.debounce.300ms="searchProducts()"
-                    @keydown.enter="searchProducts()"
-                    :placeholder="t('search_placeholder', 'Cari produk dari Jepang...')" 
-                    class="w-full bg-transparent text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none pr-1"
-                >
-                <!-- Clear Button (when text exists) -->
-                <button 
-                    type="button"
-                    x-show="searchQuery && searchQuery.length > 0"
-                    @click="clearSearch()"
-                    class="p-1 text-zinc-400 hover:text-zinc-600 rounded-full transition mr-1 shrink-0"
-                    title="Hapus pencarian">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-                <button 
-                    @click="searchProducts()"
-                    :disabled="isSearching"
-                    class="px-4 py-1.5 bg-[#00D06C] hover:bg-[#00B85F] text-white text-xs font-bold rounded-full transition shadow-xs shrink-0 active:scale-95 disabled:opacity-75 flex items-center gap-1.5">
-                    <template x-if="isSearching">
-                        <svg class="w-3 h-3 animate-spin text-white" viewBox="0 0 24 24" fill="none">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
-                    </template>
-                    <span x-text="t('search_btn', 'Cari')">Cari</span>
-                </button>
-            </div>
-        </div>
-
+    <!-- ================= 1. ROYAL BLUE HERO SECTION ================= -->
+    <div class="bg-[#1657FF] text-white px-4 pt-1 pb-3.5 shadow-sm -mx-px w-[calc(100%+2px)]">
         <!-- Tokyo Summer Hero Carousel (Auto-sliding & Swipeable) -->
         <div x-show="!searchQuery || !searchQuery.trim()">
             <div class="relative overflow-hidden min-h-[140px] select-none cursor-grab active:cursor-grabbing touch-pan-y" 
@@ -472,7 +429,7 @@
     </div>
 
     <!-- ================= 4. KATALOG PRODUK INDONESIA (CATEGORY FILTER PILLS) ================= -->
-    <div class="pt-1">
+    <div id="katalog-produk-indonesia" class="pt-1 scroll-mt-24">
         <div class="px-4 flex items-center justify-between mb-2">
             <h3 class="font-bold text-base text-zinc-900 tracking-tight">
                 Katalog Produk Indonesia

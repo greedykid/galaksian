@@ -62,6 +62,9 @@
                 searchResults: [],
                 hasSearched: false,
                 searchTotal: 0,
+                catalogFilter: 'all',
+                isPastKatalog: false,
+                stickySearchExpanded: false,
                 waCsUrl: 'https://wa.me/6281200000001?text=Halo%20Admin%20Galaksian%2C%20saya%20butuh%20bantuan%20jastip',
 
                 toast: { show: false, message: '', type: 'success' },
@@ -161,6 +164,7 @@
                     this.startHeroCarousel();
                     this.fetchHome();
                     this.fetchCart();
+                    this.initScrollListener();
                 },
 
                 showToast(msg, type = 'success') {
@@ -300,7 +304,36 @@
                     this.hasSearched = false;
                     this.searchResults = [];
                     this.searchTotal = 0;
+                    this.stickySearchExpanded = false;
                     this.fetchHome();
+                },
+
+                initScrollListener() {
+                    const checkScroll = () => {
+                        if (this.activeTab !== 'home' || this.activeSubView) {
+                            this.isPastKatalog = false;
+                            return;
+                        }
+                        const el = document.getElementById('katalog-produk-indonesia');
+                        if (el) {
+                            const rect = el.getBoundingClientRect();
+                            // When the top of Katalog Produk Indonesia reaches or passes near the sticky header (rect.top <= 100)
+                            this.isPastKatalog = rect.top <= 100;
+                        } else {
+                            this.isPastKatalog = window.scrollY > 600;
+                        }
+                    };
+
+                    window.addEventListener('scroll', checkScroll, { passive: true });
+                },
+
+                focusSearch() {
+                    this.$nextTick(() => {
+                        const input = document.getElementById('global-search-input');
+                        if (input) {
+                            input.focus();
+                        }
+                    });
                 },
 
                 getCuratedProducts() {

@@ -17,7 +17,7 @@
         @include('partials.header')
 
         <!-- TOP APP BAR SPACER (Guarantees content never slides under fixed header) -->
-        <div :class="activeSubView === 'order-detail' ? 'h-[114px]' : 'h-[58px]'" class="shrink-0 transition-all duration-150"></div>
+        <div :class="activeSubView === 'order-detail' ? 'h-[114px]' : ((activeTab === 'home' && !activeSubView) ? 'h-[96px]' : 'h-[58px]')" class="shrink-0 transition-all duration-150"></div>
 
         <!-- SCROLLABLE MAIN CONTENT -->
         <main class="flex-1 bottom-nav-safe">
