@@ -113,6 +113,22 @@ class DatabaseSeeder extends Seeder
             ['name' => 'ABC', 'slug' => 'abc', 'logo_path' => '/storage/brands/abc.png'],
             ['name' => 'Meiji', 'slug' => 'meiji', 'logo_path' => '/storage/brands/meiji.png'],
             ['name' => 'Calbee', 'slug' => 'calbee', 'logo_path' => '/storage/brands/calbee.png'],
+            ['name' => 'Shiseido', 'slug' => 'shiseido', 'logo_path' => '/storage/brands/shiseido.png'],
+            ['name' => 'Sony', 'slug' => 'sony', 'logo_path' => '/storage/brands/sony.png'],
+            ['name' => 'Rohto', 'slug' => 'rohto', 'logo_path' => '/storage/brands/rohto.png'],
+            ['name' => 'Nintendo', 'slug' => 'nintendo', 'logo_path' => '/storage/brands/nintendo.png'],
+            ['name' => 'Pixy', 'slug' => 'pixy', 'logo_path' => '/storage/brands/pixy.png'],
+            ['name' => 'Bourbon', 'slug' => 'bourbon', 'logo_path' => '/storage/brands/bourbon.png'],
+            ['name' => 'Kao', 'slug' => 'kao', 'logo_path' => '/storage/brands/kao.png'],
+            ['name' => 'Mandom', 'slug' => 'mandom', 'logo_path' => '/storage/brands/mandom.png'],
+            ['name' => 'Kose', 'slug' => 'kose', 'logo_path' => '/storage/brands/kose.png'],
+            ['name' => 'Suntory', 'slug' => 'suntory', 'logo_path' => '/storage/brands/suntory.png'],
+            ['name' => 'Morinaga', 'slug' => 'morinaga', 'logo_path' => '/storage/brands/morinaga.png'],
+            ['name' => 'DHC', 'slug' => 'dhc', 'logo_path' => '/storage/brands/dhc.png'],
+            ['name' => 'Curel', 'slug' => 'curel', 'logo_path' => '/storage/brands/curel.png'],
+            ['name' => 'Fancl', 'slug' => 'fancl', 'logo_path' => '/storage/brands/fancl.png'],
+            ['name' => 'Sido Muncul', 'slug' => 'sido-muncul', 'logo_path' => '/storage/brands/sido-muncul.png'],
+
         ];
 
         $brandModels = [];
@@ -128,6 +144,10 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Bahan Masakan', 'slug' => 'bahan-masakan', 'image_path' => '/storage/categories/cooking-ingredients.png'],
             ['name' => 'Snack & Cemilan', 'slug' => 'snack-cemilan', 'image_path' => '/storage/categories/snacks.png'],
             ['name' => 'Skincare & Beauty', 'slug' => 'skincare-beauty', 'image_path' => '/storage/categories/skincare.png'],
+            ['name' => 'Elektronik', 'slug' => 'elektronik', 'image_path' => '/storage/categories/elektronik.png'],
+            ['name' => 'Fashion', 'slug' => 'fashion', 'image_path' => '/storage/categories/fashion.png'],
+            ['name' => 'Kesehatan', 'slug' => 'kesehatan', 'image_path' => '/storage/categories/kesehatan.png'],
+
         ];
 
         $categoryModels = [];
@@ -305,5 +325,7 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        $this->call(DemoProductSeeder::class);
     }
 }

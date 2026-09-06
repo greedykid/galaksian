@@ -83,7 +83,7 @@ class HomeController extends Controller
             ->get();
 
         // Initial Product Grid
-        $productGrid = (clone $baseProductQuery)->latest()->paginate(12);
+        $productGrid = (clone $baseProductQuery)->latest()->paginate(30);
 
         // Active Trip
         $activeTrip = Trip::active()->first();

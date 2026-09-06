@@ -31,6 +31,7 @@
                 ],
                 transactionTab: 'pending',
                 curatedTab: 'special',
+                catalogFilter: 'all',
                 selectedCountry: 'all',
                 currentLang: localStorage.getItem('galaksian_lang') || 'id',
                 langDropdownOpen: false,
@@ -1460,7 +1461,7 @@
                 },
 
                 getFallbackImage(prod) {
-                    if (!prod) return 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80';
+                    if (!prod) return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
                     const name = prod.name ? prod.name.toLowerCase() : '';
                     if (name.includes('indomie') || name.includes('mie')) {
                         return 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&fit=crop&q=80';
@@ -1468,14 +1469,23 @@
                     if (name.includes('sambal') || name.includes('bumbu') || name.includes('rendang')) {
                         return 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&fit=crop&q=80';
                     }
-                    if (name.includes('meiji') || name.includes('chocolate') || name.includes('cokelat')) {
+                    if (name.includes('meiji') || name.includes('chocolate') || name.includes('cokelat') || name.includes('bourbon') || name.includes('alfort')) {
                         return 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&fit=crop&q=80';
                     }
-                    if (name.includes('sukro') || name.includes('kacang') || name.includes('calbee') || name.includes('potato') || name.includes('crisps')) {
-                        return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
+                    if (name.includes('headphone') || name.includes('sony') || name.includes('switch') || name.includes('nintendo') || name.includes('elektronik')) {
+                        return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&fit=crop&q=80';
                     }
-                    if (name.includes('skincare') || name.includes('beauty')) {
+                    if (name.includes('tea') || name.includes('matcha') || name.includes('oolong') || name.includes('kopi') || name.includes('coffee')) {
+                        return 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('sunscreen') || name.includes('shiseido') || name.includes('suncut') || name.includes('biore') || name.includes('uv') || name.includes('lotion') || name.includes('cleansing') || name.includes('hada labo') || name.includes('curel') || name.includes('fancl') || name.includes('dhc') || name.includes('cushion') || name.includes('skincare') || name.includes('beauty')) {
                         return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('hair') || name.includes('wax') || name.includes('makarizo') || name.includes('gatsby')) {
+                        return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&fit=crop&q=80';
+                    }
+                    if (name.includes('sukro') || name.includes('kacang') || name.includes('calbee') || name.includes('potato') || name.includes('crisps') || name.includes('snack') || name.includes('caramel') || name.includes('pino')) {
+                        return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
                     }
                     return 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&fit=crop&q=80';
                 }
