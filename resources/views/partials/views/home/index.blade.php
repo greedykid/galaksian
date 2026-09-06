@@ -29,11 +29,17 @@
             </div>
         </div>
 
-        <!-- Tokyo Summer Hero Carousel (Auto-sliding) -->
-        <div class="relative overflow-hidden min-h-[140px]" @mouseenter="pauseHeroCarousel()" @mouseleave="startHeroCarousel()">
+        <!-- Tokyo Summer Hero Carousel (Auto-sliding & Swipeable) -->
+        <div class="relative overflow-hidden min-h-[140px] select-none cursor-grab active:cursor-grabbing touch-pan-y" 
+             @mouseenter="pauseHeroCarousel()" 
+             @mouseleave="startHeroCarousel()"
+             @touchstart="handleHeroTouchStart($event)"
+             @touchmove="handleHeroTouchMove($event)"
+             @touchend="handleHeroTouchEnd()"
+             @mousedown="handleHeroMouseDown($event)">
             <div 
-                class="flex transition-transform duration-500 ease-in-out" 
-                :style="'transform: translateX(-' + (heroSlide * 100) + '%)'">
+                class="flex select-none" 
+                :style="getHeroTrackStyle()">
                 
                 <!-- Slide 0: Tokyo Summer -->
                 <div class="w-full shrink-0 flex items-center justify-between min-h-[135px]">

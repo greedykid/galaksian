@@ -1,20 +1,58 @@
 <!-- ========================================================= -->
         <!-- MODAL: SOLUSI BARANG HABIS DI JEPANG (OOS RESOLUTION)      -->
         <!-- ========================================================= -->
-        <div x-show="showOosModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4" @click.self="showOosModal = false" x-cloak>
-            <div class="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl border border-zinc-200">
-                <!-- Top Sticky Header -->
-                <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 py-3 border-b border-zinc-100 flex justify-between items-center">
+        <div x-show="showOosModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:leave="transition ease-in duration-250"
+             x-cloak
+             class="fixed inset-0 z-50 flex items-end justify-center overflow-hidden" 
+             style="display: none;"
+             @keydown.window.escape="showOosModal = false">
+
+            <!-- Smooth Backdrop Fade -->
+            <div x-show="showOosModal"
+                 x-transition:enter="transition-opacity ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-in duration-250"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-black/60 backdrop-blur-[2px]" 
+                 @click="showOosModal = false">
+            </div>
+
+            <!-- Sliding Bottom Sheet Panel -->
+            <div x-show="showOosModal"
+                 x-transition:enter="transition-transform ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-full"
+                 x-transition:enter-end="translate-y-0"
+                 x-transition:leave="transition-transform ease-in duration-250 transform"
+                 x-transition:leave-start="translate-y-0"
+                 x-transition:leave-end="translate-y-full"
+                 :style="getSheetStyle('oos')"
+                 class="relative w-full max-w-[430px] bg-white rounded-t-[28px] max-h-[90vh] overflow-hidden flex flex-col shadow-2xl z-10 border-t border-zinc-100">
+
+                <!-- Grab Bar Handle (Swipeable Up/Down when pressed) -->
+                <div class="pt-3 pb-1.5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none w-full"
+                     @touchstart.passive="startSheetDrag('oos', $event)"
+                     @mousedown="startSheetDrag('oos', $event)">
+                    <div class="w-12 h-1.5 bg-zinc-300 rounded-full hover:bg-zinc-400 active:bg-zinc-500 transition-colors"></div>
+                </div>
+
+                <!-- Top Header -->
+                <div class="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-white cursor-grab active:cursor-grabbing select-none"
+                     @touchstart.passive="startSheetDrag('oos', $event)"
+                     @mousedown="startSheetDrag('oos', $event)">
                     <div>
                         <h3 class="font-extrabold text-sm text-zinc-950" x-text="t('oos_modal_title', 'Solusi Barang Habis di Toko JP')">Solusi Barang Habis di Toko JP</h3>
                         <p class="text-[11px] text-zinc-500" x-text="t('oos_modal_subtitle', 'Pilih opsi pengembalian dana atau penggantian barang')">Pilih opsi pengembalian dana atau penggantian barang</p>
                     </div>
-                    <button @click="showOosModal = false" class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 hover:text-zinc-900 flex items-center justify-center font-bold text-xs min-h-[44px] min-w-[44px]">
-                        ✕
+                    <button @click.stop="showOosModal = false" type="button" class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 flex items-center justify-center transition-colors shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
-                <div class="p-4 space-y-4 text-xs">
+                <div class="p-4 space-y-4 text-xs overflow-y-auto flex-1">
                     <!-- Target Item Info Card -->
                     <div class="p-3 bg-red-50 border border-red-200 rounded-xl space-y-2">
                         <div class="flex items-center gap-2 text-red-800 font-bold">

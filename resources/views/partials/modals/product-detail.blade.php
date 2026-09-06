@@ -27,20 +27,24 @@
          x-transition:leave="transition-transform ease-in duration-250 transform"
          x-transition:leave-start="translate-y-0"
          x-transition:leave-end="translate-y-full"
+         :style="getSheetStyle('productDetail')"
          class="relative w-full max-w-[430px] bg-white rounded-t-[28px] max-h-[88vh] overflow-hidden flex flex-col shadow-2xl z-10 border-t border-zinc-100">
         
-        <!-- Grab Bar Handle -->
-        <div class="pt-2.5 pb-1 flex justify-center items-center cursor-pointer select-none" @click="closeProductDetailModal()">
-            <div class="w-10 h-1 bg-zinc-300 rounded-full hover:bg-zinc-400 transition-colors"></div>
+        <!-- Grab Bar Handle (Swipeable Up/Down when pressed) -->
+        <div class="pt-3 pb-1.5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none w-full"
+             @touchstart.passive="startSheetDrag('productDetail', $event)"
+             @mousedown="startSheetDrag('productDetail', $event)">
+            <div class="w-12 h-1.5 bg-zinc-300 rounded-full hover:bg-zinc-400 active:bg-zinc-500 transition-colors"></div>
         </div>
 
         <!-- Modal Header -->
-        <div class="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-white">
-            <div class="flex items-center gap-2 min-w-0 pr-2">
-                <span class="w-2 h-2 rounded-full bg-[#1657FF] shrink-0"></span>
+        <div class="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-white cursor-grab active:cursor-grabbing select-none"
+             @touchstart.passive="startSheetDrag('productDetail', $event)"
+             @mousedown="startSheetDrag('productDetail', $event)">
+            <div class="min-w-0 pr-2">
                 <h3 class="font-bold text-xs text-zinc-900 truncate" x-text="activeProduct?.name"></h3>
             </div>
-            <button @click="closeProductDetailModal()" 
+            <button @click.stop="closeProductDetailModal()" 
                     type="button"
                     class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 flex items-center justify-center transition-colors shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,22 +1,51 @@
 <!-- ========================================================= -->
-<!-- MODAL: PILIH INVOICE UNTUK DIUNDUH                        -->
+<!-- MODAL: PILIH INVOICE UNTUK DIUNDUH (BOTTOM SHEET)         -->
 <!-- ========================================================= -->
 <div 
     x-show="showInvoiceDownloadModal" 
-    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4" 
-    @click.self="showInvoiceDownloadModal = false"
-    x-transition:enter="transition ease-out duration-200"
-    x-transition:enter-start="opacity-0 translate-y-4"
-    x-transition:enter-end="opacity-100 translate-y-0"
-    x-transition:leave="transition ease-in duration-150"
-    x-transition:leave-start="opacity-100 translate-y-0"
-    x-transition:leave-end="opacity-0 translate-y-4"
-    x-cloak>
-    <div class="w-full max-w-[430px] bg-white rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:leave="transition ease-in duration-250"
+    x-cloak
+    class="fixed inset-0 z-50 flex items-end justify-center overflow-hidden" 
+    style="display: none;"
+    @keydown.window.escape="showInvoiceDownloadModal = false">
+
+    <!-- Smooth Backdrop Fade -->
+    <div x-show="showInvoiceDownloadModal"
+         x-transition:enter="transition-opacity ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-250"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black/60 backdrop-blur-[2px]" 
+         @click="showInvoiceDownloadModal = false">
+    </div>
+
+    <!-- Sliding Bottom Sheet Panel -->
+    <div x-show="showInvoiceDownloadModal"
+         x-transition:enter="transition-transform ease-out duration-300 transform"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition-transform ease-in duration-250 transform"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         :style="getSheetStyle('invoiceDownload')"
+         class="relative w-full max-w-[430px] bg-white rounded-t-[28px] max-h-[88vh] overflow-hidden flex flex-col shadow-2xl z-10 border-t border-zinc-100">
+
+        <!-- Grab Bar Handle (Swipeable Up/Down when pressed) -->
+        <div class="pt-3 pb-1.5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none w-full"
+             @touchstart.passive="startSheetDrag('invoiceDownload', $event)"
+             @mousedown="startSheetDrag('invoiceDownload', $event)">
+            <div class="w-12 h-1.5 bg-zinc-300 rounded-full hover:bg-zinc-400 active:bg-zinc-500 transition-colors"></div>
+        </div>
+
         <!-- Modal Header -->
-        <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/80">
+        <div class="px-4 py-2.5 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/80 cursor-grab active:cursor-grabbing select-none"
+             @touchstart.passive="startSheetDrag('invoiceDownload', $event)"
+             @mousedown="startSheetDrag('invoiceDownload', $event)">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center shadow-xs">
+                <div class="w-8 h-8 rounded-lg bg-[#1657FF] text-white flex items-center justify-center shadow-xs">
                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 </div>
                 <div>
@@ -24,8 +53,8 @@
                     <p class="text-[10px] text-zinc-500 font-mono" x-text="selectedInvoiceOrder ? selectedInvoiceOrder.order_number : ''"></p>
                 </div>
             </div>
-            <button @click="showInvoiceDownloadModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition text-sm font-bold min-h-[32px]">
-                ✕
+            <button @click.stop="showInvoiceDownloadModal = false" type="button" class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 flex items-center justify-center transition-colors shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
 
@@ -90,7 +119,7 @@
             <template x-if="selectedInvoiceOrder && selectedInvoiceOrder.invoices && selectedInvoiceOrder.invoices.length > 1">
                 <button 
                     @click="downloadAllInvoices(selectedInvoiceOrder)" 
-                    class="flex-1 py-2.5 bg-[#E60012] hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 min-h-[44px] shadow-xs">
+                    class="flex-1 py-2.5 bg-[#1657FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 min-h-[44px] shadow-md shadow-blue-500/20">
                     <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span x-text="t('download_all_invoices_btn', 'Unduh Semua')">Unduh Semua</span>
                 </button>

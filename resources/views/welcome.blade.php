@@ -6,7 +6,12 @@
 <body class="min-h-full bg-zinc-100 text-zinc-900 font-sans antialiased flex justify-center selection:bg-red-500 selection:text-white">
 
     <!-- MOBILE CONTAINER (Max 430px, strict viewport bounds) -->
-    <div x-data="galaksianApp()" x-init="init()" class="w-full max-w-[430px] bg-white min-h-screen flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-zinc-200" x-cloak>
+    <div x-data="galaksianApp()" x-init="init()" 
+         @touchmove.window="sheetIsDragging ? moveSheetDrag($event) : null"
+         @touchend.window="sheetIsDragging ? endSheetDrag(sheetDraggingModal) : null"
+         @mousemove.window="sheetIsDragging ? moveSheetDrag($event) : (heroIsMouseDragging ? handleHeroMouseMove($event) : null)"
+         @mouseup.window="sheetIsDragging ? endSheetDrag(sheetDraggingModal) : (heroIsMouseDragging ? handleHeroMouseUp() : null)"
+         class="w-full max-w-[430px] bg-white min-h-screen flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-zinc-200" x-cloak>
 
         <!-- TOP APP BAR (FIXED) -->
         @include('partials.header')

@@ -31,9 +31,18 @@
                 ],
                 transactionTab: 'pending',
                 curatedTab: 'special',
-                catalogFilter: 'all',
                 heroSlide: 0,
                 heroInterval: null,
+                heroTouchStartX: 0,
+                heroTouchStartY: 0,
+                heroDragDeltaX: 0,
+                heroIsSwiping: false,
+                heroIsMouseDragging: false,
+                sheetDraggingModal: null,
+                sheetDragStartY: 0,
+                sheetDragCurrentY: 0,
+                sheetDragOffset: 0,
+                sheetIsDragging: false,
                 selectedCountry: 'all',
                 currentLang: localStorage.getItem('galaksian_lang') || 'id',
                 langDropdownOpen: false,
@@ -300,6 +309,146 @@
                 setHeroSlide(idx) {
                     this.heroSlide = idx;
                     this.startHeroCarousel();
+                },
+
+                nextHeroSlide() {
+                    this.heroSlide = (this.heroSlide + 1) % 3;
+                    this.startHeroCarousel();
+                },
+
+                prevHeroSlide() {
+                    this.heroSlide = (this.heroSlide - 1 + 3) % 3;
+                    this.startHeroCarousel();
+                },
+
+                getHeroTrackStyle() {
+                    if ((this.heroIsSwiping || this.heroIsMouseDragging) && this.heroDragDeltaX !== 0) {
+                        return `transform: translateX(calc(-${this.heroSlide * 100}% + ${this.heroDragDeltaX}px)); transition: none;`;
+                    }
+                    return `transform: translateX(-${this.heroSlide * 100}%); transition: transform 500ms ease-in-out;`;
+                },
+
+                handleHeroTouchStart(e) {
+                    this.pauseHeroCarousel();
+                    const touch = e.touches ? e.touches[0] : e;
+                    this.heroTouchStartX = touch.clientX;
+                    this.heroTouchStartY = touch.clientY;
+                    this.heroDragDeltaX = 0;
+                    this.heroIsSwiping = true;
+                },
+
+                handleHeroTouchMove(e) {
+                    if (!this.heroIsSwiping) return;
+                    const touch = e.touches ? e.touches[0] : e;
+                    const deltaX = touch.clientX - this.heroTouchStartX;
+                    const deltaY = touch.clientY - this.heroTouchStartY;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        this.heroDragDeltaX = deltaX;
+                    }
+                },
+
+                handleHeroTouchEnd() {
+                    if (!this.heroIsSwiping) return;
+                    this.heroIsSwiping = false;
+                    const threshold = 35;
+                    if (this.heroDragDeltaX < -threshold) {
+                        this.heroSlide = (this.heroSlide + 1) % 3;
+                    } else if (this.heroDragDeltaX > threshold) {
+                        this.heroSlide = (this.heroSlide - 1 + 3) % 3;
+                    }
+                    this.heroDragDeltaX = 0;
+                    this.startHeroCarousel();
+                },
+
+                handleHeroMouseDown(e) {
+                    this.pauseHeroCarousel();
+                    this.heroTouchStartX = e.clientX;
+                    this.heroTouchStartY = e.clientY;
+                    this.heroDragDeltaX = 0;
+                    this.heroIsMouseDragging = true;
+                },
+
+                handleHeroMouseMove(e) {
+                    if (!this.heroIsMouseDragging) return;
+                    this.heroDragDeltaX = e.clientX - this.heroTouchStartX;
+                },
+
+                handleHeroMouseUp() {
+                    if (!this.heroIsMouseDragging) return;
+                    this.heroIsMouseDragging = false;
+                    const threshold = 35;
+                    if (this.heroDragDeltaX < -threshold) {
+                        this.heroSlide = (this.heroSlide + 1) % 3;
+                    } else if (this.heroDragDeltaX > threshold) {
+                        this.heroSlide = (this.heroSlide - 1 + 3) % 3;
+                    }
+                    this.heroDragDeltaX = 0;
+                    this.startHeroCarousel();
+                },
+
+                getSheetStyle(modalName) {
+                    if (this.sheetDraggingModal === modalName) {
+                        if (this.sheetIsDragging) {
+                            return `transform: translateY(${this.sheetDragOffset}px); transition: none;`;
+                        } else {
+                            return `transform: translateY(0px); transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);`;
+                        }
+                    }
+                    return '';
+                },
+
+                startSheetDrag(modalName, e) {
+                    this.sheetDraggingModal = modalName;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    this.sheetDragStartY = clientY;
+                    this.sheetDragCurrentY = clientY;
+                    this.sheetDragOffset = 0;
+                    this.sheetIsDragging = true;
+                },
+
+                moveSheetDrag(e) {
+                    if (!this.sheetIsDragging) return;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    this.sheetDragCurrentY = clientY;
+                    const deltaY = clientY - this.sheetDragStartY;
+                    if (deltaY > 0) {
+                        this.sheetDragOffset = deltaY;
+                    } else {
+                        this.sheetDragOffset = Math.max(-20, deltaY * 0.15);
+                    }
+                },
+
+                endSheetDrag(modalName) {
+                    if (!this.sheetIsDragging) return;
+                    this.sheetIsDragging = false;
+                    const target = modalName || this.sheetDraggingModal;
+                    const threshold = 70;
+                    if (this.sheetDragOffset > threshold) {
+                        this.closeBottomSheet(target);
+                        this.sheetDragOffset = 0;
+                        this.sheetDraggingModal = null;
+                    } else {
+                        this.sheetDragOffset = 0;
+                        setTimeout(() => {
+                            if (!this.sheetIsDragging) {
+                                this.sheetDraggingModal = null;
+                            }
+                        }, 220);
+                    }
+                },
+
+                closeBottomSheet(modalName) {
+                    if (modalName === 'productDetail') {
+                        this.closeProductDetailModal();
+                    } else if (modalName === 'address') {
+                        this.showAddressModal = false;
+                    } else if (modalName === 'review') {
+                        this.showReviewModal = false;
+                    } else if (modalName === 'invoiceDownload') {
+                        this.showInvoiceDownloadModal = false;
+                    } else if (modalName === 'oos') {
+                        this.showOosModal = false;
+                    }
                 },
 
                 openProductDetail(prod) {
