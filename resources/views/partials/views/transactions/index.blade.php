@@ -2,7 +2,7 @@
             <!-- VIEW 3: TRANSAKSI (2 TABS: PENDING & SELESAI)              -->
             <!-- ========================================================= -->
             <div x-show="activeTab === 'transactions' && !activeSubView" class="space-y-4">
-                <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
+                <!-- 1. Dedicated Top Header (Consistent Royal Blue #1657FF) -->
                 <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 shadow-xs -mx-px w-[calc(100%+2px)]">
                     <div class="flex items-center justify-between">
                         <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('transaction_history', 'Transaksi')">Transaksi</h1>
@@ -94,7 +94,34 @@
                 <!-- Order Listing -->
                 <template x-if="isLoggedIn">
                     <div class="px-4 space-y-3 pb-6">
-                        <template x-if="getFilteredOrders().length === 0">
+                        <!-- Loading State: Skeleton Cards -->
+                        <div x-show="ordersLoading" x-cloak class="space-y-3">
+                            <div x-for="i in 3" :key="i" class="bg-white border border-zinc-200 rounded-2xl p-4 space-y-3 shadow-2xs">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-zinc-100 animate-pulse"></div>
+                                        <div class="space-y-1.5">
+                                            <div class="w-24 h-2.5 rounded bg-zinc-200 animate-pulse"></div>
+                                            <div class="w-28 h-2 rounded bg-zinc-100 animate-pulse"></div>
+                                        </div>
+                                    </div>
+                                    <div class="w-16 h-5 rounded-full bg-zinc-100 animate-pulse"></div>
+                                </div>
+                                <div class="flex items-center gap-2.5 pt-1">
+                                    <div class="w-10 h-10 rounded-xl bg-zinc-100 animate-pulse"></div>
+                                    <div class="flex-1 space-y-1.5">
+                                        <div class="w-3/4 h-2.5 rounded bg-zinc-200 animate-pulse"></div>
+                                        <div class="w-1/2 h-2 rounded bg-zinc-100 animate-pulse"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-zinc-100">
+                                    <div class="w-20 h-3 rounded bg-zinc-100 animate-pulse"></div>
+                                    <div class="w-24 h-6 rounded-lg bg-zinc-200 animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <template x-if="!ordersLoading && getFilteredOrders().length === 0">
                             <div class="p-10 text-center space-y-2">
                                 <div class="w-10 h-10 rounded-full bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto">
                                     <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>

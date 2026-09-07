@@ -4,12 +4,12 @@
 <div x-show="activeSubView === 'flash-sale'" class="bg-white min-h-screen space-y-4 pb-12" x-cloak>
     <!-- 1. Dedicated Top Sticky Header (Uniform Royal Blue #1657FF) -->
     <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
-        <button @click="closeSubView()" class="p-1 -ml-1 text-white hover:text-white/80 transition flex items-center gap-2 cursor-pointer">
-            <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
+        <div class="flex items-center gap-3">
+            <button @click="closeSubView()" class="w-9 h-9 rounded-xl border border-white/30 bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition shrink-0" :title="t('back_btn', 'Kembali')">
+                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
             <span class="text-base font-extrabold text-white tracking-tight">Flash Sale & Bundle</span>
-        </button>
+        </div>
         <button @click="goToTab('cart')" class="relative p-1.5 text-white hover:text-white/80 transition cursor-pointer">
             <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1"></circle>

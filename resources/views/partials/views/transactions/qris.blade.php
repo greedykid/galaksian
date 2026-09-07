@@ -2,18 +2,19 @@
             <!-- SUBVIEW: PEMBAYARAN QRIS (FIGMA EXECUTIVE GRADE)          -->
             <!-- ========================================================= -->
             <div x-show="activeSubView === 'qris-payment'" class="pb-12 bg-zinc-50 min-h-[85vh]">
-                <!-- Blue Top Hero Container -->
-                <div class="bg-[#1657FF] text-white pt-3 pb-12 px-4 space-y-4 -mx-px w-[calc(100%+2px)]">
-                    <!-- Top App Bar Navigation -->
-                    <div class="flex items-center justify-between">
-                        <button @click="closeQrisPayView()" class="p-2 -ml-2 text-white/90 hover:text-white transition rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center">
-                            <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <!-- Blue Top Header (Consistent Royal Blue #1657FF) -->
+                <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
+                    <div class="flex items-center gap-3">
+                        <button @click="closeQrisPayView()" class="w-9 h-9 rounded-xl border border-white/30 bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition shrink-0" :title="t('back_btn', 'Kembali')">
+                            <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         </button>
-                        <h1 class="text-base font-bold text-white tracking-tight" x-text="t('qris_title', 'Pembayaran QRIS')">Pembayaran QRIS</h1>
-                        <span class="text-xs font-mono text-white/80 font-medium" x-text="selectedOrderDetail ? ('#' + selectedOrderDetail.order_number) : '#GLK-2024-087234'"></span>
+                        <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('qris_title', 'Pembayaran QRIS')">Pembayaran QRIS</h1>
                     </div>
+                    <span class="text-xs font-mono text-white/80 font-medium" x-text="selectedOrderDetail ? ('#' + selectedOrderDetail.order_number) : '#GLK-2024-087234'"></span>
+                </div>
 
-                    <!-- Hero: Total Amount & Timer -->
+                <!-- Hero: Total Amount & Timer -->
+                <div class="bg-[#1657FF] text-white px-4 pb-6 -mx-px w-[calc(100%+2px)]">
                     <div class="text-center pt-2 pb-1 space-y-1.5">
                         <span class="text-[11px] font-bold tracking-widest text-blue-100/90 uppercase block" x-text="t('total_payment', 'TOTAL PEMBAYARAN')">TOTAL PEMBAYARAN</span>
                         <div class="text-3xl font-extrabold text-white tracking-tight" x-text="formatRupiah(getQrisPayAmount())"></div>

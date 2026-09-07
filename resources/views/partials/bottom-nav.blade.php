@@ -3,7 +3,7 @@
 <!-- Tampil mengambang di atas bottom-nav saat bukan di cart    -->
 <!-- ========================================================= -->
 <div 
-    x-show="cart && cart.total_qty > 0 && activeTab !== 'cart' && activeSubView !== 'checkout' && activeSubView !== 'payment-instruction'"
+    x-show="cart && cart.total_qty > 0 && activeTab !== 'cart' && activeSubView !== 'checkout' && activeSubView !== 'payment-instruction' && activeSubView !== 'shipping-payment'"
     x-transition:enter="transition ease-out duration-200 transform"
     x-transition:enter-start="opacity-0 translate-y-3 scale-95"
     x-transition:enter-end="opacity-100 translate-y-0 scale-100"

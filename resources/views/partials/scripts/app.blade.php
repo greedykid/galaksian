@@ -81,11 +81,13 @@
                 isLoggedIn: false,
                 authToken: null,
                 currentUser: null,
+                userLoading: false,
                 authPhone: '081234567890',
                 authOtp: '',
                 otpStep: 'phone',
                 authLoading: false,
 
+                homeLoading: false,
                 homeData: {
                     banners: [],
                     flash_sales: [],
@@ -101,6 +103,7 @@
 
                 cartToken: '',
                 cart: { items: [], total_qty: 0, pricing: null, voucher_applied: null },
+                cartLoading: false,
                 voucherCode: '',
 
                 selectedFilter: { type: 'kategori', name: '', slug: '', subtab: 'all' },
@@ -165,7 +168,9 @@
 
                 paymentResult: null,
                 isSimulatingPayment: false,
+                shippingPaymentMethod: 'virtual_account',
                 orders: [],
+                ordersLoading: false,
 
                 reviewForm: {
                     orderId: null,
@@ -231,6 +236,9 @@
                     this.fetchHome();
                     this.fetchCart(savedVoucherCode);
                     this.initScrollListener();
+
+                    // Restore tab/sub-view terakhir (kecuali state transaksional selesai)
+                    this.$nextTick(() => this.restoreNavState());
                 },
 
                 showToast(msg, type = 'success') {
@@ -296,10 +304,105 @@
                         this.fetchUserProfile();
                         this.fetchAddresses();
                     }
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 closeSubView() {
                     this.activeSubView = null;
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                // ================= NAVIGATION STATE PERSISTENCE =================
+                saveNavState() {
+                    try {
+                        localStorage.setItem('galaksian_nav', JSON.stringify({
+                            activeTab: this.activeTab,
+                            activeSubView: this.activeSubView,
+                            selectedOrderId: this.selectedOrderId || null,
+                            selectedFilter: this.selectedFilter,
+                            profileTab: this.profileTab,
+                            transactionTab: this.transactionTab,
+                            savedAt: Date.now()
+                        }));
+                    } catch (e) {}
+                },
+
+                clearNavState() {
+                    localStorage.removeItem('galaksian_nav');
+                },
+
+                async restoreNavState() {
+                    let saved;
+                    try {
+                        saved = JSON.parse(localStorage.getItem('galaksian_nav') || 'null');
+                    } catch (e) { saved = null; }
+                    if (!saved || !saved.activeTab) return;
+
+                    // Tab & filters
+                    this.activeTab = saved.activeTab;
+                    if (saved.profileTab) this.profileTab = saved.profileTab;
+                    if (saved.transactionTab) this.transactionTab = saved.transactionTab;
+                    if (saved.selectedFilter) this.selectedFilter = saved.selectedFilter;
+
+                    // Jika kembali ke tab transaksi (tanpa sub-view), muat daftar order
+                    if (this.activeTab === 'transactions' && !saved.activeSubView) {
+                        this.fetchOrders();
+                    }
+
+                    // Sub-view dengan dependensi data: perlu re-fetch / validasi
+                    const sub = saved.activeSubView;
+                    this.activeSubView = sub;
+
+                    if (sub) {
+                        if (['order-detail', 'shipping-payment', 'qris-payment'].includes(sub) && saved.selectedOrderId) {
+                            // Re-fetch order detail lalu kembali ke sub-view
+                            const orderId = saved.selectedOrderId;
+                            this.activeSubView = sub;
+                            await this.ensureOrderDetail(orderId);
+                            if (sub === 'qris-payment') this.openQrisPayView();
+                        } else if (sub === 'checkout') {
+                            this.proceedToCheckout();
+                        } else if (sub === 'payment-instruction') {
+                            // Restore paymentResult dari localStorage
+                            try {
+                                const pr = JSON.parse(localStorage.getItem('galaksian_payment_result') || 'null');
+                                if (pr && pr.invoice) {
+                                    this.paymentResult = pr;
+                                    // Jika sudah lunas, reset agar tidak kembali ke layar basi
+                                    if (pr.isPaid) {
+                                        this.activeSubView = null;
+                                        this.clearNavState();
+                                        localStorage.removeItem('galaksian_payment_result');
+                                        this.goToTab('home');
+                                    }
+                                } else {
+                                    this.activeSubView = null;
+                                    this.clearNavState();
+                                    this.goToTab('home');
+                                }
+                            } catch (e) {
+                                this.activeSubView = null;
+                                this.clearNavState();
+                                this.goToTab('home');
+                            }
+                        }
+                    }
+
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                },
+
+                async ensureOrderDetail(orderId) {
+                    if (!orderId) return;
+                    this.selectedOrderId = orderId;
+                    this.activeTab = 'transactions';
+                    try {
+                        const res = await fetch('/api/v1/orders/' + orderId, { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success && json.data) this.selectedOrderDetail = json.data;
+                    } catch (e) {}
                 },
 
                 setCountry(c) {
@@ -308,6 +411,7 @@
                 },
 
                 async fetchHome() {
+                    this.homeLoading = true;
                     try {
                         const url = this.selectedCountry === 'all' 
                             ? '/api/v1/home' 
@@ -319,6 +423,8 @@
                         }
                     } catch (e) {
                         console.error('Home load error:', e);
+                    } finally {
+                        this.homeLoading = false;
                     }
                 },
 
@@ -416,6 +522,8 @@
                     this.selectedFilter.slug = slug;
                     this.selectedFilter.subtab = 'all';
                     this.activeSubView = 'brand-category';
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 getFilteredSubViewProducts() {
@@ -436,24 +544,28 @@
                     this.flashSaleSubtab = subtab;
                     this.activeSubView = 'flash-sale';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.saveNavState();
                 },
 
                 openIndonesiaCatalogView(subtab = 'all') {
                     this.catalogSubtab = subtab;
                     this.activeSubView = 'indonesia-catalog';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.saveNavState();
                 },
 
                 openSpecialForYouView(subtab = 'all') {
                     this.specialSubtab = subtab;
                     this.activeSubView = 'special-for-you';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.saveNavState();
                 },
 
                 openBuyAgainView(subtab = 'all') {
                     this.buyAgainSubtab = subtab;
                     this.activeSubView = 'buy-again';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.saveNavState();
                 },
 
                 getFlashSaleProducts() {
@@ -796,6 +908,7 @@
 
                 async fetchCart(appliedVoucherCode = null) {
                     try {
+                        this.cartLoading = true;
                         const code = appliedVoucherCode || this.cart?.voucher_applied?.code || localStorage.getItem('galaksian_applied_voucher');
                         const url = code ? `/api/v1/cart?voucher_code=${encodeURIComponent(code)}` : '/api/v1/cart';
                         const res = await fetch(url, { headers: this.getHeaders() });
@@ -822,6 +935,8 @@
                         }
                     } catch (e) {
                         console.error('Cart fetch error:', e);
+                    } finally {
+                        this.cartLoading = false;
                     }
                 },
 
@@ -1002,6 +1117,8 @@
                         this.checkoutForm.address_id = this.userAddresses[0].id;
                     }
                     this.activeSubView = 'checkout';
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 async submitCheckout() {
@@ -1040,6 +1157,9 @@
                             this.selectedOrderId = newOrder.id;
                             this.selectedOrderDetail = null;
                             this.activeSubView = 'payment-instruction';
+                            this.saveNavState();
+                            try { localStorage.setItem('galaksian_payment_result', JSON.stringify(this.paymentResult)); } catch (e) {}
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
 
                             // Clear applied voucher after successful checkout order creation
                             if (this.cart?.voucher_applied?.code) {
@@ -1417,6 +1537,8 @@
                     this.activeTab = 'transactions';
                     this.activeSubView = 'order-detail';
                     this.orderDetailLoading = true;
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     try {
                         const res = await fetch('/api/v1/orders/' + orderId, { headers: this.getHeaders() });
                         const json = await res.json();
@@ -1451,6 +1573,8 @@
                     this.activeSubView = null;
                     this.selectedOrderDetail = null;
                     this.selectedOrderId = null;
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 // ================= QRIS PAYMENT METHODS =================
@@ -1466,6 +1590,7 @@
                             clearInterval(this.qrisTimerInterval);
                         }
                     }, 1000);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 closeQrisPayView() {
@@ -1475,6 +1600,8 @@
                     } else {
                         this.activeSubView = null;
                     }
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 getQrisPayAmount() {
@@ -1598,6 +1725,9 @@
                             if (this.paymentResult) this.paymentResult.isPaid = true;
                             this.showToast('Webhook berhasil. Status pembayaran LUNAS.');
 
+                            // Pembayaran selesai: bersihkan state transaksional agar tidak di-restore
+                            localStorage.removeItem('galaksian_payment_result');
+
                             const targetOrderId = json.data?.order_id 
                                 || this.paymentResult?.order?.id 
                                 || this.selectedOrderDetail?.id 
@@ -1620,8 +1750,57 @@
                     }
                 },
 
+                async openShippingPayment() {
+                    if (!this.selectedOrderDetail) return;
+                    this.shippingPaymentMethod = 'virtual_account';
+                    this.activeSubView = 'shipping-payment';
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                async confirmShippingPayment() {
+                    const shippingInv = this.getShippingInvoice(this.selectedOrderDetail);
+                    if (!shippingInv) {
+                        this.showToast('Invoice pengiriman belum tersedia.', 'error');
+                        return;
+                    }
+                    this.isSimulatingPayment = true;
+                    try {
+                        const res = await fetch('/api/v1/webhooks/payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({
+                                event_id: 'sim-' + Date.now(),
+                                invoice_number: shippingInv.invoice_number,
+                                status: 'paid'
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.showToast('Biaya pengiriman berhasil dibayar.');
+                            this.activeSubView = 'order-detail';
+                            this.saveNavState();
+                            await this.openOrderDetail(this.selectedOrderDetail.id);
+                            await this.fetchOrders();
+                        } else {
+                            this.showToast(json.message || 'Pembayaran gagal diproses.', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Koneksi pembayaran gagal.', 'error');
+                    } finally {
+                        this.isSimulatingPayment = false;
+                    }
+                },
+
+                closeShippingPayment() {
+                    this.activeSubView = 'order-detail';
+                    this.saveNavState();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
                 async fetchOrders() {
                     if (!this.isLoggedIn) return;
+                    this.ordersLoading = true;
                     try {
                         let url = '/api/v1/orders?type=' + this.transactionTab;
                         if (this.transactionSearchQuery && this.transactionSearchQuery.trim()) {
@@ -1634,6 +1813,8 @@
                         }
                     } catch (e) {
                         console.error('Fetch orders error:', e);
+                    } finally {
+                        this.ordersLoading = false;
                     }
                 },
 
@@ -2052,6 +2233,7 @@
                 },
 
                 async fetchUserProfile() {
+                    this.userLoading = true;
                     try {
                         const res = await fetch('/api/v1/me', { headers: this.getHeaders() });
                         const json = await res.json();
@@ -2066,6 +2248,8 @@
                         }
                     } catch (e) {
                         console.error('Fetch me error:', e);
+                    } finally {
+                        this.userLoading = false;
                     }
                 },
 
@@ -2256,6 +2440,7 @@
                     this.otpStep = 'phone';
                     this.authOtp = '';
                     localStorage.removeItem('galaksian_token');
+                    this.clearNavState();
                     this.showToast('Anda telah keluar.');
                     this.goToTab('home');
                 },

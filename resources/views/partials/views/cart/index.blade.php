@@ -5,12 +5,12 @@
     
     <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
     <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
-        <button @click="goToTab('home')" class="p-1 -ml-1 text-white hover:text-white/80 transition flex items-center gap-2">
-            <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
+        <div class="flex items-center gap-3">
+            <button @click="goToTab('home')" class="w-9 h-9 rounded-xl border border-white/30 bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition shrink-0" :title="t('back_btn', 'Kembali')">
+                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
             <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('cart_title', 'Keranjang')">Keranjang</h1>
-        </button>
+        </div>
         <span class="bg-[#00D06C] text-white font-bold text-xs px-2.5 py-0.5 rounded-full shadow-2xs tabular" x-text="(cart.total_qty || 0) + ' ' + t('items', 'item')"></span>
     </div>
 
@@ -117,7 +117,27 @@
     </div>
 
     <!-- 4. Empty Cart State -->
-    <template x-if="!cart.items || cart.items.length === 0">
+    <!-- Loading State: Cart Skeleton -->
+    <div x-show="cartLoading" x-cloak class="px-4 space-y-3">
+        <div x-for="i in 3" :key="i" class="bg-white border border-zinc-100 rounded-2xl p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="w-16 h-16 rounded-xl bg-zinc-100 animate-pulse"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="w-3/4 h-2.5 rounded bg-zinc-200 animate-pulse"></div>
+                        <div class="w-1/3 h-2 rounded bg-zinc-100 animate-pulse"></div>
+                        <div class="w-20 h-3 rounded bg-zinc-100 animate-pulse"></div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="w-7 h-7 rounded-lg bg-zinc-100 animate-pulse"></div>
+                    <div class="w-7 h-7 rounded-lg bg-zinc-100 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template x-if="!cartLoading && (!cart.items || cart.items.length === 0)">
         <div class="p-12 text-center space-y-3">
             <div class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto">
                 <svg class="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">

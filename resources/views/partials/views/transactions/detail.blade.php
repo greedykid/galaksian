@@ -572,7 +572,7 @@
                 </template>
                 <template x-if="getShippingInvoice(selectedOrderDetail) && getShippingInvoice(selectedOrderDetail).status !== 'paid'">
                     <button 
-                        @click="simulatePaymentWebhook(getShippingInvoice(selectedOrderDetail).invoice_number)" 
+                        @click="openShippingPayment()" 
                         class="w-full py-3 bg-[#1657FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs min-h-[44px] active:scale-[0.99]">
                         <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                         <span x-text="t('pay_shipping_fee_btn', 'Bayar Biaya Pengiriman') + ' (' + formatRupiah(getShippingInvoice(selectedOrderDetail).amount) + ')'">Bayar Biaya Pengiriman</span>

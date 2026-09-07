@@ -2,11 +2,17 @@
             <!-- SUB-VIEW: INSTRUKSI PEMBAYARAN & TESTING SIMULATION       -->
             <!-- ========================================================= -->
             <div x-show="activeSubView === 'payment-instruction'" class="space-y-4">
-                <div class="px-4 pt-3 pb-2 border-b border-zinc-200 flex items-center justify-between">
-                    <h2 class="text-base font-extrabold text-zinc-950 tracking-tight" x-text="t('payment_instructions', 'Instruksi Pembayaran')">Instruksi Pembayaran</h2>
+                <!-- Blue Top Header (Consistent Royal Blue #1657FF) -->
+                <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 py-3.5 flex items-center justify-between shadow-xs -mx-px w-[calc(100%+2px)]">
+                    <div class="flex items-center gap-3">
+                        <button @click="closeSubView()" class="w-9 h-9 rounded-xl border border-white/30 bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition shrink-0" :title="t('back_btn', 'Kembali')">
+                            <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('payment_instructions', 'Instruksi Pembayaran')">Instruksi Pembayaran</h1>
+                    </div>
                     <button 
                         @click="openOrderDetail(paymentResult?.order?.id || selectedOrderId)" 
-                        class="text-xs font-bold text-zinc-700 hover:text-zinc-950 flex items-center gap-1 py-1.5 px-3 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition min-h-[36px]">
+                        class="text-xs font-bold text-white hover:text-white/80 flex items-center gap-1 py-1.5 px-3 rounded-lg bg-white/15 hover:bg-white/20 border border-white/20 transition min-h-[36px]">
                         <span x-text="t('order_detail_title', 'Detail Transaksi')">Detail Transaksi</span>
                         <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </button>

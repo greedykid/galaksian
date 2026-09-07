@@ -38,6 +38,7 @@
             @include('partials.views.transactions.index')
             @include('partials.views.transactions.detail')
             @include('partials.views.transactions.qris')
+            @include('partials.views.transactions.shipping-payment')
 
             <!-- PROFILE TAB -->
             @include('partials.views.profile.index')

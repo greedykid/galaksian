@@ -262,6 +262,28 @@
     <!-- ================= STANDARD HOME CONTENT (WHEN NOT SEARCHING) ================= -->
     <div x-show="!searchQuery || !searchQuery.trim()" class="space-y-4">
 
+    <!-- HOME LOADING SKELETON -->
+    <div x-show="homeLoading" x-cloak class="px-4 space-y-4">
+        <div class="grid grid-cols-5 gap-2">
+            <div x-for="i in 5" :key="i" class="flex flex-col items-center gap-1.5">
+                <div class="w-12 h-12 rounded-2xl bg-zinc-100 animate-pulse"></div>
+                <div class="w-10 h-2 rounded bg-zinc-100 animate-pulse"></div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+            <div x-for="i in 6" :key="i" class="bg-white border border-zinc-100 rounded-2xl overflow-hidden">
+                <div class="aspect-square bg-zinc-100 animate-pulse"></div>
+                <div class="p-2.5 space-y-1.5">
+                    <div class="w-3/4 h-2.5 rounded bg-zinc-200 animate-pulse"></div>
+                    <div class="w-1/2 h-2.5 rounded bg-zinc-100 animate-pulse"></div>
+                    <div class="w-1/3 h-3 rounded bg-zinc-100 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="!homeLoading">
+
     <!-- ================= 2. KATEGORI (5 SOFT PASTEL CARDS, NO EMOJIS) ================= -->
     <div class="px-4">
         <div class="flex items-center justify-between mb-2.5">
@@ -633,6 +655,7 @@
                 </div>
             </template>
         </div>
+    </div>
     </div>
     </div>
 

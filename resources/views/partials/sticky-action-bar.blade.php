@@ -59,3 +59,24 @@
             </button>
         </div>
 
+        <!-- 4. Shipping Payment Sticky Action Bar (Total & Bayar, above bottom nav) -->
+        <div 
+            x-show="activeSubView === 'shipping-payment'"
+            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-x border-zinc-200 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-cloak>
+            <div class="flex flex-col">
+                <span class="text-[10px] text-zinc-400 font-medium" x-text="t('total_payment_label', 'Total Pembayaran')">Total Pembayaran</span>
+                <span class="text-lg font-black text-[#1657FF] tabular tracking-tight leading-tight" x-text="formatRupiah(selectedOrderDetail?.pricing?.shipping_total || 0)"></span>
+            </div>
+            <button 
+                @click="confirmShippingPayment()" 
+                :disabled="isSimulatingPayment"
+                class="px-7 py-2.5 bg-[#1657FF] hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold text-sm rounded-xl shadow-xs flex items-center gap-1.5 transition disabled:opacity-50 active:scale-[0.98] min-h-[42px]">
+                <span x-show="!isSimulatingPayment" x-text="t('pay_btn', 'Bayar')">Bayar</span>
+                <span x-show="isSimulatingPayment" x-text="t('processing_payment', 'Memproses Pembayaran...')">Memproses Pembayaran...</span>
+            </button>
+        </div>
+

@@ -4,7 +4,7 @@
 <!-- ========================================================= -->
 <div x-show="activeTab === 'profile' && !activeSubView" class="bg-white min-h-screen">
     
-    <!-- 1. Dedicated Top Header (Matching uniform Royal Blue #1657FF) -->
+    <!-- 1. Dedicated Top Header (Consistent Royal Blue #1657FF) -->
     <div class="sticky top-0 z-30 bg-[#1657FF] text-white px-4 pt-3.5 pb-0 shadow-xs -mx-px w-[calc(100%+2px)]">
         <div class="flex items-center justify-between mb-2.5">
             <h1 class="text-base font-extrabold text-white tracking-tight" x-text="t('my_profile', 'Profil Saya')">Profil Saya</h1>
@@ -107,6 +107,21 @@
         </template>
 
         <!-- Authenticated View (Matching media_1788727527247.png) -->
+        <!-- Profile Loading Skeleton -->
+        <div x-show="userLoading" x-cloak class="p-6 space-y-4">
+            <div class="bg-[#1657FF] pt-6 pb-10 px-4 text-center rounded-2xl">
+                <div class="w-20 h-20 rounded-full bg-white/20 mx-auto animate-pulse border-2 border-white/40"></div>
+                <div class="w-32 h-3.5 rounded bg-white/40 mx-auto mt-3 animate-pulse"></div>
+                <div class="w-40 h-2.5 rounded bg-white/30 mx-auto mt-2 animate-pulse"></div>
+            </div>
+            <div class="bg-white border border-zinc-200/90 rounded-2xl p-5 space-y-3">
+                <div x-for="i in 4" :key="i" class="flex items-center justify-between">
+                    <div class="w-20 h-2.5 rounded bg-zinc-100 animate-pulse"></div>
+                    <div class="w-28 h-2.5 rounded bg-zinc-200 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+
         <template x-if="isLoggedIn && currentUser">
             <div>
                 <!-- Blue Hero Area with Circular Sky Avatar and Edit Badge (Edge-to-edge flush) -->
