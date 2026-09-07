@@ -13,6 +13,60 @@
                 </div>
 
                 <div class="px-4 space-y-3" x-show="paymentResult">
+                    <!-- ================= PAYMENT SUCCESS SCREEN (after paid) ================= -->
+                    <div x-show="paymentResult?.isPaid" class="space-y-4" x-cloak>
+                        <!-- Success Hero: Green Checkmark -->
+                        <div class="flex flex-col items-center text-center pt-2">
+                            <div class="w-16 h-16 rounded-full bg-[#00D06C] flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                <svg class="w-8 h-8 text-white stroke-current fill-none" viewBox="0 0 24 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-zinc-950 tracking-tight mt-4" x-text="t('payment_success_title', 'Pembayaran Berhasil')">Pembayaran Berhasil</h3>
+                            <p class="text-xs text-zinc-500 text-center mt-1.5 leading-relaxed max-w-[280px]" x-text="t('payment_success_desc', 'Pesanan kamu sedang diproses. Estimasi tiba 7-14 hari kerja.')">Pesanan kamu sedang diproses. Estimasi tiba 7-14 hari kerja.</p>
+                        </div>
+
+                        <!-- Order Detail Card -->
+                        <div class="bg-white border border-zinc-200/90 rounded-2xl p-4 space-y-3 shadow-2xs">
+                            <div class="text-center pb-3 border-b border-zinc-100">
+                                <span class="text-[10px] text-zinc-400 uppercase tracking-wider font-bold block" x-text="t('total_bill_label', 'Total Tagihan')">Total Tagihan</span>
+                                <span class="text-2xl font-extrabold text-[#00D06C] tabular block mt-1" x-text="formatRupiah(paymentResult?.invoice?.amount || paymentResult?.order?.grand_total || 0)"></span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-zinc-500 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-zinc-400 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                                    <span x-text="t('bill_method_label', 'Metode')">Metode</span>
+                                </span>
+                                <span class="font-bold text-zinc-900 capitalize" x-text="paymentResult?.invoice?.payment_method || paymentResult?.payment?.method || 'virtual_account'"></span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-zinc-500 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-zinc-400 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M8 7h8M8 12h8M8 17h8"></path><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"></path></svg>
+                                    <span x-text="t('order_no_label', 'No. Order')">No. Order</span>
+                                </span>
+                                <span class="font-mono font-bold text-zinc-900" x-text="'#' + (paymentResult?.order?.order_number || '')"></span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-2.5 pt-1 pb-4">
+                            <button 
+                                @click="goToTab('cart')" 
+                                class="w-full py-3.5 bg-[#00D06C] hover:bg-[#00B85F] text-white font-bold text-sm rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-[0.99] flex items-center justify-center gap-1.5 min-h-[44px]"
+                                x-text="t('back_to_cart_btn', 'Kembali ke Keranjang')">
+                                Kembali ke Keranjang
+                            </button>
+                            <button 
+                                @click="openOrderDetail(paymentResult?.order?.id || selectedOrderId)" 
+                                class="w-full py-3 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-semibold text-sm rounded-xl transition min-h-[44px]"
+                                x-text="t('view_order_detail_btn', 'Lihat Detail Pesanan')">
+                                Lihat Detail Pesanan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ================= UNPAID / INSTRUCTION SCREEN (not yet paid) ================= -->
+                    <div x-show="!paymentResult?.isPaid" class="space-y-3" x-cloak>
                     <!-- Status Header Card -->
                     <div 
                         :class="paymentResult?.isPaid ? 'bg-emerald-700 text-white' : 'bg-zinc-900 text-white'"
@@ -118,6 +172,7 @@
                             x-text="t('open_transactions_arrow', 'Buka Daftar Transaksi')">
                             Buka Daftar Transaksi
                         </button>
+                    </div>
                     </div>
                 </div>
             </div>

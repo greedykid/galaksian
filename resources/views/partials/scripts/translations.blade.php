@@ -117,6 +117,15 @@
                         shipping_disclaimer: 'Ongkos kirim internasional & lokal akan ditagihkan secara terpisah di Invoice Pengiriman setelah barang tiba di Indonesia.',
                         total_product_payment: 'Total Pembayaran Produk',
                         pay_now: 'Bayar Sekarang',
+
+                        // Payment Success Screen
+                        payment_success_title: 'Pembayaran Berhasil',
+                        payment_success_desc: 'Pesanan kamu sedang diproses. Estimasi tiba 7-14 hari kerja.',
+                        total_bill_label: 'Total Tagihan',
+                        bill_method_label: 'Metode',
+                        order_no_label: 'No. Order',
+                        back_to_cart_btn: 'Kembali ke Keranjang',
+                        view_order_detail_btn: 'Lihat Detail Pesanan',
                         
                         // Payment & QRIS
                         payment_instructions: 'Instruksi Pembayaran',
@@ -790,6 +799,15 @@
                         shipping_disclaimer: 'International & local shipping will be billed separately in the Shipping Invoice once items arrive in Indonesia.',
                         total_product_payment: 'Total Product Payment',
                         pay_now: 'Pay Now',
+
+                        // Payment Success Screen
+                        payment_success_title: 'Payment Successful',
+                        payment_success_desc: 'Your order is being processed. Estimated arrival 7-14 working days.',
+                        total_bill_label: 'Total Bill',
+                        bill_method_label: 'Method',
+                        order_no_label: 'Order No.',
+                        back_to_cart_btn: 'Back to Cart',
+                        view_order_detail_btn: 'View Order Detail',
                         
                         // Payment & QRIS
                         payment_instructions: 'Payment Instructions',
