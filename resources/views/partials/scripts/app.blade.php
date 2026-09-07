@@ -58,6 +58,9 @@
                 showProductDetailModal: false,
                 detailModalQty: 1,
                 showAddressModal: false,
+                addressPickerMode: false,
+                isPickingAddress: false,
+                selectedAddressId: null,
                 showReviewModal: false,
                 showInvoiceDownloadModal: false,
                 selectedInvoiceOrder: null,
@@ -991,7 +994,9 @@
                     }
                     await this.fetchCart();
                     await this.fetchAddresses();
-                    if (this.defaultAddress) {
+                    if (this.selectedAddressId && this.userAddresses.some(a => a.id === this.selectedAddressId)) {
+                        this.checkoutForm.address_id = this.selectedAddressId;
+                    } else if (this.defaultAddress) {
                         this.checkoutForm.address_id = this.defaultAddress.id;
                     } else if (this.userAddresses.length > 0) {
                         this.checkoutForm.address_id = this.userAddresses[0].id;
@@ -1804,14 +1809,28 @@
                         const json = await res.json();
                         if (json.success) {
                             this.userAddresses = json.data || [];
-                            this.defaultAddress = this.userAddresses.find(a => a.is_default) || this.userAddresses[0] || null;
+                            // Hormati pilihan user (selectedAddressId); if reset default hanya bila belum ada pilihan
+                            const selected = this.userAddresses.find(a => a.id === this.selectedAddressId);
+                            if (selected) {
+                                this.defaultAddress = selected;
+                            } else {
+                                this.defaultAddress = this.userAddresses.find(a => a.is_default) || this.userAddresses[0] || null;
+                            }
                         }
                     } catch (e) {
                         console.error('Address fetch error:', e);
                     }
                 },
 
+                openAddressPicker() {
+                    this.isPickingAddress = true;
+                    this.addressPickerMode = true;
+                    this.showAddressModal = true;
+                },
+
                 openAddressModal(addr = null) {
+                    this.isPickingAddress = false;
+                    this.addressPickerMode = false;
                     if (addr) {
                         this.editingAddressId = addr.id;
                         this.addressForm = {
@@ -1835,6 +1854,31 @@
                             is_default: this.userAddresses.length === 0
                         };
                     }
+                    this.showAddressModal = true;
+                },
+
+                selectAddress(addr) {
+                    if (!addr) return;
+                    this.selectedAddressId = addr.id;
+                    this.defaultAddress = addr;
+                    this.checkoutForm.address_id = addr.id;
+                    this.showAddressModal = false;
+                    this.showToast('Alamat pengiriman berhasil diubah.');
+                },
+
+                openAddressPickerForm() {
+                    this.isPickingAddress = true;
+                    this.addressPickerMode = false;
+                    this.editingAddressId = null;
+                    this.addressForm = {
+                        recipient_name: this.currentUser?.name || '',
+                        phone: this.currentUser?.phone || '',
+                        address: '',
+                        city: 'Jakarta Selatan',
+                        postal_code: '12190',
+                        delivery_note: 'leave_at_front_door',
+                        is_default: this.userAddresses.length === 0
+                    };
                     this.showAddressModal = true;
                 },
 
@@ -1869,7 +1913,14 @@
                             this.showToast(this.editingAddressId ? 'Alamat berhasil diperbarui.' : 'Alamat berhasil disimpan.');
                             this.showAddressModal = false;
                             this.editingAddressId = null;
-                            this.fetchAddresses();
+                            const savedAddress = json.data || null;
+                            if (this.isPickingAddress && savedAddress && savedAddress.id) {
+                                this.selectedAddressId = savedAddress.id;
+                                this.defaultAddress = savedAddress;
+                                this.checkoutForm.address_id = savedAddress.id;
+                            }
+                            this.isPickingAddress = false;
+                            await this.fetchAddresses();
                         } else {
                             this.showToast(json.message || 'Gagal menyimpan alamat', 'error');
                         }
@@ -2199,6 +2250,9 @@
                     this.isLoggedIn = false;
                     this.authToken = null;
                     this.currentUser = null;
+                    this.selectedAddressId = null;
+                    this.defaultAddress = null;
+                    this.userAddresses = [];
                     this.otpStep = 'phone';
                     this.authOtp = '';
                     localStorage.removeItem('galaksian_token');

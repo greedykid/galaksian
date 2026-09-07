@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <!-- Rounded Edit Pencil Button -->
-                <button @click="openAddressModal()" class="w-8 h-8 rounded-xl border border-zinc-200 hover:border-zinc-400 bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition shrink-0 cursor-pointer" :title="t('change_address', 'Ubah Alamat')">
+                <button @click="openAddressPicker()" class="w-8 h-8 rounded-xl border border-zinc-200 hover:border-zinc-400 bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition shrink-0 cursor-pointer" :title="t('change_address', 'Ubah Alamat')">
                     <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                     </svg>

@@ -31,7 +31,7 @@
                 <p class="text-[11px] text-zinc-500 line-clamp-1" x-text="defaultAddress ? ((defaultAddress.city || '') + (defaultAddress.postal_code ? ' ' + defaultAddress.postal_code : '') + (defaultAddress.province ? ', ' + defaultAddress.province : '')) : t('please_set_destination', 'Silakan tentukan alamat tujuan')"></p>
             </div>
         </div>
-        <button @click="openAddressModal()" class="px-3.5 py-1 rounded-lg border border-blue-200 text-[#1657FF] hover:bg-blue-50 text-xs font-semibold transition shrink-0 cursor-pointer" x-text="t('edit_btn', 'Ubah')">
+        <button @click="openAddressPicker()" class="px-3.5 py-1 rounded-lg border border-blue-200 text-[#1657FF] hover:bg-blue-50 text-xs font-semibold transition shrink-0 cursor-pointer" x-text="t('edit_btn', 'Ubah')">
             Ubah
         </button>
     </div>

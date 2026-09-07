@@ -41,7 +41,7 @@
         <div class="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-white cursor-grab active:cursor-grabbing select-none"
              @touchstart.passive="startSheetDrag('address', $event)"
              @mousedown="startSheetDrag('address', $event)">
-            <h3 class="font-bold text-xs text-zinc-900" x-text="addressForm.id ? t('edit_address_btn', 'Ubah Alamat') : t('add_new_address', 'Tambah Alamat Baru')">Tambah Alamat Baru</h3>
+            <h3 class="font-bold text-xs text-zinc-900" x-text="addressPickerMode ? t('select_address', 'Pilih Alamat Pengiriman') : (editingAddressId ? t('edit_address_btn', 'Ubah Alamat') : t('add_new_address', 'Tambah Alamat Baru'))">Pilih Alamat Pengiriman</h3>
             <button @click.stop="showAddressModal = false" 
                     type="button"
                     class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 flex items-center justify-center transition-colors shrink-0">
@@ -51,8 +51,45 @@
             </button>
         </div>
 
+        <!-- Picker Content (Address List) - Shown when picking for cart/checkout -->
+        <div x-show="addressPickerMode" class="p-4 space-y-3 text-xs overflow-y-auto flex-1" x-cloak>
+            <template x-if="userAddresses.length === 0">
+                <div class="bg-white border border-zinc-200/90 rounded-2xl p-8 text-center space-y-2 shadow-2xs">
+                    <p class="text-xs font-bold text-zinc-800" x-text="t('no_address_saved', 'Belum Ada Alamat Tersimpan')">Belum Ada Alamat Tersimpan</p>
+                    <p class="text-[11px] text-zinc-400" x-text="t('no_saved_addresses_hint', 'Belum ada alamat tersimpan. Klik \"+ Tambah Baru\".')">Belum ada alamat tersimpan. Klik "+ Tambah Baru".</p>
+                </div>
+            </template>
+
+            <template x-for="addr in userAddresses" :key="addr.id">
+                <button @click="selectAddress(addr)" type="button" class="w-full text-left bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-2xs transition hover:border-[#1657FF] hover:bg-blue-50/30 cursor-pointer">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <h4 class="font-bold text-xs text-zinc-900" x-text="addr.recipient_name"></h4>
+                                <template x-if="addr.is_default">
+                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-extrabold rounded-full" x-text="t('primary_address_badge', 'Utama')">Utama</span>
+                                </template>
+                            </div>
+                            <p class="text-xs text-zinc-500 leading-relaxed mt-1" x-text="addr.address + ', ' + (addr.city || '') + (addr.postal_code ? ' ' + addr.postal_code : '')"></p>
+                            <p class="text-xs font-semibold text-[#1657FF] font-mono mt-1" x-text="'+' + addr.phone.replace(/^\+/, '')"></p>
+                        </div>
+                        <span class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition mt-0.5" :class="(defaultAddress && defaultAddress.id === addr.id) ? 'border-[#1657FF]' : 'border-zinc-300'">
+                            <template x-if="defaultAddress && defaultAddress.id === addr.id">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#1657FF]"></span>
+                            </template>
+                        </span>
+                    </div>
+                </button>
+            </template>
+
+            <button @click="openAddressPickerForm()" type="button" class="w-full border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50/80 text-[#1657FF] font-bold text-xs py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition shadow-2xs cursor-pointer">
+                <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span x-text="t('add_new_address', 'Tambah Alamat Baru')">Tambah Alamat Baru</span>
+            </button>
+        </div>
+
         <!-- Form Content (Scrollable) -->
-        <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
+        <div x-show="!addressPickerMode" class="p-4 space-y-3 text-xs overflow-y-auto flex-1" x-cloak>
             <div>
                 <label class="block font-semibold text-zinc-700 mb-1" x-text="t('recipient_name', 'Nama Penerima')">Nama Penerima</label>
                 <input type="text" x-model="addressForm.recipient_name" :placeholder="t('full_name_placeholder_alt', 'Nama Lengkap')" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-[#1657FF] focus:border-[#1657FF] transition">
