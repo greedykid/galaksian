@@ -26,7 +26,7 @@ Galaksian adalah backend mobile web e-commerce/jastip Indonesia–Jepang dengan 
 |---|---|
 | Laravel | Versi target: Laravel 13 |
 | PHP | Versi terbaru yang didukung Laravel 13 |
-| MySQL/PostgreSQL | Database utama |
+| PostgreSQL | Database utama |
 | Redis | Cache, queue, session bila digunakan |
 | Laravel Sanctum | Auth API/token |
 | Laravel Queue | Proses async |

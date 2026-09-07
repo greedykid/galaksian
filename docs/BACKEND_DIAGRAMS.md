@@ -46,7 +46,7 @@ flowchart TD
     end
 
     subgraph Database["4. Basis Data (ACID Transaction)"]
-        DB[(MySQL Database)]
+        DB[(PostgreSQL Database)]
         Lock["Pessimistic Lock (lockForUpdate: Cegah Rebutan Stok)"]
     end
 

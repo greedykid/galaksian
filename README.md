@@ -27,17 +27,23 @@ Dokumentasi teknis yang mudah dibaca dan dipahami telah disiapkan:
 # 1. Install dependensi
 composer install
 
-# 2. Salin environment dan generate key
+# 2. Siapkan database PostgreSQL dan user
+sudo -u postgres psql -c "CREATE ROLE galaksian LOGIN PASSWORD 'galaksian_dev_password';"
+sudo -u postgres psql -c "CREATE DATABASE galaksian OWNER galaksian;"
+
+# 3. Salin environment dan generate key
 cp .env.example .env
 php artisan key:generate
 
-# 3. Jalankan migrasi dan seed database
+# 4. Konfigurasi koneksi di .env (pgsql, host/port/db/user/password)
+
+# 5. Jalankan migrasi dan seed database
 php artisan migrate --seed
 
-# 4. Buat symbolic link storage
+# 6. Buat symbolic link storage
 php artisan storage:link
 
-# 5. Jalankan server lokal
+# 7. Jalankan server lokal
 php artisan serve
 ```
 
