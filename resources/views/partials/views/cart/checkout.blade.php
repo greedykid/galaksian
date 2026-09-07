@@ -330,23 +330,22 @@
             <!-- Total Harga Barang -->
             <div class="flex justify-between items-center text-zinc-600">
                 <span x-text="t('total_goods_price', 'Total Harga Barang') + ' (' + (cart.total_qty || 0) + ' ' + t('items', 'Item') + ')'"></span>
-                <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.subtotal || 0)"></span>
+                <div class="flex items-center gap-1.5 text-right">
+                    <template x-if="cart.pricing?.promo_discount > 0">
+                        <span class="text-[11px] text-zinc-400 line-through tabular" x-text="formatRupiah(cart.pricing?.raw_subtotal || cart.pricing?.subtotal || 0)"></span>
+                    </template>
+                    <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.discounted_subtotal || (cart.pricing?.subtotal - (cart.pricing?.promo_discount || 0)))"></span>
+                    <template x-if="cart.pricing?.promo_discount > 0">
+                        <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded-full tabular" x-text="t('save_prefix', 'Hemat ') + formatRupiah(cart.pricing.promo_discount)"></span>
+                    </template>
+                </div>
             </div>
 
-            <!-- Biaya Jastip & Handling -->
-            <div class="flex justify-between items-center text-zinc-600">
-                <span x-text="t('jastip_handling_fee', 'Biaya Jastip & Handling')">Biaya Jastip & Handling</span>
-                <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
-            </div>
-
-            <!-- Biaya Bingkisan & Kartu Ucapan (If enabled) -->
-            <template x-if="giftOptionEnabled">
-                <div class="flex justify-between items-center text-zinc-600">
-                    <div>
-                        <span class="block font-medium text-zinc-800" x-text="t('gift_card_fee_label', 'Biaya Bingkisan & Kartu')">Biaya Bingkisan & Kartu</span>
-                        <span class="text-[10px] text-zinc-400 block" x-text="giftCardTo ? (t('for_prefix', 'Untuk: ') + giftCardTo) : t('gift_desc_short', 'Kemasan khusus & ucapan')"></span>
-                    </div>
-                    <span class="font-bold text-zinc-900 tabular">+ Rp 10.000</span>
+            <!-- Diskon Pengguna Baru -->
+            <template x-if="cart.pricing?.new_user_discount > 0">
+                <div class="flex justify-between items-center text-[#00D06C]">
+                    <span x-text="t('new_user_discount_label', 'Diskon Pengguna Baru')">Diskon Pengguna Baru</span>
+                    <span class="font-bold tabular" x-text="'- ' + formatRupiah(cart.pricing.new_user_discount)"></span>
                 </div>
             </template>
 
@@ -358,10 +357,27 @@
                 </div>
             </template>
 
-            <!-- Asuransi Pengiriman -->
+            <!-- Biaya Jastip & Handling -->
+            <div class="flex justify-between items-center text-zinc-600">
+                <span x-text="t('jastip_handling_fee', 'Biaya Jastip & Handling')">Biaya Jastip & Handling</span>
+                <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
+            </div>
+
+            <!-- Biaya Bingkisan & Kartu Ucapan (If enabled) -->
+            <template x-if="giftOptionEnabled || (cart.pricing?.gift_fee > 0)">
+                <div class="flex justify-between items-center text-zinc-600">
+                    <div>
+                        <span class="block font-medium text-zinc-800" x-text="t('gift_card_fee_label', 'Biaya Bingkisan & Kartu')">Biaya Bingkisan & Kartu</span>
+                        <span class="text-[10px] text-zinc-400 block" x-text="giftCardTo ? (t('for_prefix', 'Untuk: ') + giftCardTo) : t('gift_desc_short', 'Kemasan khusus & ucapan')"></span>
+                    </div>
+                    <span class="font-bold text-zinc-900 tabular" x-text="'+ ' + formatRupiah(cart.pricing?.gift_fee || 10000)"></span>
+                </div>
+            </template>
+
+            <!-- Asuransi Pengiriman (Ditagihkan bersama ongkir tahap 2) -->
             <div class="flex justify-between items-center text-zinc-600">
                 <span x-text="t('shipping_insurance', 'Asuransi Pengiriman')">Asuransi Pengiriman</span>
-                <span class="font-bold text-zinc-900 tabular" x-text="isInsuranceChecked ? 'Rp 2.000' : 'Rp 0'"></span>
+                <span class="font-bold text-zinc-900 tabular" x-text="isInsuranceChecked ? ('Rp 2.000 ' + t('paid_with_shipping', '(Ditagihkan bersama ongkir)')) : 'Rp 0'"></span>
             </div>
 
             <!-- Ongkos Kirim Ekspedisi -->
@@ -373,7 +389,7 @@
             <!-- Divider Line -->
             <div class="border-t border-zinc-100 pt-2 mt-2 flex justify-between items-baseline">
                 <span class="font-extrabold text-xs text-zinc-900" x-text="t('total_bill', 'Total Tagihan')">Total Tagihan</span>
-                <span class="text-base font-black text-[#1657FF] tabular" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0) + (isInsuranceChecked ? 2000 : 0))"></span>
+                <span class="text-base font-black text-[#1657FF] tabular" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
             </div>
 
             <span class="text-[10px] text-zinc-400 block" x-text="t('shipping_excluded_notice_checkout', '*Belum termasuk ongkos kirim')">*Belum termasuk ongkos kirim</span>

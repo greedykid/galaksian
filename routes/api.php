@@ -23,6 +23,7 @@ Route::prefix('v1')->middleware(['localize'])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::put('/me', [AuthController::class, 'updateProfile']);
+        Route::post('/me/avatar', [AuthController::class, 'uploadAvatar']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
     });
 
@@ -44,6 +45,8 @@ Route::prefix('v1')->middleware(['localize'])->group(function () {
         Route::patch('/items/{id}', [CartController::class, 'updateItem']);
         Route::delete('/items/{id}', [CartController::class, 'removeItem']);
         Route::post('/voucher', [CartController::class, 'applyVoucher']);
+        Route::delete('/voucher', [CartController::class, 'removeVoucher']);
+        Route::post('/gift', [CartController::class, 'updateGiftOption']);
     });
 
     // Protected User routes

@@ -58,7 +58,7 @@
                 </div>
             </div>
             <button 
-                @click="giftOptionEnabled = !giftOptionEnabled; syncCheckoutNotes(); showToast(giftOptionEnabled ? 'Layanan bingkisan diaktifkan (+Rp 10.000)' : 'Layanan bingkisan dinonaktifkan')" 
+                @click="toggleGiftOption()" 
                 :class="giftOptionEnabled ? 'bg-[#00D06C] text-white' : 'bg-[#1657FF] text-white hover:bg-blue-700'"
                 class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition shadow-2xs cursor-pointer"
                 :title="giftOptionEnabled ? t('gift_active', 'Bingkisan Aktif') : t('activate_gift', 'Aktifkan Bingkisan')">
@@ -90,7 +90,7 @@
                     <input 
                         type="text" 
                         x-model="giftCardFrom" 
-                        @input="syncCheckoutNotes()"
+                        @input.debounce.400ms="syncGiftDetails()"
                         :placeholder="t('sender_name_placeholder', 'Nama Pengirim')" 
                         class="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]">
                 </div>
@@ -99,7 +99,7 @@
                     <input 
                         type="text" 
                         x-model="giftCardTo" 
-                        @input="syncCheckoutNotes()"
+                        @input.debounce.400ms="syncGiftDetails()"
                         :placeholder="t('recipient_name_placeholder', 'Nama Penerima')" 
                         class="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]">
                 </div>
@@ -108,7 +108,7 @@
                 <label class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1" x-text="t('greeting_message_label', 'Pesan Ucapan')">Pesan Ucapan</label>
                 <textarea 
                     x-model="giftCardMessage" 
-                    @input="syncCheckoutNotes()"
+                    @input.debounce.400ms="syncGiftDetails()"
                     rows="2" 
                     :placeholder="t('gift_message_placeholder', 'Tulis pesan ucapan Anda (misal: Selamat ulang tahun, semoga suka oleh-oleh dari Jepangnya!)...')" 
                     class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#1657FF]"></textarea>
@@ -294,26 +294,22 @@
                 <!-- Total Harga Barang -->
                 <div class="flex justify-between items-center text-zinc-600">
                     <span x-text="t('total_goods_price', 'Total Harga Barang')">Total Harga Barang</span>
-                    <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.subtotal || 0)"></span>
-                </div>
-
-                <!-- Total Biaya Layanan -->
-                <div class="flex justify-between items-start text-zinc-600">
-                    <div>
-                        <span class="block" x-text="t('total_service_fee', 'Total Biaya Layanan')">Total Biaya Layanan</span>
-                        <span class="text-[10px] text-zinc-400 block" x-text="t('service_fee_sub', 'Termasuk biaya jastip & handling')">Termasuk biaya jastip & handling</span>
+                    <div class="flex items-center gap-1.5 text-right">
+                        <template x-if="cart.pricing?.promo_discount > 0">
+                            <span class="text-[11px] text-zinc-400 line-through tabular" x-text="formatRupiah(cart.pricing?.raw_subtotal || cart.pricing?.subtotal || 0)"></span>
+                        </template>
+                        <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.discounted_subtotal || (cart.pricing?.subtotal - (cart.pricing?.promo_discount || 0)))"></span>
+                        <template x-if="cart.pricing?.promo_discount > 0">
+                            <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded-full tabular" x-text="t('save_prefix', 'Hemat ') + formatRupiah(cart.pricing.promo_discount)"></span>
+                        </template>
                     </div>
-                    <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
                 </div>
 
-                <!-- Biaya Bingkisan & Kartu Ucapan (if enabled) -->
-                <template x-if="giftOptionEnabled">
-                    <div class="flex justify-between items-start text-zinc-600">
-                        <div>
-                            <span class="block font-medium text-zinc-800" x-text="t('gift_card_fee_label', 'Biaya Bingkisan & Kartu')">Biaya Bingkisan & Kartu</span>
-                            <span class="text-[10px] text-zinc-400 block" x-text="t('gift_card_fee_sub', 'Kemasan khusus & ucapan')">Kemasan khusus & ucapan</span>
-                        </div>
-                        <span class="font-bold text-zinc-900 tabular">+ Rp 10.000</span>
+                <!-- Diskon Pengguna Baru (if any) -->
+                <template x-if="cart.pricing?.new_user_discount > 0">
+                    <div class="flex justify-between items-center text-[#00D06C]">
+                        <span x-text="t('new_user_discount_label', 'Diskon Pengguna Baru:')">Diskon Pengguna Baru:</span>
+                        <span class="font-bold tabular" x-text="'- ' + formatRupiah(cart.pricing.new_user_discount)"></span>
                     </div>
                 </template>
 
@@ -325,10 +321,30 @@
                     </div>
                 </template>
 
+                <!-- Total Biaya Layanan -->
+                <div class="flex justify-between items-start text-zinc-600">
+                    <div>
+                        <span class="block" x-text="t('total_service_fee', 'Total Biaya Layanan')">Total Biaya Layanan</span>
+                        <span class="text-[10px] text-zinc-400 block" x-text="t('service_fee_sub', 'Termasuk biaya jastip & handling')">Termasuk biaya jastip & handling</span>
+                    </div>
+                    <span class="font-bold text-zinc-900 tabular" x-text="formatRupiah(cart.pricing?.handling_fee || 5000)"></span>
+                </div>
+
+                <!-- Biaya Bingkisan & Kartu Ucapan (if enabled) -->
+                <template x-if="giftOptionEnabled || (cart.pricing?.gift_fee > 0)">
+                    <div class="flex justify-between items-start text-zinc-600">
+                        <div>
+                            <span class="block font-medium text-zinc-800" x-text="t('gift_card_fee_label', 'Biaya Bingkisan & Kartu')">Biaya Bingkisan & Kartu</span>
+                            <span class="text-[10px] text-zinc-400 block" x-text="t('gift_card_fee_sub', 'Kemasan khusus & ucapan')">Kemasan khusus & ucapan</span>
+                        </div>
+                        <span class="font-bold text-zinc-900 tabular" x-text="'+ ' + formatRupiah(cart.pricing?.gift_fee || 10000)"></span>
+                    </div>
+                </template>
+
                 <!-- Thin Divider Line -->
                 <div class="border-t border-zinc-100 pt-2.5 mt-2 flex justify-between items-baseline">
                     <span class="font-extrabold text-sm text-zinc-900">Total</span>
-                    <span class="text-base font-extrabold text-[#00D06C] tabular" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0))"></span>
+                    <span class="text-base font-extrabold text-[#00D06C] tabular" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
                 </div>
 
                 <!-- Asterisk Ongkir Notice -->

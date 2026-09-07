@@ -20,6 +20,8 @@
                 isCheckingQris: false,
                 qrisSecondsRemaining: 2697, // 44:57 matching Figma screenshot
                 qrisTimerInterval: null,
+                diffTimerInterval: null,
+                diffCountdownTick: 0,
 
                 // OOS (Barang Habis) Simulation & Resolution state
                 showOosModal: false,
@@ -118,7 +120,7 @@
                     notes: ''
                 },
                 checkoutFormNotesManual: '',
-                isInsuranceChecked: true,
+                isInsuranceChecked: false,
                 giftOptionEnabled: false,
                 giftCardFrom: '',
                 giftCardTo: '',
@@ -797,6 +799,12 @@
                         const json = await res.json();
                         if (json.success) {
                             this.cart = json.data;
+                            if (this.cart.is_gift !== undefined && this.cart.is_gift !== null) {
+                                this.giftOptionEnabled = !!this.cart.is_gift;
+                                if (this.cart.gift_from) this.giftCardFrom = this.cart.gift_from;
+                                if (this.cart.gift_to) this.giftCardTo = this.cart.gift_to;
+                                if (this.cart.gift_message) this.giftCardMessage = this.cart.gift_message;
+                            }
                             if (this.cart.voucher_applied?.code) {
                                 const activeCode = this.cart.voucher_applied.code;
                                 this.voucherStates[activeCode] = 'applied';
@@ -844,20 +852,62 @@
                     }
                 },
 
-                removeVoucher() {
+                async removeVoucher() {
                     const currentCode = this.cart?.voucher_applied?.code || localStorage.getItem('galaksian_applied_voucher');
                     if (currentCode) {
                         this.voucherStates[currentCode] = 'claimed';
                         this.saveVoucherStates();
                     }
                     localStorage.removeItem('galaksian_applied_voucher');
-                    this.cart.voucher_applied = null;
-                    if (this.cart.pricing) {
-                        this.cart.pricing.voucher_discount = 0;
-                        this.cart.pricing.product_total = (this.cart.pricing.subtotal || 0) + (this.cart.pricing.handling_fee || 5000);
-                    }
                     this.voucherCode = '';
+                    try {
+                        const res = await fetch('/api/v1/cart/voucher', {
+                            method: 'DELETE',
+                            headers: this.getHeaders()
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                        } else {
+                            await this.fetchCart();
+                        }
+                    } catch (e) {
+                        await this.fetchCart();
+                    }
                     this.showToast('Voucher dibatalkan.');
+                },
+
+                async toggleGiftOption() {
+                    this.giftOptionEnabled = !this.giftOptionEnabled;
+                    await this.updateGiftOptionBackend();
+                    this.syncCheckoutNotes();
+                },
+
+                async syncGiftDetails() {
+                    if (!this.giftOptionEnabled) return;
+                    await this.updateGiftOptionBackend();
+                    this.syncCheckoutNotes();
+                },
+
+                async updateGiftOptionBackend() {
+                    try {
+                        const res = await fetch('/api/v1/cart/gift', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({
+                                is_gift: this.giftOptionEnabled,
+                                gift_from: this.giftCardFrom || null,
+                                gift_to: this.giftCardTo || null,
+                                gift_message: this.giftCardMessage || null
+                            })
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.cart = json.data;
+                        }
+                    } catch (e) {
+                        console.error('Update gift option error:', e);
+                    }
                 },
 
                 getVoucherState(code) {
@@ -939,6 +989,7 @@
                         this.goToTab('profile');
                         return;
                     }
+                    await this.fetchCart();
                     await this.fetchAddresses();
                     if (this.defaultAddress) {
                         this.checkoutForm.address_id = this.defaultAddress.id;
@@ -953,13 +1004,19 @@
                         this.showToast('Pilih alamat pengiriman terlebih dahulu.', 'error');
                         return;
                     }
+                    this.syncCheckoutNotes();
                     this.isSubmittingCheckout = true;
                     try {
                         const payload = {
                             address_id: this.checkoutForm.address_id,
                             payment_method: this.checkoutForm.payment_method,
                             notes: this.checkoutForm.notes || null,
-                            voucher_code: this.cart.voucher_applied?.code || null
+                            voucher_code: this.cart?.voucher_applied?.code || null,
+                            is_gift: !!this.giftOptionEnabled,
+                            gift_from: this.giftCardFrom || null,
+                            gift_to: this.giftCardTo || null,
+                            gift_message: this.giftCardMessage || null,
+                            has_insurance: !!this.isInsuranceChecked
                         };
                         const res = await fetch('/api/v1/checkout', {
                             method: 'POST',
@@ -1296,6 +1353,57 @@
                     return this.getCurrentStep(status) === stepNum;
                 },
 
+                getPendingAdditionalInvoice(order) {
+                    if (!order || !order.invoices) return null;
+                    return order.invoices.find(i => i.type === 'additional' && i.status === 'pending');
+                },
+
+                getDiffCountdown(inv) {
+                    // Reference diffCountdownTick to make Alpine re-render each second
+                    void this.diffCountdownTick;
+                    if (!inv) return { days: '02', hours: '23', minutes: '59', seconds: '00', text: '2h 23j 59m' };
+                    const expireTime = inv.expired_at ? new Date(inv.expired_at).getTime() : (inv.created_at ? new Date(inv.created_at).getTime() + (72 * 3600 * 1000) : Date.now() + 172800000);
+                    const diff = Math.max(0, expireTime - Date.now());
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    return {
+                        days: String(days).padStart(2, '0'),
+                        hours: String(hours).padStart(2, '0'),
+                        minutes: String(minutes).padStart(2, '0'),
+                        seconds: String(seconds).padStart(2, '0'),
+                        text: `${days}h ${hours}j ${minutes}m`
+                    };
+                },
+
+                get4StepNumber(status) {
+                    if (status === 'completed') return 4;
+                    if (status === 'delivering') return 3;
+                    if (['ready_for_delivery', 'pending_payment_shipping', 'shipping_paid'].includes(status)) return 2;
+                    return 1;
+                },
+
+                is4StepPassed(status, stepNum) {
+                    return this.get4StepNumber(status) >= stepNum;
+                },
+
+                is4StepActive(status, stepNum) {
+                    return this.get4StepNumber(status) === stepNum;
+                },
+
+                scrollToInvoice(invId) {
+                    const el = document.getElementById(invId);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                },
+
+                hasOosNotice(order) {
+                    if (!order || !order.items) return false;
+                    return order.items.some(item => item.is_oos || (item.product_name && item.product_name.includes('(Pengganti')) || item.refund_status);
+                },
+
                 // ================= TRANSACTION DETAIL HANDLERS =================
                 async openOrderDetail(orderId) {
                     if (!orderId) return;
@@ -1310,6 +1418,16 @@
                         if (json.success && json.data) {
                             this.selectedOrderDetail = json.data;
                             this.adminSelectedStatus = json.data.status;
+
+                            // Start diff countdown timer if there's a pending additional invoice
+                            if (this.diffTimerInterval) clearInterval(this.diffTimerInterval);
+                            const pendingAdditional = this.getPendingAdditionalInvoice(json.data);
+                            if (pendingAdditional) {
+                                this.diffCountdownTick = 0;
+                                this.diffTimerInterval = setInterval(() => {
+                                    this.diffCountdownTick++;
+                                }, 1000);
+                            }
                         } else {
                             this.showToast(json.message || 'Gagal memuat detail transaksi.');
                         }
@@ -1323,6 +1441,8 @@
 
                 closeOrderDetail() {
                     if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
+                    if (this.diffTimerInterval) clearInterval(this.diffTimerInterval);
+                    this.diffTimerInterval = null;
                     this.activeSubView = null;
                     this.selectedOrderDetail = null;
                     this.selectedOrderId = null;
@@ -2027,35 +2147,51 @@
                         this.showToast('Ukuran gambar maksimal 3MB.', 'error');
                         return;
                     }
+
+                    // Show local preview immediately
                     const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        const base64Url = e.target.result;
-                        await this.saveAvatar(base64Url);
+                    reader.onload = (e) => {
+                        this.currentUser.avatar_url = e.target.result;
                     };
                     reader.readAsDataURL(file);
+
+                    // Upload file to server
+                    await this.uploadAvatarFile(file);
+
+                    // Reset input so same file can be re-selected
+                    event.target.value = '';
                 },
 
-                async saveAvatar(url) {
+                async uploadAvatarFile(file) {
                     if (!this.currentUser) return;
-                    this.currentUser.avatar_url = url;
-                    localStorage.setItem('galaksian_user_avatar', url);
-                    localStorage.setItem('galaksian_user', JSON.stringify(this.currentUser));
                     try {
-                        await fetch('/api/v1/me', {
-                            method: 'PUT',
-                            headers: this.getHeaders(),
-                            body: JSON.stringify({ avatar_url: url })
+                        const formData = new FormData();
+                        formData.append('avatar', file);
+
+                        const headers = { ...this.getHeaders() };
+                        delete headers['Content-Type']; // Let browser set multipart boundary
+
+                        const res = await fetch('/api/v1/me/avatar', {
+                            method: 'POST',
+                            headers: headers,
+                            body: formData
                         });
-                        this.showToast('Foto profil berhasil diperbarui.');
+                        const json = await res.json();
+                        if (json.success && json.data) {
+                            this.currentUser.avatar_url = json.data.avatar_url;
+                            localStorage.setItem('galaksian_user', JSON.stringify(this.currentUser));
+                            this.showToast('Foto profil berhasil diperbarui.');
+                        } else {
+                            this.showToast(json.message || 'Gagal mengunggah foto profil.', 'error');
+                        }
                     } catch (e) {
-                        this.showToast('Foto profil berhasil disimpan.');
+                        console.error('Avatar upload error:', e);
+                        this.showToast('Gagal mengunggah foto profil.', 'error');
                     }
                 },
 
                 getProfileAvatar() {
                     if (this.currentUser?.avatar_url) return this.currentUser.avatar_url;
-                    const local = localStorage.getItem('galaksian_user_avatar');
-                    if (local) return local;
                     return 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&fit=crop&q=80';
                 },
 
@@ -2077,11 +2213,11 @@
 
                 getCartTotalAmount() {
                     if (this.cart?.pricing?.product_total !== undefined && this.cart?.pricing?.product_total !== null) {
-                        return Number(this.cart.pricing.product_total) + (this.giftOptionEnabled ? 10000 : 0);
+                        return Number(this.cart.pricing.product_total);
                     }
                     if (this.cart?.items?.length) {
                         const sum = this.cart.items.reduce((acc, it) => acc + ((it.unit_price || it.price || 0) * (it.qty || 1)), 0);
-                        return sum + (this.giftOptionEnabled ? 10000 : 0);
+                        return sum + (this.cart?.pricing?.handling_fee || 5000) + (this.giftOptionEnabled ? 10000 : 0);
                     }
                     return 0;
                 },

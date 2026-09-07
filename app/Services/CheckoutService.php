@@ -70,8 +70,10 @@ class CheckoutService
 
         $paymentMethod = $payload['payment_method'] ?? 'qris';
         $notes = $payload['notes'] ?? null;
+        $isGift = (bool) ($payload['is_gift'] ?? $cart->is_gift ?? false);
+        $hasInsurance = (bool) ($payload['has_insurance'] ?? false);
 
-        return DB::transaction(function () use ($user, $trip, $address, $cart, $voucher, $paymentMethod, $notes) {
+        return DB::transaction(function () use ($user, $trip, $address, $cart, $voucher, $paymentMethod, $notes, $isGift, $hasInsurance, $payload) {
             // 4. Validasi Stok dengan Pessimistic Locking
             $cartItems = $cart->items()->with('product')->get();
             $productIds = $cartItems->pluck('product_id')->all();
@@ -95,7 +97,7 @@ class CheckoutService
             }
 
             // 5. Hitung Pricing
-            $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user);
+            $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
             // 6. Buat Order
             $orderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(Str::random(6));
@@ -127,8 +129,14 @@ class CheckoutService
                 'voucher_id' => $voucher?->id,
                 'voucher_amount' => $pricing->voucherDiscount,
                 'handling_fee_amount' => $pricing->handlingFee,
+                'gift_fee_amount' => $pricing->giftFee,
                 'product_total' => $pricing->productTotal,
                 'notes' => $notes,
+                'is_gift' => $isGift,
+                'gift_from' => $payload['gift_from'] ?? $cart->gift_from ?? null,
+                'gift_to' => $payload['gift_to'] ?? $cart->gift_to ?? null,
+                'gift_message' => $payload['gift_message'] ?? $cart->gift_message ?? null,
+                'has_insurance' => $hasInsurance,
             ]);
 
             // 7. Buat Order Items Snapshot

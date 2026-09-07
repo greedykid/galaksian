@@ -5,6 +5,8 @@ namespace Tests\Feature\Api;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -78,14 +80,43 @@ class AuthTest extends TestCase
                 'name' => 'John Updated',
                 'language' => 'en',
                 'identity_number' => '3171012505870003',
-                'avatar_url' => 'https://example.com/avatar.jpg',
             ]);
 
         $updateResponse->assertStatus(200)
             ->assertJsonPath('data.name', 'John Updated')
             ->assertJsonPath('data.language', 'en')
-            ->assertJsonPath('data.identity_number', '3171012505870003')
-            ->assertJsonPath('data.avatar_url', 'https://example.com/avatar.jpg');
+            ->assertJsonPath('data.identity_number', '3171012505870003');
+    }
+
+    public function test_authenticated_user_can_upload_avatar(): void
+    {
+        Storage::fake('public');
+
+        $user = User::create([
+            'name' => 'Avatar User',
+            'phone' => '628888888888',
+            'role' => UserRole::USER,
+        ]);
+
+        $token = $user->createToken('test')->plainTextToken;
+
+        $file = UploadedFile::fake()->image('avatar.jpg', 200, 200);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/me/avatar', [
+                'avatar' => $file,
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $avatarUrl = $response->json('data.avatar_url');
+        $this->assertNotNull($avatarUrl);
+        $this->assertStringContainsString('/storage/avatars/', $avatarUrl);
+
+        // Verify file exists in storage
+        $storagePath = str_replace('/storage/', '', $avatarUrl);
+        Storage::disk('public')->assertExists($storagePath);
     }
 
     public function test_change_password_requires_min_8_characters_and_confirmation(): void

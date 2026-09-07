@@ -269,4 +269,83 @@ class CheckoutTest extends TestCase
                 ],
             ]);
     }
+
+    public function test_checkout_with_gift_option_succeeds_and_creates_invoice_with_gift_fee(): void
+    {
+        $trip = Trip::create([
+            'code' => 'TRIP-GIFT',
+            'origin_country' => 'ID',
+            'destination_country' => 'JP',
+            'status' => TripStatus::ACTIVE,
+        ]);
+
+        $user = User::create([
+            'name' => 'Gift Checkout User',
+            'phone' => '628100000005',
+            'role' => UserRole::USER,
+            'is_new_user' => false,
+        ]);
+        $token = $user->createToken('test')->plainTextToken;
+
+        $address = Address::create([
+            'user_id' => $user->id,
+            'recipient_name' => 'Gift Checkout User',
+            'phone' => '628100000005',
+            'address' => 'Jl. Senopati No. 8',
+        ]);
+
+        $brand = Brand::create(['name' => 'Brand Gift', 'slug' => 'brand-gift-2']);
+        $product = Product::create([
+            'name' => 'Product Gift Item',
+            'slug' => 'product-gift-item',
+            'brand_id' => $brand->id,
+            'price' => 50000,
+            'stock' => 5,
+            'availability_type' => ProductAvailability::READY_STOCK,
+            'is_active' => true,
+        ]);
+
+        $cart = Cart::create(['user_id' => $user->id, 'status' => 'active']);
+        CartItem::create(['cart_id' => $cart->id, 'product_id' => $product->id, 'qty' => 1]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/checkout', [
+                'address_id' => $address->id,
+                'payment_method' => 'qris',
+                'is_gift' => true,
+                'gift_from' => 'Sender Name',
+                'gift_to' => 'Recipient Name',
+                'gift_message' => 'Happy Birthday!',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'order' => [
+                        'pricing' => [
+                            'product_subtotal' => 50000,
+                            'handling_fee_amount' => 5000,
+                            'gift_fee_amount' => 10000,
+                            'product_total' => 65000,
+                        ],
+                    ],
+                    'invoice' => [
+                        'amount' => 65000,
+                    ],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'user_id' => $user->id,
+            'is_gift' => true,
+            'gift_fee_amount' => 10000,
+            'product_total' => 65000,
+        ]);
+
+        $this->assertDatabaseHas('invoices', [
+            'type' => InvoiceType::PRODUCT->value,
+            'amount' => 65000,
+        ]);
+    }
 }

@@ -27,11 +27,11 @@ class CartController extends Controller
     public function index(Request $request): JsonResponse
     {
         $cart = $this->getOrCreateCart($request);
-        $voucherCode = $request->query('voucher_code');
-        $voucher = $voucherCode ? Voucher::where('code', $voucherCode)->first() : null;
+        $voucher = $this->getVoucherForCart($request, $cart);
+        $isGift = $this->getIsGiftForCart($request, $cart);
 
         $user = $request->user('sanctum');
-        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user);
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
         return $this->successResponse(
             (new CartResource($cart))->withPricing($pricing, $voucher),
@@ -65,11 +65,13 @@ class CartController extends Controller
             ]);
         }
 
+        $voucher = $this->getVoucherForCart($request, $cart);
+        $isGift = $this->getIsGiftForCart($request, $cart);
         $user = $request->user('sanctum');
-        $pricing = $this->pricingCalculator->calculateCart($cart, null, $user);
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
         return $this->successResponse(
-            (new CartResource($cart->fresh()))->withPricing($pricing),
+            (new CartResource($cart->fresh()))->withPricing($pricing, $voucher),
             'Item berhasil ditambahkan ke keranjang.'
         );
     }
@@ -87,11 +89,13 @@ class CartController extends Controller
 
         $cartItem->update(['qty' => $qty]);
 
+        $voucher = $this->getVoucherForCart($request, $cart);
+        $isGift = $this->getIsGiftForCart($request, $cart);
         $user = $request->user('sanctum');
-        $pricing = $this->pricingCalculator->calculateCart($cart, null, $user);
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
         return $this->successResponse(
-            (new CartResource($cart->fresh()))->withPricing($pricing),
+            (new CartResource($cart->fresh()))->withPricing($pricing, $voucher),
             'Jumlah item berhasil diperbarui.'
         );
     }
@@ -102,11 +106,13 @@ class CartController extends Controller
         $cartItem = CartItem::where('cart_id', $cart->id)->where('id', $id)->firstOrFail();
         $cartItem->delete();
 
+        $voucher = $this->getVoucherForCart($request, $cart);
+        $isGift = $this->getIsGiftForCart($request, $cart);
         $user = $request->user('sanctum');
-        $pricing = $this->pricingCalculator->calculateCart($cart, null, $user);
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
         return $this->successResponse(
-            (new CartResource($cart->fresh()))->withPricing($pricing),
+            (new CartResource($cart->fresh()))->withPricing($pricing, $voucher),
             'Item berhasil dihapus dari keranjang.'
         );
     }
@@ -116,8 +122,9 @@ class CartController extends Controller
         $cart = $this->getOrCreateCart($request);
         $user = $request->user('sanctum');
         $voucher = Voucher::where('code', $request->validated('code'))->firstOrFail();
+        $isGift = $this->getIsGiftForCart($request, $cart);
 
-        $pricingWithoutVoucher = $this->pricingCalculator->calculateCart($cart, null, $user);
+        $pricingWithoutVoucher = $this->pricingCalculator->calculateCart($cart, null, $user, $isGift);
         $subtotal = $pricingWithoutVoucher->subtotal - $pricingWithoutVoucher->promoDiscount;
 
         $voucherError = $voucher->getValidationError($user, $subtotal);
@@ -125,12 +132,84 @@ class CartController extends Controller
             throw new BusinessException($voucherError);
         }
 
-        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user);
+        $cart->update(['voucher_id' => $voucher->id]);
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
 
         return $this->successResponse(
-            (new CartResource($cart))->withPricing($pricing, $voucher),
+            (new CartResource($cart->fresh()))->withPricing($pricing, $voucher),
             'Voucher berhasil digunakan.'
         );
+    }
+
+    public function removeVoucher(Request $request): JsonResponse
+    {
+        $cart = $this->getOrCreateCart($request);
+        $cart->update(['voucher_id' => null]);
+        $isGift = $this->getIsGiftForCart($request, $cart);
+        $user = $request->user('sanctum');
+        $pricing = $this->pricingCalculator->calculateCart($cart, null, $user, $isGift);
+
+        return $this->successResponse(
+            (new CartResource($cart->fresh()))->withPricing($pricing, null),
+            'Voucher berhasil dihapus.'
+        );
+    }
+
+    public function updateGiftOption(Request $request): JsonResponse
+    {
+        $cart = $this->getOrCreateCart($request);
+        $isGift = $request->boolean('is_gift');
+
+        $cart->update([
+            'is_gift' => $isGift,
+            'gift_from' => $request->input('gift_from'),
+            'gift_to' => $request->input('gift_to'),
+            'gift_message' => $request->input('gift_message'),
+        ]);
+
+        $voucher = $this->getVoucherForCart($request, $cart);
+        $user = $request->user('sanctum');
+        $pricing = $this->pricingCalculator->calculateCart($cart, $voucher, $user, $isGift);
+
+        return $this->successResponse(
+            (new CartResource($cart->fresh()))->withPricing($pricing, $voucher),
+            $isGift ? 'Layanan bingkisan diaktifkan.' : 'Layanan bingkisan dinonaktifkan.'
+        );
+    }
+
+    protected function getVoucherForCart(Request $request, Cart $cart): ?Voucher
+    {
+        $voucherCode = $request->input('voucher_code') ?? $request->query('voucher_code');
+        if ($voucherCode) {
+            $voucher = Voucher::where('code', $voucherCode)->first();
+            if ($voucher) {
+                if ($cart->voucher_id !== $voucher->id) {
+                    $cart->update(['voucher_id' => $voucher->id]);
+                }
+
+                return $voucher;
+            }
+        }
+
+        if ($cart->voucher_id) {
+            return $cart->voucher;
+        }
+
+        return null;
+    }
+
+    protected function getIsGiftForCart(Request $request, Cart $cart): bool
+    {
+        if ($request->has('is_gift')) {
+            $isGift = $request->boolean('is_gift');
+            if ($cart->is_gift !== $isGift) {
+                $cart->update(['is_gift' => $isGift]);
+            }
+
+            return $isGift;
+        }
+
+        return (bool) $cart->is_gift;
     }
 
     protected function getOrCreateCart(Request $request): Cart

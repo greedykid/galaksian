@@ -11,7 +11,7 @@ use App\Services\DTO\PricingResult;
 
 class PricingCalculator
 {
-    public function calculateCart(Cart $cart, ?Voucher $voucher = null, ?User $user = null): PricingResult
+    public function calculateCart(Cart $cart, ?Voucher $voucher = null, ?User $user = null, bool $isGift = false): PricingResult
     {
         $items = $cart->items()->with('product')->get();
 
@@ -76,9 +76,15 @@ class PricingCalculator
         $defaultHandlingFee = (int) Setting::get('handling_fee_default', 0);
         $handlingFee = $defaultHandlingFee;
 
+        // Biaya Bingkisan & Kartu Ucapan
+        $giftFee = 0;
+        if ($isGift) {
+            $giftFee = (int) Setting::get('gift_package_fee', 10000);
+        }
+
         // Product Total
         $totalDiscount = $promoDiscount + $newUserDiscount + $voucherDiscount;
-        $productTotal = max(0, $rawSubtotal - $totalDiscount + $handlingFee);
+        $productTotal = max(0, $rawSubtotal - $totalDiscount + $handlingFee + $giftFee);
 
         return new PricingResult(
             subtotal: $rawSubtotal,
@@ -86,34 +92,44 @@ class PricingCalculator
             newUserDiscount: $newUserDiscount,
             voucherDiscount: $voucherDiscount,
             handlingFee: $handlingFee,
+            giftFee: $giftFee,
             productTotal: $productTotal,
             shippingJastipAmount: 0,
             shippingLocalAmount: 0,
             shippingTotal: 0,
             grandTotal: $productTotal,
             items: $itemsData,
+            rawSubtotal: $rawSubtotal,
+            discountedSubtotal: $subtotalAfterPromo,
         );
     }
 
     public function calculateShipping(Order $order): PricingResult
     {
+        $rawSubtotal = (int) $order->product_subtotal;
+        $promoDiscount = (int) $order->product_discount_amount;
+        $discountedSubtotal = max(0, $rawSubtotal - $promoDiscount);
+
         $shippingJastip = (int) ($order->shipping_jastip_amount ?? 0);
         $shippingLocal = (int) ($order->shipping_local_amount ?? 0);
         $shippingTotal = $shippingJastip + $shippingLocal;
         $grandTotal = (int) $order->product_total + $shippingTotal;
 
         return new PricingResult(
-            subtotal: (int) $order->product_subtotal,
-            promoDiscount: (int) $order->product_discount_amount,
+            subtotal: $rawSubtotal,
+            promoDiscount: $promoDiscount,
             newUserDiscount: (int) $order->new_user_discount_amount,
             voucherDiscount: (int) $order->voucher_amount,
             handlingFee: (int) $order->handling_fee_amount,
+            giftFee: (int) ($order->gift_fee_amount ?? 0),
             productTotal: (int) $order->product_total,
             shippingJastipAmount: $shippingJastip,
             shippingLocalAmount: $shippingLocal,
             shippingTotal: $shippingTotal,
             grandTotal: $grandTotal,
             items: [],
+            rawSubtotal: $rawSubtotal,
+            discountedSubtotal: $discountedSubtotal,
         );
     }
 }

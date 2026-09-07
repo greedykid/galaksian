@@ -7,11 +7,13 @@ use App\Http\Requests\User\ChangePasswordRequest;
 use App\Http\Requests\User\OtpRequestRequest;
 use App\Http\Requests\User\OtpVerifyRequest;
 use App\Http\Requests\User\UpdateProfileRequest;
+use App\Http\Requests\User\UploadAvatarRequest;
 use App\Http\Resources\UserResource;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -59,6 +61,30 @@ class AuthController extends Controller
         return $this->successResponse(
             new UserResource($user->fresh()),
             'Profil berhasil diperbarui.'
+        );
+    }
+
+    public function uploadAvatar(UploadAvatarRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Delete old avatar file if it exists in storage
+        if ($user->avatar_url) {
+            $oldPath = str_replace('/storage/', '', $user->avatar_url);
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $file = $request->file('avatar');
+        $filename = 'user-'.$user->id.'-'.time().'.'.$file->getClientOriginalExtension();
+        $path = $file->storeAs('avatars', $filename, 'public');
+
+        $user->update([
+            'avatar_url' => '/storage/'.$path,
+        ]);
+
+        return $this->successResponse(
+            new UserResource($user->fresh()),
+            'Foto profil berhasil diperbarui.'
         );
     }
 

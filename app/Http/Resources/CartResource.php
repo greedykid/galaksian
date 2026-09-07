@@ -38,8 +38,13 @@ class CartResource extends JsonResource
                 'voucher_discount' => 0,
                 'total_discount' => 0,
                 'handling_fee' => 0,
+                'gift_fee' => 0,
                 'product_total' => 0,
             ],
+            'is_gift' => (bool) $this->is_gift,
+            'gift_from' => $this->gift_from,
+            'gift_to' => $this->gift_to,
+            'gift_message' => $this->gift_message,
             'voucher_applied' => $this->voucher ? [
                 'code' => $this->voucher->code,
                 'type' => $this->voucher->type?->value,

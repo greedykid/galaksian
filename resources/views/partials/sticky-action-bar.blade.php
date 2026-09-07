@@ -11,7 +11,7 @@
             x-cloak>
             <div class="flex flex-col">
                 <span class="text-[10px] text-zinc-400 font-medium" x-text="t('total_payment_label', 'Total Pembayaran')">Total Pembayaran</span>
-                <span class="text-lg font-black text-zinc-950 tabular tracking-tight leading-tight" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0))"></span>
+                <span class="text-lg font-black text-zinc-950 tabular tracking-tight leading-tight" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
                 <span class="text-[10px] text-zinc-400 leading-tight" x-text="t('not_including_shipping', 'Belum termasuk ongkir')">Belum termasuk ongkir</span>
             </div>
             <button 
@@ -31,7 +31,7 @@
             x-cloak>
             <div class="flex flex-col">
                 <span class="text-[10px] text-zinc-400 font-medium" x-text="t('total_bill_label', 'Total Tagihan')">Total Tagihan</span>
-                <span class="text-lg font-black text-[#1657FF] tabular tracking-tight leading-tight" x-text="formatRupiah((cart.pricing?.product_total || 0) + (giftOptionEnabled ? 10000 : 0) + (isInsuranceChecked ? 2000 : 0))"></span>
+                <span class="text-lg font-black text-[#1657FF] tabular tracking-tight leading-tight" x-text="formatRupiah(cart.pricing?.product_total || 0)"></span>
                 <span class="text-[10px] text-zinc-400 leading-tight" x-text="t('not_including_shipping', 'Belum termasuk ongkir')">Belum termasuk ongkir</span>
             </div>
             <button 
@@ -42,3 +42,20 @@
                 <span x-show="isSubmittingCheckout" x-text="t('processing_checkout', 'Memproses Checkout...')">Memproses Checkout...</span>
             </button>
         </div>
+
+        <!-- 3. Transaction Detail Sticky Action Bar (Bayar Biaya Tambahan Selisih) -->
+        <div 
+            x-show="activeSubView === 'order-detail' && selectedOrderDetail && getPendingAdditionalInvoice(selectedOrderDetail)"
+            class="fixed bottom-[61px] inset-x-0 mx-auto z-30 w-full max-w-[430px] px-3.5 pb-2 pt-1 pointer-events-none"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-cloak>
+            <button 
+                @click="simulatePaymentWebhook(getPendingAdditionalInvoice(selectedOrderDetail).invoice_number)"
+                class="pointer-events-auto w-full py-3.5 bg-[#F59E0B] hover:bg-[#D97706] active:bg-[#B45309] text-white font-black text-xs rounded-xl shadow-[0_6px_20px_rgba(245,158,11,0.35)] flex items-center justify-center gap-2 transition active:scale-[0.98] min-h-[46px]">
+                <span class="text-sm font-black">+</span>
+                <span x-text="t('pay_additional_fee_btn', 'Bayar Biaya Tambahan') + ' (' + formatRupiah(getPendingAdditionalInvoice(selectedOrderDetail).amount) + ')'">Bayar Biaya Tambahan</span>
+            </button>
+        </div>
+

@@ -61,6 +61,8 @@ class PricingCalculatorTest extends TestCase
 
         // Subtotal = 50.000 * 2 = 100.000
         $this->assertEquals(100000, $result->subtotal);
+        $this->assertEquals(100000, $result->rawSubtotal);
+        $this->assertEquals(80000, $result->discountedSubtotal);
         // Promo discount = (50.000 - 40.000) * 2 = 20.000
         $this->assertEquals(20000, $result->promoDiscount);
         // User is not new user -> 0
@@ -139,5 +141,37 @@ class PricingCalculatorTest extends TestCase
 
         $this->assertEquals(70000, $shippingResult->shippingTotal);
         $this->assertEquals(175000, $shippingResult->grandTotal);
+    }
+
+    public function test_it_calculates_gift_fee_correctly(): void
+    {
+        $brand = Brand::create(['name' => 'Brand Gift', 'slug' => 'brand-gift']);
+        $product = Product::create([
+            'name' => 'Product Gift',
+            'slug' => 'product-gift',
+            'brand_id' => $brand->id,
+            'price' => 50000,
+            'stock' => 10,
+            'availability_type' => ProductAvailability::READY_STOCK,
+        ]);
+
+        $user = User::create([
+            'name' => 'Gift User',
+            'phone' => '628444444444',
+            'role' => UserRole::USER,
+            'is_new_user' => false,
+        ]);
+
+        $cart = Cart::create(['user_id' => $user->id, 'status' => 'active']);
+        CartItem::create(['cart_id' => $cart->id, 'product_id' => $product->id, 'qty' => 1]);
+
+        // When isGift is true, 10.000 gift fee is added
+        $result = $this->calculator->calculateCart($cart, null, $user, true);
+
+        $this->assertEquals(50000, $result->subtotal);
+        $this->assertEquals(5000, $result->handlingFee);
+        $this->assertEquals(10000, $result->giftFee);
+        // Product Total = 50.000 + 5.000 + 10.000 = 65.000
+        $this->assertEquals(65000, $result->productTotal);
     }
 }
