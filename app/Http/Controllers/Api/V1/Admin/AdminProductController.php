@@ -21,8 +21,10 @@ class AdminProductController extends Controller
         $query = Product::with(['brand', 'category', 'primaryImage']);
 
         if ($search = $request->query('q')) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('sku', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('sku', "%{$search}%");
+            });
         }
 
         if ($brandId = $request->query('brand_id')) {

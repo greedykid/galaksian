@@ -22,10 +22,10 @@ class ProductController extends Controller
         // Search q across product name, brand name, category name
         if ($search = $request->query('q')) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('brand', fn ($bq) => $bq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('description', "%{$search}%")
+                    ->orWhereHas('brand', fn ($bq) => $bq->whereLike('name', "%{$search}%"))
+                    ->orWhereHas('category', fn ($cq) => $cq->whereLike('name', "%{$search}%"));
             });
         }
 
@@ -94,7 +94,7 @@ class ProductController extends Controller
             ->with(['brand', 'category', 'primaryImage', 'images']);
 
         if ($search = $request->query('q')) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $perPage = min((int) $request->query('per_page', 16), 50);
@@ -115,7 +115,7 @@ class ProductController extends Controller
             ->with(['brand', 'category', 'primaryImage', 'images']);
 
         if ($search = $request->query('q')) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $perPage = min((int) $request->query('per_page', 16), 50);

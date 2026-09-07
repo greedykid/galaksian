@@ -62,9 +62,9 @@ class OrderController extends Controller
 
         if ($search = trim((string) $request->query('search'))) {
             $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
+                $q->whereLike('order_number', "%{$search}%")
                     ->orWhereHas('items', function ($iq) use ($search) {
-                        $iq->where('product_name', 'like', "%{$search}%");
+                        $iq->whereLike('product_name', "%{$search}%");
                     });
             });
         }

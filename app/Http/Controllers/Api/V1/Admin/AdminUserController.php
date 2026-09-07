@@ -16,9 +16,11 @@ class AdminUserController extends Controller
         $query = User::query();
 
         if ($search = $request->query('q')) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('phone', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%");
+            });
         }
 
         if ($role = $request->query('role')) {
