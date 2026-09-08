@@ -1,5 +1,9 @@
 <template x-if="activeView === 'refunds'">
     <div class="px-4 py-4 space-y-3">
+        <button @click="goTo('more')" class="flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span x-text="t('back_to_menu', 'Kembali ke Menu')"></span>
+        </button>
         <h1 class="text-lg font-extrabold text-zinc-900" x-text="t('refund_management', 'Manajemen Refund')"></h1>
         <div class="space-y-2">
             <template x-if="refundsLoading"><div class="flex justify-center py-8"><svg class="w-6 h-6 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg></div></template>

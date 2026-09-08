@@ -1,5 +1,9 @@
 <template x-if="activeView === 'users'">
     <div class="px-4 py-4 space-y-3">
+        <button @click="goTo('more')" class="flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span x-text="t('back_to_menu', 'Kembali ke Menu')"></span>
+        </button>
         <h1 class="text-lg font-extrabold text-zinc-900" x-text="t('user_management', 'Manajemen User')"></h1>
         <div class="relative">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>

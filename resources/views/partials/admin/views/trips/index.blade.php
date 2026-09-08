@@ -1,5 +1,9 @@
 <template x-if="activeView === 'trips'">
     <div class="px-4 py-4 space-y-3">
+        <button @click="goTo('more')" class="flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span x-text="t('back_to_menu', 'Kembali ke Menu')"></span>
+        </button>
         <div class="flex items-center justify-between">
             <h1 class="text-lg font-extrabold text-zinc-900" x-text="t('trip_management', 'Manajemen Trip')"></h1>
             <button @click="tripForm = { id: null, code: '', origin_country: 'ID', destination_country: 'JP', departure_at: '', arrival_at: '', cutoff_at: '', status: 'draft', notes: '' }; activeView='trip-form'" class="bg-zinc-900 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-zinc-800 transition" x-text="t('add_trip','+ Trip')"></button>

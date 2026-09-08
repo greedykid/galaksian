@@ -154,6 +154,7 @@
             user_desc: 'Lihat & kelola pelanggan',
             nav_catalog: 'Katalog',
             catalog_desc: 'Brand, kategori, banner',
+            back_to_menu: 'Kembali ke Menu',
         },
         en: {
             admin_title: 'Admin Panel',
@@ -308,6 +309,7 @@
             user_desc: 'View & manage customers',
             nav_catalog: 'Catalog',
             catalog_desc: 'Brands, categories, banners',
+            back_to_menu: 'Back to Menu',
         }
     };
 </script>
