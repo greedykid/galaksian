@@ -101,6 +101,7 @@
                     active_trip: null
                 },
                 productGridPage: 1,
+                productGridLastPage: 1,
                 productGridNextUrl: null,
                 productGridLoading: false,
                 productGridTotal: 0,
@@ -501,6 +502,9 @@
                             this.productGridPage = 1;
                             const pg = json.data?.product_grid;
                             this.productGridTotal = pg?.meta?.total || (pg?.data?.length || 0);
+                            this.productGridLastPage = pg?.meta?.last_page || 1;
+                            // Jangan percaya penuh pada links.next (host/path bisa salah);
+                            // pakai productGridLastPage sebagai penanda ada halaman berikutnya.
                             this.productGridNextUrl = pg?.links?.next || null;
                         }
                     } catch (e) {
@@ -510,11 +514,24 @@
                     }
                 },
 
+                // Bangun URL pagination untuk product_grid secara eksplisit.
+                // Tidak bergantung pada links.next karena host/path dari paginate()
+                // bisa salah (mis. 'https://domain?page=2' tanpa path /api/v1/home).
+                get productGridNextPageUrl() {
+                    if (! this.hasMoreProducts) return null;
+                    const params = new URLSearchParams();
+                    params.set('page', String(this.productGridPage + 1));
+                    if (this.selectedCountry && this.selectedCountry !== 'all') {
+                        params.set('country', this.selectedCountry);
+                    }
+                    return '/api/v1/home?' + params.toString();
+                },
+
                 async loadMoreProducts() {
-                    if (this.productGridLoading || !this.productGridNextUrl) return;
+                    if (this.productGridLoading || !this.hasMoreProducts) return;
                     this.productGridLoading = true;
                     try {
-                        const url = this.productGridNextUrl;
+                        const url = this.productGridNextPageUrl;
                         const res = await fetch(url, { headers: this.getHeaders() });
                         const json = await res.json();
                         if (json.success) {
@@ -527,7 +544,7 @@
                                 links: json.data?.product_grid?.links ?? this.homeData.product_grid?.links,
                             };
                             this.productGridPage = json.data?.product_grid?.meta?.current_page || (this.productGridPage + 1);
-                            this.productGridNextUrl = json.data?.product_grid?.links?.next || null;
+                            this.productGridLastPage = json.data?.product_grid?.meta?.last_page || this.productGridLastPage;
                             this.productGridTotal = json.data?.product_grid?.meta?.total || this.productGridTotal;
                         }
                     } catch (e) {
@@ -538,7 +555,7 @@
                 },
 
                 get hasMoreProducts() {
-                    return !!this.productGridNextUrl;
+                    return this.productGridPage < this.productGridLastPage;
                 },
 
                 async searchProducts() {

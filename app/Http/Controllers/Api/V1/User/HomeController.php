@@ -88,6 +88,12 @@ class HomeController extends Controller
         // Active Trip
         $activeTrip = Trip::active()->first();
 
+        // Bangun response product grid dengan link pagination yang BENAR (path endpoint),
+        // karena paginate() default menghasilkan link ber-host salah + tanpa path /api/v1/home
+        // (mis. 'https://domain?page=2'), yang membuat tombol 'Muat Lebih Banyak' gagal/loop.
+        $productGridPayload = ProductResource::collection($productGrid)->response()->getData(true);
+        $productGridPayload['links'] = $this->buildPaginationLinks($productGrid, $country);
+
         return $this->successResponse([
             'banners' => BannerResource::collection($banners),
             'flash_sales' => ProductResource::collection($flashSales),
@@ -97,8 +103,34 @@ class HomeController extends Controller
             'beli_lagi' => ProductResource::collection($beliLagi),
             'best_sellers' => ProductResource::collection($bestSellers),
             'promo_products' => ProductResource::collection($promoProducts),
-            'product_grid' => ProductResource::collection($productGrid)->response()->getData(true),
+            'product_grid' => $productGridPayload,
             'active_trip' => $activeTrip ? new TripResource($activeTrip) : null,
         ], 'Data home berhasil diambil.');
+    }
+
+    /**
+     * Bangun link prev/next pagination yang mengarah ke endpoint yang benar.
+     */
+    protected function buildPaginationLinks($paginator, ?string $country): array
+    {
+        $path = url('/api/v1/home');
+        $page = $paginator->currentPage();
+        $lastPage = $paginator->lastPage();
+
+        $makeUrl = function (int $p) use ($path, $country) {
+            $query = http_build_query(array_filter([
+                'page' => $p,
+                'country' => $country,
+            ]));
+
+            return $query === '' ? $path : $path.'?'.$query;
+        };
+
+        return [
+            'first' => $makeUrl(1),
+            'last' => $makeUrl($lastPage),
+            'prev' => $page > 1 ? $makeUrl($page - 1) : null,
+            'next' => $page < $lastPage ? $makeUrl($page + 1) : null,
+        ];
     }
 }
