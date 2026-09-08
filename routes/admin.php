@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AdminActivityLogController;
 use App\Http\Controllers\Api\V1\Admin\AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\AdminBannerController;
 use App\Http\Controllers\Api\V1\Admin\AdminBrandController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminRefundController;
 use App\Http\Controllers\Api\V1\Admin\AdminShipmentController;
 use App\Http\Controllers\Api\V1\Admin\AdminTripController;
 use App\Http\Controllers\Api\V1\Admin\AdminUserController;
+use App\Http\Controllers\Api\V1\Admin\AdminWebhookEventController;
 use Illuminate\Support\Facades\Route;
 
 // Public admin auth
@@ -25,6 +27,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Products
     Route::apiResource('products', AdminProductController::class);
     Route::post('/products/import', [AdminProductController::class, 'import']);
+    Route::post('/products/{id}/images', [AdminProductController::class, 'uploadImages']);
+    Route::delete('/products/{id}/images/{imageId}', [AdminProductController::class, 'deleteImage']);
 
     // Brands, Categories, Banners
     Route::apiResource('brands', AdminBrandController::class);
@@ -53,4 +57,11 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // Users
     Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'update']);
+
+    // Webhook Events (debug pembayaran)
+    Route::get('/webhook-events', [AdminWebhookEventController::class, 'index']);
+    Route::get('/webhook-events/{id}', [AdminWebhookEventController::class, 'show']);
+
+    // Activity Logs (audit admin)
+    Route::get('/activity-logs', [AdminActivityLogController::class, 'index']);
 });

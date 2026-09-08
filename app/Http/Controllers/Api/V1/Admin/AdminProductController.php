@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ImportProductRequest;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
+use App\Http\Requests\Admin\UploadProductImageRequest;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdminProductController extends Controller
@@ -170,5 +172,54 @@ class AdminProductController extends Controller
         return $this->successResponse([
             'imported_count' => $imported,
         ], "Berhasil mengimpor {$imported} produk.");
+    }
+
+    public function uploadImages(int $id, UploadProductImageRequest $request): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+        $hasPrimary = $product->images()->where('is_primary', true)->exists();
+        $currentMaxOrder = (int) $product->images()->max('order');
+
+        foreach ($request->file('images') as $index => $file) {
+            $filename = Str::slug($product->name).'-'.time().'-'.$index.'.'.$file->getClientOriginalExtension();
+            $path = $file->storeAs('products/'.$product->slug, $filename, 'public');
+
+            ProductImage::create([
+                'product_id' => $product->id,
+                'path' => '/storage/'.$path,
+                'order' => $currentMaxOrder + $index + 1,
+                'is_primary' => ! $hasPrimary && $index === 0,
+            ]);
+        }
+
+        return $this->successResponse(
+            new ProductDetailResource($product->fresh(['brand', 'category', 'images'])),
+            'Gambar produk berhasil diunggah.',
+            201
+        );
+    }
+
+    public function deleteImage(int $id, int $imageId): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+        $image = ProductImage::where('product_id', $product->id)->findOrFail($imageId);
+
+        // Delete file from storage
+        $storagePath = str_replace('/storage/', '', $image->path);
+        Storage::disk('public')->delete($storagePath);
+
+        $wasPrimary = $image->is_primary;
+        $image->delete();
+
+        // If deleted image was primary, promote the next one
+        if ($wasPrimary) {
+            $nextImage = $product->images()->orderBy('order')->first();
+            $nextImage?->update(['is_primary' => true]);
+        }
+
+        return $this->successResponse(
+            new ProductDetailResource($product->fresh(['brand', 'category', 'images'])),
+            'Gambar produk berhasil dihapus.'
+        );
     }
 }

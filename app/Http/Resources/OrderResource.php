@@ -30,6 +30,14 @@ class OrderResource extends JsonResource
             'items_count' => $this->items()->count(),
             'total_qty' => $this->items()->sum('qty'),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            // Info ringkas pemesan (opsional; hanya disertakan bila relasi ter-load).
+            // Aman backward-compatible: field baru, tidak menghapus field lain.
+            'user' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user?->id,
+                'name' => $this->user?->name,
+                'phone' => $this->user?->phone,
+                'email' => $this->user?->email,
+            ]),
             'can_reorder' => $this->canReorder(),
             'has_pending_invoice' => $this->invoices()->where('status', InvoiceStatus::PENDING)->exists(),
             'created_at' => $this->created_at?->toIso8601String(),
