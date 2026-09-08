@@ -29,6 +29,21 @@ class RefundService
             throw new BusinessException("Nominal refund tidak boleh melebihi total pesanan ({$maxAllowed}).");
         }
 
+        // Refund hanya boleh diajukan untuk pesanan yang sudah dibayar (produk atau ongkir)
+        $refundableStatuses = [
+            OrderStatus::PAID_PRODUCT,
+            OrderStatus::PROCESSING,
+            OrderStatus::PACKING,
+            OrderStatus::READY_FOR_DELIVERY,
+            OrderStatus::PENDING_PAYMENT_SHIPPING,
+            OrderStatus::SHIPPING_PAID,
+            OrderStatus::DELIVERING,
+            OrderStatus::COMPLETED,
+        ];
+        if (! in_array($order->status, $refundableStatuses, true)) {
+            throw new BusinessException('Pesanan belum dapat direfund pada status saat ini.');
+        }
+
         return DB::transaction(function () use ($order, $data, $amount) {
             $refund = Refund::create([
                 'order_id' => $order->id,

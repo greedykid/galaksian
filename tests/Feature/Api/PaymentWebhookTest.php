@@ -125,4 +125,102 @@ class PaymentWebhookTest extends TestCase
         // Stock should still be 8 (not decremented twice)
         $this->assertEquals(8, $product->fresh()->stock);
     }
+
+    public function test_payment_webhook_rejects_invalid_signature(): void
+    {
+        config(['services.payment.signing_secret' => 'test_secret']);
+
+        $user = User::create(['name' => 'Buyer', 'phone' => '628100000009', 'role' => UserRole::USER]);
+        $order = Order::create([
+            'order_number' => 'ORD-SIG-01',
+            'user_id' => $user->id,
+            'status' => OrderStatus::PENDING_PAYMENT_PRODUCT,
+            'address_snapshot' => ['recipient_name' => 'Buyer'],
+            'product_subtotal' => 50000,
+            'product_total' => 50000,
+        ]);
+        $invoice = Invoice::create([
+            'invoice_number' => 'INV-SIG-01',
+            'order_id' => $order->id,
+            'type' => InvoiceType::PRODUCT,
+            'status' => InvoiceStatus::PENDING,
+            'amount' => 50000,
+            'payment_method' => PaymentMethod::QRIS,
+        ]);
+
+        $payload = [
+            'event_id' => 'evt_sig_bad',
+            'invoice_number' => 'INV-SIG-01',
+            'status' => 'settlement',
+            'amount' => 50000,
+        ];
+
+        // Signature tidak valid harus ditolak
+        $response = $this->postJson('/api/v1/webhooks/payment', $payload, ['x-signature' => 'invalid_signature']);
+
+        $response->assertStatus(422);
+
+        // Invoice tetap pending (tidak di-mark paid)
+        $this->assertEquals(InvoiceStatus::PENDING, $invoice->fresh()->status);
+    }
+
+    public function test_payment_webhook_accepts_valid_signature(): void
+    {
+        $secret = 'test_secret';
+        config(['services.payment.signing_secret' => $secret]);
+
+        $user = User::create(['name' => 'Buyer', 'phone' => '628100000008', 'role' => UserRole::USER]);
+        $brand = Brand::create(['name' => 'Brand Test', 'slug' => 'brand-test']);
+        $product = Product::create([
+            'name' => 'Item Test',
+            'slug' => 'item-test',
+            'brand_id' => $brand->id,
+            'price' => 50000,
+            'stock' => 10,
+            'availability_type' => ProductAvailability::READY_STOCK,
+            'is_active' => true,
+        ]);
+        $order = Order::create([
+            'order_number' => 'ORD-SIG-02',
+            'user_id' => $user->id,
+            'status' => OrderStatus::PENDING_PAYMENT_PRODUCT,
+            'address_snapshot' => ['recipient_name' => 'Buyer'],
+            'product_subtotal' => 50000,
+            'product_total' => 50000,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name_snapshot' => $product->name,
+            'qty' => 1,
+            'unit_price' => 50000,
+            'original_price' => 50000,
+            'subtotal' => 50000,
+            'availability_type' => ProductAvailability::READY_STOCK,
+        ]);
+        $invoice = Invoice::create([
+            'invoice_number' => 'INV-SIG-02',
+            'order_id' => $order->id,
+            'type' => InvoiceType::PRODUCT,
+            'status' => InvoiceStatus::PENDING,
+            'amount' => 50000,
+            'payment_method' => PaymentMethod::QRIS,
+        ]);
+
+        $payload = [
+            'event_id' => 'evt_sig_ok',
+            'invoice_number' => 'INV-SIG-02',
+            'status' => 'settlement',
+            'amount' => 50000,
+        ];
+        // Signature = HMAC-SHA256 dari payload kanonik (tanpa signature/event_id/source)
+        $canonical = $payload;
+        unset($canonical['signature'], $canonical['event_id'], $canonical['source']);
+        $sig = hash_hmac('sha256', json_encode($canonical, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $secret);
+
+        $response = $this->postJson('/api/v1/webhooks/payment', $payload, ['x-signature' => $sig]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(InvoiceStatus::PAID, $invoice->fresh()->status);
+    }
 }

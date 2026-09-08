@@ -139,6 +139,14 @@ class CheckoutService
                 'has_insurance' => $hasInsurance,
             ]);
 
+            // Reservasi kuota voucher secara atomik (mencegah race condition)
+            if ($voucher) {
+                $lockedVoucher = Voucher::where('id', $voucher->id)->lockForUpdate()->first();
+                if ($lockedVoucher) {
+                    $lockedVoucher->incrementUsedCount();
+                }
+            }
+
             // 7. Buat Order Items Snapshot
             foreach ($pricing->items as $itemData) {
                 $product = $products->get($itemData['product_id']);

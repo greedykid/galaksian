@@ -20,6 +20,7 @@ class Voucher extends Model
         'min_order_amount',
         'usage_limit',
         'usage_per_user',
+        'used_count',
         'applicable_scope',
         'starts_at',
         'ends_at',
@@ -35,11 +36,17 @@ class Voucher extends Model
             'min_order_amount' => 'integer',
             'usage_limit' => 'integer',
             'usage_per_user' => 'integer',
+            'used_count' => 'integer',
             'applicable_scope' => VoucherScope::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function incrementUsedCount(): void
+    {
+        $this->increment('used_count');
     }
 
     public function orders(): HasMany
@@ -68,8 +75,7 @@ class Voucher extends Model
         }
 
         if ($this->usage_limit !== null) {
-            $totalUsed = Order::where('voucher_id', $this->id)->count();
-            if ($totalUsed >= $this->usage_limit) {
+            if ((int) $this->used_count >= (int) $this->usage_limit) {
                 return 'Kuota penggunaan voucher ini sudah habis.';
             }
         }

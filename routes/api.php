@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(['localize'])->group(function () {
     // Auth endpoints
     Route::prefix('auth')->group(function () {
-        Route::post('/otp/request', [AuthController::class, 'requestOtp']);
-        Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+        Route::post('/otp/request', [AuthController::class, 'requestOtp'])->middleware('throttle:10,1');
+        Route::post('/otp/verify', [AuthController::class, 'verifyOtp'])->middleware('throttle:20,1');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     });
 

@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'payment' => [
+        // Default gateway (system_gateway | midtrans | xendit | paypal)
+        'gateway' => env('PAYMENT_GATEWAY', 'system_gateway'),
+        'signing_secret' => env('PAYMENT_WEBHOOK_SECRET'),
+        'callback_token' => env('PAYMENT_WEBHOOK_TOKEN'),
+        'midtrans_server_key' => env('MIDTRANS_SERVER_KEY'),
+        'xendit_api_key' => env('XENDIT_API_KEY'),
+        'paypal_secret' => env('PAYPAL_SECRET'),
+    ],
+
 ];

@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 // Public admin auth
-Route::post('/auth/login', [AdminAuthController::class, 'login']);
+Route::post('/auth/login', [AdminAuthController::class, 'login'])->middleware('throttle:10,1');
 
 // Protected admin routes
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

@@ -83,12 +83,84 @@ class PaymentGatewayService
         ];
     }
 
+    protected function extractHeaderValue(array $headers, string $key): ?string
+    {
+        if (! isset($headers[$key])) {
+            return null;
+        }
+        $value = $headers[$key];
+        if (is_array($value)) {
+            return $value[0] ?? null;
+        }
+
+        return $value;
+    }
+
+    protected function verifyWebhookSignature(array $payload, array $headers = []): void
+    {
+        $source = $payload['source'] ?? 'payment_gateway';
+        $config = config('services.payment', []);
+        $signingSecret = $config['signing_secret'] ?? null;
+        $callbackToken = $config['callback_token'] ?? null;
+
+        // Jika belum ada secret gateway terkonfigurasi (dev/simulasi), lewati verifikasi.
+        if (empty($signingSecret) && empty($callbackToken)) {
+            return;
+        }
+
+        $isValid = false;
+
+        if ($source === 'xendit' && $callbackToken) {
+            // Xendit memakai header x-callback-token
+            $token = $this->extractHeaderValue($headers, 'x-callback-token');
+            $isValid = is_string($token) && hash_equals($callbackToken, $token);
+        } else {
+            // Payload signature (dari field `signature`) atau header x-signature
+            $provided = $this->extractHeaderValue($headers, 'x-signature') ?? $payload['signature'] ?? null;
+            $expected = $this->computeSignature($payload, $signingSecret, $source);
+            if ($provided && $expected) {
+                $isValid = hash_equals($expected, (string) $provided);
+            }
+        }
+
+        if (! $isValid) {
+            throw new BusinessException('Signature webhook tidak valid.');
+        }
+    }
+
+    protected function computeSignature(array $payload, ?string $secret, string $source): ?string
+    {
+        if (empty($secret)) {
+            return null;
+        }
+
+        // Midtrans: sha512(order_id.transaction_status.gross_amount.server_key)
+        if (str_contains($source, 'midtrans')) {
+            $orderId = $payload['order_id'] ?? $payload['invoice_number'] ?? '';
+            $status = $payload['transaction_status'] ?? $payload['status'] ?? '';
+            $amount = $payload['gross_amount'] ?? $payload['amount'] ?? '';
+            $signature = strtoupper($orderId).$status.$amount.$secret;
+
+            return hash('sha512', $signature);
+        }
+
+        // Default: HMAC-SHA256 dari payload kanonik (tanpa field signature & event-derived)
+        $canonical = $payload;
+        unset($canonical['signature'], $canonical['event_id'], $canonical['source']);
+        $json = json_encode($canonical, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return hash_hmac('sha256', $json, $secret);
+    }
+
     public function handleWebhook(array $payload, array $headers = []): array
     {
+        // Verifikasi signature webhook (aktif hanya jika secret gateway dikonfigurasi)
+        $this->verifyWebhookSignature($payload, $headers);
+
         $eventId = $payload['event_id'] ?? $payload['id'] ?? null;
         $eventType = $payload['event_type'] ?? $payload['transaction_status'] ?? 'payment_notification';
         $source = $payload['source'] ?? 'payment_gateway';
-        $signature = $headers['x-signature'] ?? $payload['signature'] ?? null;
+        $signature = $this->extractHeaderValue($headers, 'x-signature') ?? $payload['signature'] ?? null;
 
         // Idempotency check: jika event_id sudah pernah diproses, abaikan
         if ($eventId) {

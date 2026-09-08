@@ -75,7 +75,9 @@ class AuthController extends Controller
         }
 
         $file = $request->file('avatar');
-        $filename = 'user-'.$user->id.'-'.time().'.'.$file->getClientOriginalExtension();
+        // Gunakan ekstensi dari MIME yang telah divalidasi (bukan nama file client)
+        $extension = $file->extension() ?: $file->guessExtension() ?: 'jpg';
+        $filename = 'user-'.$user->id.'-'.time().'.'.$extension;
         $path = $file->storeAs('avatars', $filename, 'public');
 
         $user->update([

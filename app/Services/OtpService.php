@@ -28,7 +28,7 @@ class OtpService
             ->update(['consumed_at' => now()]);
 
         // Generate 6 digit OTP (gunakan 123456 di local jika testing/demo)
-        $code = app()->environment('local', 'testing') ? '123456' : (string) rand(100000, 999999);
+        $code = app()->environment('local', 'testing') ? '123456' : (string) random_int(100000, 999999);
 
         $otp = OtpCode::create([
             'phone' => $cleanPhone,
