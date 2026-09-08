@@ -1175,7 +1175,31 @@
                     return this.voucherStates[code] || 'unclaimed';
                 },
 
+                // True jika voucher tidak bisa dipakai (dari state backend: expired, kuota habis, sudah dipakai, dll)
+                isVoucherUnavailable(v) {
+                    return v && v.state && v.state !== 'usable';
+                },
+
+                // Label alasan voucher tidak bisa dipakai
+                getVoucherBlockReason(state) {
+                    const map = {
+                        inactive: this.t('voucher_state_inactive', 'Voucher tidak aktif'),
+                        not_started: this.t('voucher_state_not_started', 'Voucher belum dimulai'),
+                        expired: this.t('voucher_state_expired', 'Voucher sudah kadaluarsa'),
+                        min_not_met: this.t('voucher_state_min_not_met', 'Min. belanja belum terpenuhi'),
+                        quota_exhausted: this.t('voucher_state_quota_exhausted', 'Kuota voucher sudah habis'),
+                        used_up: this.t('voucher_state_used_up', 'Sudah dipakai'),
+                    };
+                    return map[state] || map.inactive;
+                },
+
                 async handleVoucherAction(code) {
+                    // Blokir jika voucher tidak memenuhi syarat (expired/kuota habis/sudah dipakai)
+                    const v = (this.voucherList || []).find(v => v.code === code);
+                    if (this.isVoucherUnavailable(v)) {
+                        this.showToast(this.getVoucherBlockReason(v.state), 'error');
+                        return;
+                    }
                     const state = this.getVoucherState(code);
                     if (state === 'unclaimed') {
                         this.voucherStates[code] = 'claimed';
@@ -1314,6 +1338,7 @@
                             this.voucherCode = '';
 
                             this.fetchCart();
+                            this.fetchVouchers();
                             this.fetchOrders();
                             this.showToast('Pesanan dibuat. Silakan selesaikan pembayaran.');
                         } else {

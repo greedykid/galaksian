@@ -84,4 +84,52 @@ class VoucherTest extends TestCase
         $this->assertEquals(20000, $voucher['max_discount']);
         $this->assertEquals('product', $voucher['applicable_scope']);
     }
+
+    public function test_voucher_payload_includes_usable_state(): void
+    {
+        Voucher::create([
+            'code' => 'QTA10',
+            'type' => VoucherType::PERCENT,
+            'value' => 10,
+            'min_order_amount' => 0,
+            'applicable_scope' => VoucherScope::PRODUCT,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addYear(),
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/v1/cart/vouchers');
+
+        $response->assertOk();
+
+        $voucher = collect($response->json('data'))->firstWhere('code', 'QTA10');
+
+        $this->assertNotNull($voucher);
+        $this->assertArrayHasKey('state', $voucher);
+        $this->assertEquals('usable', $voucher['state']);
+    }
+
+    public function test_exhausted_voucher_state_quota_exhausted(): void
+    {
+        Voucher::create([
+            'code' => 'HABIS',
+            'type' => VoucherType::FIXED,
+            'value' => 15000,
+            'usage_limit' => 1,
+            'used_count' => 1,
+            'applicable_scope' => VoucherScope::PRODUCT,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addYear(),
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/v1/cart/vouchers');
+
+        $response->assertOk();
+
+        $voucher = collect($response->json('data'))->firstWhere('code', 'HABIS');
+
+        $this->assertNotNull($voucher);
+        $this->assertEquals('quota_exhausted', $voucher['state']);
+    }
 }

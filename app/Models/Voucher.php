@@ -54,42 +54,59 @@ class Voucher extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function getValidationError(?User $user, int $subtotal): ?string
+    /**
+     * Status kelayakan voucher untuk user tertentu.
+     *
+     * @return string salah satu: usable | inactive | not_started | expired |
+     *                min_not_met | quota_exhausted | used_up
+     */
+    public function getState(?User $user, int $subtotal): string
     {
         if (! $this->is_active) {
-            return 'Voucher sudah tidak aktif.';
+            return 'inactive';
         }
 
         $now = now();
         if ($this->starts_at && $this->starts_at->isFuture()) {
-            return 'Periode promo voucher belum dimulai.';
+            return 'not_started';
         }
         if ($this->ends_at && $this->ends_at->isPast()) {
-            return 'Voucher sudah kadaluarsa.';
+            return 'expired';
         }
 
         if ($this->min_order_amount && $subtotal < $this->min_order_amount) {
-            $minFormatted = 'Rp '.number_format($this->min_order_amount, 0, ',', '.');
-
-            return "Minimal belanja untuk voucher ini adalah {$minFormatted}.";
+            return 'min_not_met';
         }
 
-        if ($this->usage_limit !== null) {
-            if ((int) $this->used_count >= (int) $this->usage_limit) {
-                return 'Kuota penggunaan voucher ini sudah habis.';
-            }
+        if ($this->usage_limit !== null && (int) $this->used_count >= (int) $this->usage_limit) {
+            return 'quota_exhausted';
         }
 
-        if ($user && $this->usage_per_user !== null) {
-            $userUsed = Order::where('voucher_id', $this->id)
-                ->where('user_id', $user->id)
-                ->count();
-            if ($userUsed >= $this->usage_per_user) {
-                return 'Anda telah mencapai batas maksimal penggunaan voucher ini.';
-            }
+        if ($user && $this->usage_per_user !== null && $this->countUserUsage($user) >= $this->usage_per_user) {
+            return 'used_up';
         }
 
-        return null;
+        return 'usable';
+    }
+
+    public function countUserUsage(User $user): int
+    {
+        return Order::where('voucher_id', $this->id)
+            ->where('user_id', $user->id)
+            ->count();
+    }
+
+    public function getValidationError(?User $user, int $subtotal): ?string
+    {
+        return match ($this->getState($user, $subtotal)) {
+            'inactive' => 'Voucher sudah tidak aktif.',
+            'not_started' => 'Periode promo voucher belum dimulai.',
+            'expired' => 'Voucher sudah kadaluarsa.',
+            'min_not_met' => 'Minimal belanja untuk voucher ini adalah Rp '.number_format($this->min_order_amount, 0, ',', '.').'.',
+            'quota_exhausted' => 'Kuota penggunaan voucher ini sudah habis.',
+            'used_up' => 'Anda telah mencapai batas maksimal penggunaan voucher ini.',
+            default => null,
+        };
     }
 
     public function isValid(?User $user, int $subtotal): bool

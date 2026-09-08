@@ -156,7 +156,7 @@
                     <span x-text="t('try_claim', 'Coba klaim:')">Coba klaim:</span>
                     <template x-for="(v, idx) in voucherList" :key="'vchip-' + v.code">
                         <span class="flex items-center gap-1.5">
-                            <button @click="handleVoucherAction(v.code)" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer" x-text="v.code"></button>
+                            <button @click="handleVoucherAction(v.code)" :disabled="isVoucherUnavailable(v)" :class="isVoucherUnavailable(v) ? 'text-zinc-300 line-through cursor-not-allowed' : 'font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer'" x-text="v.code"></button>
                             <span x-show="idx < voucherList.length - 1">·</span>
                         </span>
                     </template>

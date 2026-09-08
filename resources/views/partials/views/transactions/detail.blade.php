@@ -463,7 +463,7 @@
                                     </div>
                                 </template>
                                 <div class="flex justify-between items-center font-bold text-xs pt-1 border-t border-zinc-100">
-                                    <span class="text-zinc-800" x-text="'Subtotal ' + inv.invoice_number">Subtotal INV-001</span>
+                                    <span class="text-zinc-800" x-text="t('subtotal_label', 'Subtotal:')">Subtotal:</span>
                                     <span class="text-[#00A862] font-black tabular text-sm" x-text="formatRupiah(inv.amount)"></span>
                                 </div>
                             </div>

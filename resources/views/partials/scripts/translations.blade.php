@@ -697,6 +697,12 @@
                         voucher_active_applied: 'Voucher aktif terpasang',
                         voucher_discount_label: 'Diskon Voucher:',
                         voucher_discount_title: 'Diskon Voucher',
+                        voucher_state_inactive: 'Voucher tidak aktif',
+                        voucher_state_not_started: 'Voucher belum dimulai',
+                        voucher_state_expired: 'Voucher sudah kadaluarsa',
+                        voucher_state_min_not_met: 'Min. belanja belum terpenuhi',
+                        voucher_state_quota_exhausted: 'Kuota voucher sudah habis',
+                        voucher_state_used_up: 'Sudah dipakai',
 
                     },
                     en: {
@@ -1447,6 +1453,12 @@
                         voucher_active_applied: 'Voucher active & applied',
                         voucher_discount_label: 'Voucher Discount:',
                         voucher_discount_title: 'Voucher Discount',
+                        voucher_state_inactive: 'Voucher not active',
+                        voucher_state_not_started: 'Voucher has not started',
+                        voucher_state_expired: 'Voucher expired',
+                        voucher_state_min_not_met: 'Min. spend not met',
+                        voucher_state_quota_exhausted: 'Voucher quota exhausted',
+                        voucher_state_used_up: 'Already used',
 
                     }
 

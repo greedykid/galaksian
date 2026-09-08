@@ -14,6 +14,7 @@ use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\Voucher;
 use App\Services\PricingCalculator;
 use Illuminate\Http\JsonResponse;
@@ -43,6 +44,13 @@ class CartController extends Controller
 
     public function availableVouchers(Request $request): JsonResponse
     {
+        $cart = $this->getOrCreateCart($request);
+        $user = $request->user('sanctum');
+
+        // Subtotal setelah promo, dipakai untuk menentukan kelayakan voucher (min_order, kuota, dll).
+        $pricing = $this->pricingCalculator->calculateCart($cart, null, $user, (bool) $cart->is_gift);
+        $subtotal = max(0, $pricing->subtotal - $pricing->promoDiscount);
+
         $vouchers = Voucher::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('starts_at')
@@ -55,14 +63,14 @@ class CartController extends Controller
             ->orderBy('value', 'desc')
             ->get();
 
-        $data = $vouchers->map(function (Voucher $voucher) {
-            return $this->voucherToArray($voucher);
+        $data = $vouchers->map(function (Voucher $voucher) use ($user, $subtotal) {
+            return $this->voucherToArray($voucher, $user, $subtotal);
         });
 
         return $this->successResponse($data, 'Daftar voucher berhasil diambil.');
     }
 
-    protected function voucherToArray(Voucher $voucher): array
+    protected function voucherToArray(Voucher $voucher, ?User $user = null, ?int $subtotal = null): array
     {
         $valueText = $voucher->type === VoucherType::FIXED
             ? 'Cashback Jastip '.$this->formatRupiah($voucher->value)
@@ -79,6 +87,8 @@ class CartController extends Controller
 
         $icon = $voucher->type === VoucherType::FIXED ? 'tag' : 'percent';
 
+        $state = $voucher->getState($user, $subtotal ?? 0);
+
         return [
             'code' => $voucher->code,
             'type' => $voucher->type->value,
@@ -89,6 +99,7 @@ class CartController extends Controller
             'title' => $valueText,
             'description' => $minText.' · '.$scopeText,
             'icon' => $icon,
+            'state' => $state,
             'ends_at' => $voucher->ends_at?->toISOString(),
         ];
     }
