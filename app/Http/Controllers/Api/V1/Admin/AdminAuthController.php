@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminLoginRequest;
+use App\Http\Requests\Admin\ChangePasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +34,28 @@ class AdminAuthController extends Controller
         return $this->successResponse([
             'token' => $token,
             'user' => new UserResource($user),
+            'must_change_password' => (bool) $user->must_change_password,
         ], 'Login admin berhasil.');
+    }
+
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->password && $request->filled('current_password')) {
+            if (! Hash::check($request->validated('current_password'), $user->password)) {
+                throw new BusinessException('Kata sandi lama yang Anda masukkan tidak sesuai.', 422);
+            }
+        }
+
+        $user->update([
+            'password' => Hash::make($request->validated('password')),
+            'must_change_password' => false,
+            'last_login_at' => now(),
+        ]);
+
+        return $this->successResponse([
+            'user' => new UserResource($user->fresh()),
+        ], 'Kata sandi berhasil diperbarui.');
     }
 }

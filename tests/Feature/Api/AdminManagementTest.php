@@ -235,4 +235,36 @@ class AdminManagementTest extends TestCase
         $this->assertEquals(OrderStatus::REFUNDED, $order->fresh()->status);
         $this->assertNull($order->fresh()->deleted_at);
     }
+
+    public function test_admin_login_response_includes_must_change_password_flag(): void
+    {
+        // Admin dengan must_change_password = true (mis. dibuat dengan password default)
+        $this->admin->update(['must_change_password' => true]);
+
+        $response = $this->postJson('/api/v1/admin/auth/login', [
+            'login' => 'admin@galaksian.test',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.must_change_password', true);
+    }
+
+    public function test_admin_change_password_clears_must_change_password_flag(): void
+    {
+        $this->admin->update(['must_change_password' => true]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$this->adminToken}")
+            ->postJson('/api/v1/admin/auth/change-password', [
+                'current_password' => 'secret123',
+                'password' => 'newsecret456',
+                'password_confirmation' => 'newsecret456',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.user.must_change_password', false);
+
+        $this->assertFalse($this->admin->fresh()->must_change_password);
+        $this->assertTrue(Hash::check('newsecret456', $this->admin->fresh()->password));
+    }
 }

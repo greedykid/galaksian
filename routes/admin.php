@@ -18,6 +18,8 @@ Route::post('/auth/login', [AdminAuthController::class, 'login'])->middleware('t
 
 // Protected admin routes
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    // Perubahan kata sandi admin (juga untuk paksa ganti password default)
+    Route::post('/auth/change-password', [AdminAuthController::class, 'changePassword']);
     Route::get('/dashboard', [AdminDashboardController::class, 'index']);
 
     // Products

@@ -35,25 +35,29 @@ class DatabaseSeeder extends Seeder
         Setting::set('shipping_estimate_text', 'Estimasi 7-14 hari kerja setelah jadwal trip berakhir.');
 
         // 2. Admin User
+        $adminPassword = env('ADMIN_PASSWORD');
         $admin = User::firstOrCreate(
             ['phone' => '6281200000001'],
             [
                 'name' => 'Galaksian Admin',
                 'email' => 'admin@galaksian.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($adminPassword ?: 'password'),
                 'role' => UserRole::ADMIN,
                 'language' => 'id',
                 'is_new_user' => false,
+                // Paksa ganti password jika memakai password default (env tidak diset).
+                'must_change_password' => empty($adminPassword),
             ]
         );
 
         // 3. Demo User
+        $demoPassword = env('DEMO_PASSWORD', 'password');
         $user = User::firstOrCreate(
             ['phone' => '6281234567890'],
             [
                 'name' => 'Budi Santoso',
                 'email' => 'budi@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($demoPassword),
                 'role' => UserRole::USER,
                 'language' => 'id',
                 'is_new_user' => true,

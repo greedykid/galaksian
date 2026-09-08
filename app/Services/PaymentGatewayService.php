@@ -162,25 +162,33 @@ class PaymentGatewayService
         $source = $payload['source'] ?? 'payment_gateway';
         $signature = $this->extractHeaderValue($headers, 'x-signature') ?? $payload['signature'] ?? null;
 
-        // Idempotency check: jika event_id sudah pernah diproses, abaikan
-        if ($eventId) {
-            $existingEvent = WebhookEvent::where('event_id', $eventId)->first();
-            if ($existingEvent && $existingEvent->status === 'processed') {
-                return [
-                    'status' => 'ignored',
-                    'message' => 'Event already processed',
-                ];
-            }
+        // Idempotency WAJIB: setiap webhook harus memiliki event_id yang unik.
+        // Tanpa event_id, event yang sama dapat diproses dua kali (double stock decrement,
+        // double status transition) jika payload tidak menyertakan identifier.
+        if (empty($eventId)) {
+            throw new BusinessException('Webhook harus menyertakan event_id / id yang unik.');
         }
 
-        $webhookEvent = WebhookEvent::create([
-            'source' => $source,
-            'event_id' => $eventId,
-            'event_type' => $eventType,
-            'payload' => $payload,
-            'signature' => $signature,
-            'status' => 'received',
-        ]);
+        // Idempotency check: jika event_id sudah pernah diproses, abaikan.
+        // Memakai firstOrCreate (berbasis unique index event_id) agar aman pada race condition,
+        // sekaligus mengunci agar satu event hanya diproses sekali.
+        $webhookEvent = WebhookEvent::firstOrCreate(
+            ['event_id' => $eventId],
+            [
+                'source' => $source,
+                'event_type' => $eventType,
+                'payload' => $payload,
+                'signature' => $signature,
+                'status' => 'received',
+            ]
+        );
+
+        if ($webhookEvent->status === 'processed') {
+            return [
+                'status' => 'ignored',
+                'message' => 'Event already processed',
+            ];
+        }
 
         return DB::transaction(function () use ($payload, $webhookEvent) {
             $invoiceNumber = $payload['invoice_number'] ?? null;
@@ -214,6 +222,23 @@ class PaymentGatewayService
             }
 
             if (in_array($paymentStatusStr, ['capture', 'settlement', 'paid', 'success'], true)) {
+                // Guard: jika invoice SUDAH paid, jangan proses ulang (double stock decrement,
+                // double status transition). Ini proteksi tambahan selain idempotency event_id,
+                // untuk kasus event berbeda menunjuk invoice yang sama.
+                if ($invoice->status === InvoiceStatus::PAID) {
+                    $webhookEvent->update([
+                        'status' => 'processed',
+                        'processed_at' => now(),
+                    ]);
+
+                    return [
+                        'status' => 'ignored',
+                        'invoice_number' => $invoice->invoice_number,
+                        'invoice_status' => $invoice->status->value,
+                        'message' => 'Invoice sudah dibayar; event diabaikan.',
+                    ];
+                }
+
                 // Update payment & invoice to paid
                 $payment->update([
                     'status' => PaymentStatus::PAID,

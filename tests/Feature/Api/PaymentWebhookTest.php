@@ -126,6 +126,109 @@ class PaymentWebhookTest extends TestCase
         $this->assertEquals(8, $product->fresh()->stock);
     }
 
+    public function test_payment_webhook_does_not_double_decrement_stock_on_cross_event(): void
+    {
+        $user = User::create(['name' => 'Buyer', 'phone' => '628100000011', 'role' => UserRole::USER]);
+        $brand = Brand::create(['name' => 'Brand Test', 'slug' => 'brand-test']);
+        $product = Product::create([
+            'name' => 'Item Test',
+            'slug' => 'item-test',
+            'brand_id' => $brand->id,
+            'price' => 50000,
+            'stock' => 10,
+            'availability_type' => ProductAvailability::READY_STOCK,
+            'is_active' => true,
+        ]);
+        $order = Order::create([
+            'order_number' => 'ORD-CROSS-01',
+            'user_id' => $user->id,
+            'status' => OrderStatus::PENDING_PAYMENT_PRODUCT,
+            'address_snapshot' => ['recipient_name' => 'Buyer'],
+            'product_subtotal' => 50000,
+            'product_total' => 50000,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name_snapshot' => $product->name,
+            'qty' => 2,
+            'unit_price' => 50000,
+            'original_price' => 50000,
+            'subtotal' => 100000,
+            'availability_type' => ProductAvailability::READY_STOCK,
+        ]);
+        $invoice = Invoice::create([
+            'invoice_number' => 'INV-CROSS-01',
+            'order_id' => $order->id,
+            'type' => InvoiceType::PRODUCT,
+            'status' => InvoiceStatus::PENDING,
+            'amount' => 50000,
+            'payment_method' => PaymentMethod::QRIS,
+            'gateway_reference' => 'REF-CROSS',
+        ]);
+        Payment::create([
+            'invoice_id' => $invoice->id,
+            'method' => PaymentMethod::QRIS,
+            'status' => PaymentStatus::PENDING,
+            'amount' => 50000,
+            'gateway_reference' => 'REF-CROSS',
+        ]);
+
+        // Duplicate payment event dengan event_id BERBEDA menunjuk invoice yang SAMA.
+        $first = $this->postJson('/api/v1/webhooks/payment', [
+            'event_id' => 'evt_cross_1',
+            'invoice_number' => 'INV-CROSS-01',
+            'status' => 'settlement',
+            'amount' => 50000,
+        ]);
+        $first->assertOk()->assertJsonPath('data.status', 'success');
+
+        $second = $this->postJson('/api/v1/webhooks/payment', [
+            'event_id' => 'evt_cross_2',
+            'invoice_number' => 'INV-CROSS-01',
+            'status' => 'settlement',
+            'amount' => 50000,
+        ]);
+
+        // Event kedua harus diabaikan (invoice sudah paid), stock TIDAK double-decrement.
+        $second->assertOk()->assertJsonPath('data.status', 'ignored');
+        $this->assertEquals(8, $product->fresh()->stock, 'Stock tidak boleh berkurang dua kali.');
+        $this->assertEquals(OrderStatus::PAID_PRODUCT, $order->fresh()->status);
+    }
+
+    public function test_payment_webhook_requires_event_id(): void
+    {
+        $user = User::create(['name' => 'Buyer', 'phone' => '628100000010', 'role' => UserRole::USER]);
+        $order = Order::create([
+            'order_number' => 'ORD-NOEVENT-01',
+            'user_id' => $user->id,
+            'status' => OrderStatus::PENDING_PAYMENT_PRODUCT,
+            'address_snapshot' => ['recipient_name' => 'Buyer'],
+            'product_subtotal' => 50000,
+            'product_total' => 50000,
+        ]);
+        $invoice = Invoice::create([
+            'invoice_number' => 'INV-NOEVENT-01',
+            'order_id' => $order->id,
+            'type' => InvoiceType::PRODUCT,
+            'status' => InvoiceStatus::PENDING,
+            'amount' => 50000,
+            'payment_method' => PaymentMethod::QRIS,
+        ]);
+
+        // Payload TANPA event_id -> harus ditolak (422) agar idempotency terjamin
+        $payload = [
+            'invoice_number' => 'INV-NOEVENT-01',
+            'status' => 'settlement',
+            'amount' => 50000,
+        ];
+
+        $response = $this->postJson('/api/v1/webhooks/payment', $payload);
+
+        $response->assertStatus(422);
+        $this->assertEquals(InvoiceStatus::PENDING, $invoice->fresh()->status);
+    }
+
     public function test_payment_webhook_rejects_invalid_signature(): void
     {
         config(['services.payment.signing_secret' => 'test_secret']);

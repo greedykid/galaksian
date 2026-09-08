@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'is_new_user' => (bool) $this->is_new_user,
             'new_user_promo_used_at' => $this->new_user_promo_used_at?->toIso8601String(),
             'last_login_at' => $this->last_login_at?->toIso8601String(),
+            'must_change_password' => (bool) $this->must_change_password,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

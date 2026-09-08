@@ -29,6 +29,7 @@ class User extends Authenticatable
         'is_new_user',
         'new_user_promo_used_at',
         'last_login_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'is_new_user' => 'boolean',
             'new_user_promo_used_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'must_change_password' => 'boolean',
         ];
     }
 

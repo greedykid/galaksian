@@ -20,7 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        // Trusted proxies (default: kosong = tidak ada proxy dipercaya).
+        // Mencegah spoofing X-Forwarded-For -> bypass rate limit OTP.
+        // Catatan: config() belum termuat pada tahap ini, jadi pakai env() langsung.
+        $trustedProxies = env('TRUSTED_PROXIES', '');
+        if (is_string($trustedProxies) && trim($trustedProxies) !== '') {
+            $proxies = array_values(array_filter(array_map('trim', explode(',', $trustedProxies)))) ?: [];
+            if ($proxies !== []) {
+                $middleware->trustProxies(at: $proxies);
+            }
+        }
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
