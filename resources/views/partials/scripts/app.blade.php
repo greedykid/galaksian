@@ -100,6 +100,10 @@
                     product_grid: { data: [] },
                     active_trip: null
                 },
+                productGridPage: 1,
+                productGridNextUrl: null,
+                productGridLoading: false,
+                productGridTotal: 0,
 
                 cartToken: '',
                 cart: { items: [], total_qty: 0, pricing: null, voucher_applied: null },
@@ -490,12 +494,47 @@
                         const json = await res.json();
                         if (json.success) {
                             this.homeData = json.data;
+                            this.productGridPage = 1;
+                            const pg = json.data?.product_grid;
+                            this.productGridTotal = pg?.meta?.total || (pg?.data?.length || 0);
+                            this.productGridNextUrl = pg?.links?.next || null;
                         }
                     } catch (e) {
                         console.error('Home load error:', e);
                     } finally {
                         this.homeLoading = false;
                     }
+                },
+
+                async loadMoreProducts() {
+                    if (this.productGridLoading || !this.productGridNextUrl) return;
+                    this.productGridLoading = true;
+                    try {
+                        const url = this.productGridNextUrl;
+                        const res = await fetch(url, { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            const newData = json.data?.product_grid?.data || [];
+                            const existing = this.homeData?.product_grid?.data || [];
+                            this.homeData.product_grid = {
+                                ...this.homeData.product_grid,
+                                data: [...existing, ...newData],
+                                meta: json.data?.product_grid?.meta ?? this.homeData.product_grid?.meta,
+                                links: json.data?.product_grid?.links ?? this.homeData.product_grid?.links,
+                            };
+                            this.productGridPage = json.data?.product_grid?.meta?.current_page || (this.productGridPage + 1);
+                            this.productGridNextUrl = json.data?.product_grid?.links?.next || null;
+                            this.productGridTotal = json.data?.product_grid?.meta?.total || this.productGridTotal;
+                        }
+                    } catch (e) {
+                        console.error('Load more products error:', e);
+                    } finally {
+                        this.productGridLoading = false;
+                    }
+                },
+
+                get hasMoreProducts() {
+                    return !!this.productGridNextUrl;
                 },
 
                 async searchProducts() {
@@ -552,10 +591,20 @@
 
                 initScrollListener() {
                     const checkScroll = () => {
+                        // Infinite scroll: auto-load produk saat mentok bawah (hanya di beranda)
+                        if (this.activeTab === 'home' && !this.activeSubView && this.hasMoreProducts && !this.productGridLoading) {
+                            const scrollThreshold = window.innerHeight + window.scrollY;
+                            const docHeight = document.documentElement.offsetHeight;
+                            if (scrollThreshold >= docHeight - 300) {
+                                this.loadMoreProducts();
+                            }
+                        }
+
                         if (this.activeTab !== 'home' || this.activeSubView) {
                             this.isPastKatalog = false;
                             return;
                         }
+
                         const el = document.getElementById('katalog-produk-indonesia');
                         if (el) {
                             const rect = el.getBoundingClientRect();

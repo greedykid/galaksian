@@ -612,7 +612,7 @@
             <h3 class="font-bold text-base text-zinc-900 tracking-tight" x-text="t('all_products_title', 'Semua Produk')">
                 Semua Produk
             </h3>
-            <span class="text-xs text-zinc-400 font-medium" x-text="(homeData.product_grid?.data?.length || 30) + ' ' + t('products', 'produk')">
+            <span class="text-xs text-zinc-400 font-medium" x-text="(homeData.product_grid?.meta?.total || homeData.product_grid?.data?.length || 0) + ' ' + t('products', 'produk')">
                 30 produk
             </span>
         </div>
@@ -653,6 +653,29 @@
                         </button>
                     </div>
                 </div>
+            </template>
+        </div>
+
+        <!-- Load More / Loading Indicator -->
+        <div class="px-4 pb-6">
+            <template x-if="productGridLoading">
+                <div class="flex items-center justify-center py-3">
+                    <svg class="w-5 h-5 animate-spin text-[#1657FF]" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                </div>
+            </template>
+            <template x-if="!productGridLoading && hasMoreProducts">
+                <button 
+                    @click="loadMoreProducts()" 
+                    class="w-full py-2.5 bg-[#1657FF] hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-xl transition shadow-xs cursor-pointer min-h-[42px]"
+                    x-text="t('load_more_btn', 'Muat Lebih Banyak')">
+                    Muat Lebih Banyak
+                </button>
+            </template>
+            <template x-if="!hasMoreProducts && homeData.product_grid?.data?.length > 0">
+                <p class="text-center text-[11px] text-zinc-400 font-medium" x-text="t('all_loaded', 'Semua produk telah ditampilkan')">Semua produk telah ditampilkan</p>
             </template>
         </div>
     </div>
