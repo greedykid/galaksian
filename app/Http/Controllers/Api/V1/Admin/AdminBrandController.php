@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBrandRequest;
 use App\Http\Requests\Admin\UpdateBrandRequest;
@@ -62,6 +63,9 @@ class AdminBrandController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $brand = Brand::findOrFail($id);
+        if ($brand->products()->exists()) {
+            throw new BusinessException('Brand masih dipakai oleh produk. Tidak dapat dihapus.');
+        }
         $brand->delete();
 
         return $this->successResponse(null, 'Brand berhasil dihapus.');

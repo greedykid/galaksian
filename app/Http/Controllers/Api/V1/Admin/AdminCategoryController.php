@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
@@ -62,6 +63,9 @@ class AdminCategoryController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $category = Category::findOrFail($id);
+        if ($category->products()->exists()) {
+            throw new BusinessException('Kategori masih dipakai oleh produk. Tidak dapat dihapus.');
+        }
         $category->delete();
 
         return $this->successResponse(null, 'Kategori berhasil dihapus.');

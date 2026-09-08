@@ -12,18 +12,21 @@ use App\Http\Resources\OrderDetailResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\Shipment;
+use App\Services\AdminActivityLogService;
 use App\Services\InvoiceService;
 use App\Services\OrderStatusService;
 use App\Services\ShipmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request as RequestFacade;
 
 class AdminOrderController extends Controller
 {
     public function __construct(
         protected OrderStatusService $orderStatusService,
         protected InvoiceService $invoiceService,
-        protected ShipmentService $shipmentService
+        protected ShipmentService $shipmentService,
+        protected AdminActivityLogService $activityLogService
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -90,6 +93,15 @@ class AdminOrderController extends Controller
             }
         }
 
+        $this->activityLogService->log(
+            $request->user(),
+            'update_order_status',
+            "Ubah status order #{$order->order_number} ke {$newStatus->value}".($note ? " ({$note})" : ''),
+            $order,
+            ['from_status' => $order->status?->value, 'to_status' => $newStatus->value],
+            RequestFacade::ip()
+        );
+
         return $this->successResponse(
             new OrderDetailResource($order->fresh(['invoices'])),
             'Status order berhasil diperbarui.'
@@ -104,6 +116,15 @@ class AdminOrderController extends Controller
 
         $this->shipmentService->assignOrders($shipment, [$order->id]);
 
+        $this->activityLogService->log(
+            $request->user(),
+            'assign_shipment',
+            "Assign order #{$order->order_number} ke shipment #{$shipment->shipment_number}",
+            $order,
+            ['shipment_id' => $shipment->id],
+            RequestFacade::ip()
+        );
+
         return $this->successResponse(
             new OrderDetailResource($order->fresh(['shipment'])),
             'Order berhasil ditugaskan ke shipment.'
@@ -114,6 +135,15 @@ class AdminOrderController extends Controller
     {
         $order = Order::findOrFail($id);
         $invoice = $this->invoiceService->createAdditionalInvoice($order, $request->validated(), $request->user());
+
+        $this->activityLogService->log(
+            $request->user(),
+            'create_invoice',
+            "Buat invoice tambahan #{$invoice->invoice_number} utk order #{$order->order_number}",
+            $invoice,
+            ['amount' => $invoice->amount, 'order_id' => $order->id],
+            RequestFacade::ip()
+        );
 
         return $this->successResponse(
             new InvoiceResource($invoice),

@@ -24,7 +24,8 @@ class WebhookEventResource extends JsonResource
 
     private function isDetailRequest(Request $request): bool
     {
-        return $request->route()?->getName() === 'admin.webhook-events.show'
-            || $request->is('*/webhook-events/*');
+        // Hanya expose payload/signature pada request DETAIL (route show),
+        // bukan semua request yang path-nya cocok '*/webhook-events/*'.
+        return $request->route()?->getName() === 'admin.webhook-events.show';
     }
 }

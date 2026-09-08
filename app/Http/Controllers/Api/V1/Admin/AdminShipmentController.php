@@ -7,14 +7,17 @@ use App\Http\Requests\Admin\StoreShipmentRequest;
 use App\Http\Requests\Admin\UpdateShipmentRequest;
 use App\Http\Resources\ShipmentResource;
 use App\Models\Shipment;
+use App\Services\AdminActivityLogService;
 use App\Services\ShipmentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
 class AdminShipmentController extends Controller
 {
     public function __construct(
-        protected ShipmentService $shipmentService
+        protected ShipmentService $shipmentService,
+        protected AdminActivityLogService $activityLogService
     ) {}
 
     public function index(): JsonResponse
@@ -68,6 +71,15 @@ class AdminShipmentController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
         $result = $this->shipmentService->sendToBagasian($shipment);
+
+        $this->activityLogService->log(
+            Request::user(),
+            'send_bagasian',
+            "Kirim Bagasian shipment #{$shipment->shipment_number}",
+            $shipment,
+            ['status' => $result['status'] ?? null],
+            Request::ip()
+        );
 
         return $this->successResponse($result, 'Dokumen Bagasian berhasil digenerate dan siap dikirim.');
     }

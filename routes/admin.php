@@ -59,8 +59,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'update']);
 
     // Webhook Events (debug pembayaran)
-    Route::get('/webhook-events', [AdminWebhookEventController::class, 'index']);
-    Route::get('/webhook-events/{id}', [AdminWebhookEventController::class, 'show']);
+    Route::get('/webhook-events', [AdminWebhookEventController::class, 'index'])->name('admin.webhook-events.index');
+    Route::get('/webhook-events/{id}', [AdminWebhookEventController::class, 'show'])->name('admin.webhook-events.show');
 
     // Activity Logs (audit admin)
     Route::get('/activity-logs', [AdminActivityLogController::class, 'index']);

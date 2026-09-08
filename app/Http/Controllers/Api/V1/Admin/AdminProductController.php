@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Enums\ProductAvailability;
+use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ImportProductRequest;
 use App\Http\Requests\Admin\StoreProductRequest;
@@ -9,15 +11,22 @@ use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Http\Requests\Admin\UploadProductImageRequest;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Services\AdminActivityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request as RequestFacade;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdminProductController extends Controller
 {
+    public function __construct(
+        protected AdminActivityLogService $activityLogService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $query = Product::with(['brand', 'category', 'primaryImage']);
@@ -79,6 +88,15 @@ class AdminProductController extends Controller
             ]);
         }
 
+        $this->activityLogService->log(
+            $request->user(),
+            'create_product',
+            "Buat produk #{$product->id} ({$product->name})",
+            $product,
+            ['price' => $product->price, 'stock' => $product->stock],
+            RequestFacade::ip()
+        );
+
         return $this->successResponse(
             new ProductDetailResource($product->load(['brand', 'category', 'images'])),
             'Produk berhasil ditambahkan.',
@@ -118,6 +136,15 @@ class AdminProductController extends Controller
             }
         }
 
+        $this->activityLogService->log(
+            $request->user(),
+            'update_product',
+            "Ubah produk #{$product->id} ({$product->name})",
+            $product,
+            ['price' => $product->price, 'stock' => $product->stock],
+            RequestFacade::ip()
+        );
+
         return $this->successResponse(
             new ProductDetailResource($product->fresh(['brand', 'category', 'images'])),
             'Produk berhasil diperbarui.'
@@ -128,6 +155,15 @@ class AdminProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $product->delete(); // Soft delete per rule
+
+        $this->activityLogService->log(
+            request()->user(),
+            'delete_product',
+            "Hapus produk #{$product->id} ({$product->name})",
+            $product,
+            ['cascade' => true],
+            request()->ip()
+        );
 
         return $this->successResponse(null, 'Produk berhasil dihapus (soft delete).');
     }
@@ -141,37 +177,75 @@ class AdminProductController extends Controller
             $items = json_decode($content, true);
         }
 
+        if (! is_array($items)) {
+            throw new BusinessException('Format import tidak valid. Harus berupa array.');
+        }
+
         $imported = 0;
-        if (is_array($items)) {
-            foreach ($items as $item) {
-                if (empty($item['name']) || empty($item['brand_id']) || ! isset($item['price'])) {
-                    continue;
-                }
+        $failures = [];
+        foreach ($items as $index => $item) {
+            $row = $index + 1;
 
-                $slug = Str::slug($item['name']).'-'.Str::random(4);
+            // Validasi ketat per item: tolak item invalid (bukan 500 / data korup).
+            if (empty($item['name']) || ! is_string($item['name'])) {
+                $failures[] = "Baris {$row}: nama produk wajib diisi.";
 
-                Product::create([
-                    'name' => $item['name'],
-                    'slug' => $slug,
-                    'sku' => $item['sku'] ?? null,
-                    'brand_id' => $item['brand_id'],
-                    'category_id' => $item['category_id'] ?? null,
-                    'price' => $item['price'],
-                    'discount_price' => $item['discount_price'] ?? null,
-                    'stock' => $item['stock'] ?? 0,
-                    'availability_type' => $item['availability_type'] ?? 'ready_stock',
-                    'origin_country' => $item['origin_country'] ?? 'ID',
-                    'currency' => $item['currency'] ?? 'IDR',
-                    'is_active' => $item['is_active'] ?? true,
-                ]);
-
-                $imported++;
+                continue;
             }
+            if (empty($item['brand_id']) || ! is_numeric($item['brand_id']) || ! Brand::whereKey((int) $item['brand_id'])->exists()) {
+                $failures[] = "Baris {$row}: brand_id tidak valid.";
+
+                continue;
+            }
+            $price = $item['price'] ?? null;
+            if (! is_numeric($price) || (int) $price < 0) {
+                $failures[] = "Baris {$row}: harga harus bilangan >= 0.";
+
+                continue;
+            }
+            $stock = $item['stock'] ?? 0;
+            if (! is_numeric($stock) || (int) $stock < 0) {
+                $failures[] = "Baris {$row}: stok harus bilangan >= 0.";
+
+                continue;
+            }
+            $availability = $item['availability_type'] ?? 'ready_stock';
+            if (! ProductAvailability::tryFrom($availability)) {
+                $failures[] = "Baris {$row}: availability_type tidak valid (ready_stock|open_po).";
+
+                continue;
+            }
+
+            $slug = Str::slug($item['name']).'-'.Str::random(4);
+
+            Product::create([
+                'name' => $item['name'],
+                'slug' => $slug,
+                'sku' => $item['sku'] ?? null,
+                'brand_id' => (int) $item['brand_id'],
+                'category_id' => $item['category_id'] ?? null,
+                'price' => (int) $price,
+                'discount_price' => isset($item['discount_price']) && $item['discount_price'] !== '' ? (int) $item['discount_price'] : null,
+                'stock' => (int) $stock,
+                'availability_type' => $availability,
+                'origin_country' => $item['origin_country'] ?? 'ID',
+                'currency' => $item['currency'] ?? 'IDR',
+                'is_active' => filter_var($item['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            ]);
+
+            $imported++;
+        }
+
+        $message = "Berhasil mengimpor {$imported} produk.";
+        if ($failures) {
+            $message .= ' '.count($failures).' baris dilewati.';
         }
 
         return $this->successResponse([
             'imported_count' => $imported,
-        ], "Berhasil mengimpor {$imported} produk.");
+            'skipped_count' => count($failures),
+            'failures' => $failures,
+        ], $message);
     }
 
     public function uploadImages(int $id, UploadProductImageRequest $request): JsonResponse
@@ -191,6 +265,15 @@ class AdminProductController extends Controller
                 'is_primary' => ! $hasPrimary && $index === 0,
             ]);
         }
+
+        $this->activityLogService->log(
+            $request->user(),
+            'upload_product_image',
+            "Upload gambar ke produk #{$product->id} ({$product->name})",
+            $product,
+            ['count' => count($request->file('images'))],
+            RequestFacade::ip()
+        );
 
         return $this->successResponse(
             new ProductDetailResource($product->fresh(['brand', 'category', 'images'])),
@@ -216,6 +299,15 @@ class AdminProductController extends Controller
             $nextImage = $product->images()->orderBy('order')->first();
             $nextImage?->update(['is_primary' => true]);
         }
+
+        $this->activityLogService->log(
+            request()->user(),
+            'delete_product_image',
+            "Hapus gambar #{$image->id} dari produk #{$product->id}",
+            $product,
+            ['image_id' => $image->id, 'was_primary' => $wasPrimary],
+            request()->ip()
+        );
 
         return $this->successResponse(
             new ProductDetailResource($product->fresh(['brand', 'category', 'images'])),

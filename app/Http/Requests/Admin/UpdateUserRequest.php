@@ -20,7 +20,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'phone' => ['sometimes', 'required', 'string', 'max:20', 'unique:users,phone,'.$userId],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$userId],
+            'email' => ['sometimes', 'nullable', 'email', 'max:255', 'unique:users,email,'.$userId],
             'role' => ['sometimes', 'nullable', new Enum(UserRole::class)],
         ];
     }
