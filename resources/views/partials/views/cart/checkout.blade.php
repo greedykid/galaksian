@@ -132,51 +132,8 @@
                 <h3 class="font-extrabold text-xs text-zinc-950" x-text="t('promo_voucher_title', 'Promo & Voucher Jastip')">Promo & Voucher Jastip</h3>
             </div>
 
-            <!-- Voucher Option 1 (GALAKSIAN10) -->
-            <div class="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
-                            <line x1="19" y1="5" x2="5" y2="19"></line>
-                            <circle cx="6.5" cy="6.5" r="2.5"></circle>
-                            <circle cx="17.5" cy="17.5" r="2.5"></circle>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xs text-zinc-900">Diskon Jastip 10% (GALAKSIAN10)</h4>
-                        <p class="text-[10px] text-zinc-500">Min. belanja Rp200rb · Semua produk</p>
-                    </div>
-                </div>
-                <button 
-                    @click="handleVoucherAction('GALAKSIAN10')" 
-                    :class="getVoucherState('GALAKSIAN10') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
-                    class="px-3.5 py-1.5 font-extrabold text-xs rounded-xl shadow-2xs transition active:scale-95 shrink-0 cursor-pointer">
-                    <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('GALAKSIAN10') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
-                </button>
-            </div>
-
-            <!-- Voucher Option 2 (NEWUSER15) -->
-            <div class="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
-                            <rect x="3" y="8" width="18" height="4" rx="1"></rect>
-                            <path d="M12 8v13"></path>
-                            <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xs text-zinc-900">Cashback Jastip Rp15.000 (NEWUSER15)</h4>
-                        <p class="text-[10px] text-zinc-500">Berlaku untuk pengguna baru</p>
-                    </div>
-                </div>
-                <button 
-                    @click="handleVoucherAction('NEWUSER15')" 
-                    :class="getVoucherState('NEWUSER15') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('NEWUSER15') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
-                    class="px-3.5 py-1.5 font-extrabold text-xs rounded-xl shadow-2xs transition active:scale-95 shrink-0 cursor-pointer">
-                    <span x-text="getVoucherState('NEWUSER15') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('NEWUSER15') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
-                </button>
-            </div>
+            <!-- Daftar voucher (dari backend, konsisten dgn cart) -->
+            @include('partials.components.voucher-list', ['style' => 'compact'])
 
             <!-- Promo Code Input & Apply Button -->
             <div class="flex items-center gap-2">
@@ -193,15 +150,18 @@
                 </button>
             </div>
 
-            <!-- Clickable Helper Chips -->
-            <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 flex-wrap">
-                <span x-text="t('try_claim', 'Coba klaim:')">Coba klaim:</span>
-                <button @click="handleVoucherAction('GALAKSIAN10')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">GALAKSIAN10</button>
-                <span>·</span>
-                <button @click="handleVoucherAction('HEMAT5')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">HEMAT5</button>
-                <span>·</span>
-                <button @click="handleVoucherAction('NEWUSER15')" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer">NEWUSER15</button>
-            </div>
+            <!-- Clickable Helper Chips (dari daftar voucher) -->
+            <template x-if="voucherList.length > 0">
+                <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 flex-wrap">
+                    <span x-text="t('try_claim', 'Coba klaim:')">Coba klaim:</span>
+                    <template x-for="(v, idx) in voucherList" :key="'vchip-' + v.code">
+                        <span class="flex items-center gap-1.5">
+                            <button @click="handleVoucherAction(v.code)" class="font-mono text-zinc-600 hover:text-[#1657FF] hover:underline cursor-pointer" x-text="v.code"></button>
+                            <span x-show="idx < voucherList.length - 1">·</span>
+                        </span>
+                    </template>
+                </div>
+            </template>
         </div>
 
         <!-- OPTIONAL CARD: BINGKISAN & GREETING CARD SUMMARY (If active) -->

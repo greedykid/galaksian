@@ -46,6 +46,7 @@ Route::prefix('v1')->middleware(['localize'])->group(function () {
         Route::delete('/items/{id}', [CartController::class, 'removeItem']);
         Route::post('/voucher', [CartController::class, 'applyVoucher']);
         Route::delete('/voucher', [CartController::class, 'removeVoucher']);
+        Route::get('/vouchers', [CartController::class, 'availableVouchers']);
         Route::post('/gift', [CartController::class, 'updateGiftOption']);
     });
 

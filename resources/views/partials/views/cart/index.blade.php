@@ -239,63 +239,9 @@
                 <span class="bg-[#00D06C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs" x-text="cart.voucher_applied ? t('voucher_1_applied', '1 Dipakai') : (Object.values(voucherStates).filter(s => s === 'claimed').length ? Object.values(voucherStates).filter(s => s === 'claimed').length + ' ' + t('ready_to_use', 'Siap Pakai') : t('available', 'Tersedia'))">Tersedia</span>
             </div>
 
-            <!-- Card 1: Diskon Jastip 20% + Bebas Ongkir (Yellow Border Card) -->
-            <div class="mx-4 rounded-2xl border-2 border-amber-400 bg-amber-50/15 p-3.5 space-y-2.5 shadow-2xs">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="5" x2="5" y2="19"></line>
-                            <circle cx="6.5" cy="6.5" r="2.5"></circle>
-                            <circle cx="17.5" cy="17.5" r="2.5"></circle>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xs text-zinc-900">Diskon Jastip 20% + Bebas Ongkir</h4>
-                        <p class="text-[10px] text-zinc-500">Min. belanja Rp200rb · Berlaku s/d besok</p>
-                    </div>
-                </div>
-                <div class="border-t border-dashed border-amber-300 pt-2 flex items-center justify-between">
-                    <div class="flex items-center gap-1.5 text-[10px] text-emerald-700 font-semibold">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#00D06C]"></span>
-                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? t('voucher_active_applied', 'Voucher aktif terpasang') : (getVoucherState('GALAKSIAN10') === 'claimed' ? t('ready_to_use_title', 'Siap digunakan') : t('available', 'Tersedia'))"></span>
-                    </div>
-                    <button 
-                        @click="handleVoucherAction('GALAKSIAN10')" 
-                        :class="getVoucherState('GALAKSIAN10') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('GALAKSIAN10') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
-                        class="px-4 py-1.5 font-extrabold text-xs rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
-                        <span x-text="getVoucherState('GALAKSIAN10') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('GALAKSIAN10') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Card 2: Cashback Jastip Rp15.000 (Light Blue Border Card) -->
-            <div class="mx-4 mt-2.5 rounded-2xl border border-blue-200 bg-blue-50/20 p-3.5 space-y-2.5 shadow-2xs">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#1657FF] flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="8" width="18" height="4" rx="1"></rect>
-                            <path d="M12 8v13"></path>
-                            <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
-                            <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xs text-zinc-900">Cashback Jastip Rp15.000 (POTONGAN15K)</h4>
-                        <p class="text-[10px] text-zinc-500">Min. belanja Rp150rb</p>
-                    </div>
-                </div>
-                <div class="border-t border-dashed border-blue-200 pt-2 flex items-center justify-between">
-                    <div class="flex items-center gap-1.5 text-[10px] text-zinc-400">
-                        <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? t('voucher_active_applied', 'Voucher aktif terpasang') : (getVoucherState('POTONGAN15K') === 'claimed' ? t('ready_to_use_title', 'Siap digunakan') : t('not_used', 'Belum dipakai'))"></span>
-                    </div>
-                    <button 
-                        @click="handleVoucherAction('POTONGAN15K')" 
-                        :class="getVoucherState('POTONGAN15K') === 'applied' ? 'bg-[#00D06C] text-white hover:bg-emerald-600' : (getVoucherState('POTONGAN15K') === 'claimed' ? 'bg-amber-400 text-zinc-950 hover:bg-amber-500' : 'bg-[#1657FF] text-white hover:bg-blue-700')"
-                        class="px-4 py-1.5 font-extrabold text-xs rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
-                        <span x-text="getVoucherState('POTONGAN15K') === 'applied' ? t('used_btn', 'Dipakai') : (getVoucherState('POTONGAN15K') === 'claimed' ? t('use_btn', 'Pakai') : t('claim_btn', 'Klaim'))"></span>
-                    </button>
-                </div>
+            <!-- Daftar voucher (dari backend, konsisten dgn checkout) -->
+            <div class="mx-4">
+                @include('partials.components.voucher-list', ['style' => 'card'])
             </div>
         </div>
     </template>

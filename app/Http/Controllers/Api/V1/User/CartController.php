@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1\User;
 
 use App\Enums\ProductAvailability;
+use App\Enums\VoucherScope;
+use App\Enums\VoucherType;
 use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AddToCartRequest;
@@ -37,6 +39,82 @@ class CartController extends Controller
             (new CartResource($cart))->withPricing($pricing, $voucher),
             'Keranjang berhasil diambil.'
         );
+    }
+
+    public function availableVouchers(Request $request): JsonResponse
+    {
+        $vouchers = Voucher::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('starts_at')
+                    ->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('ends_at')
+                    ->orWhere('ends_at', '>=', now());
+            })
+            ->orderBy('value', 'desc')
+            ->get();
+
+        $data = $vouchers->map(function (Voucher $voucher) {
+            return $this->voucherToArray($voucher);
+        });
+
+        return $this->successResponse($data, 'Daftar voucher berhasil diambil.');
+    }
+
+    protected function voucherToArray(Voucher $voucher): array
+    {
+        $valueText = $voucher->type === VoucherType::FIXED
+            ? 'Cashback Jastip '.$this->formatRupiah($voucher->value)
+            : 'Diskon Jastip '.$voucher->value.'%';
+
+        $minText = $voucher->min_order_amount > 0
+            ? 'Min. belanja '.$this->formatRupiahCompact($voucher->min_order_amount)
+            : 'Tanpa min. belanja';
+
+        $scopeText = match ($voucher->applicable_scope) {
+            VoucherScope::SHIPPING => 'Bebas Ongkir',
+            default => 'Semua produk',
+        };
+
+        $icon = $voucher->type === VoucherType::FIXED ? 'tag' : 'percent';
+
+        return [
+            'code' => $voucher->code,
+            'type' => $voucher->type->value,
+            'value' => $voucher->value,
+            'max_discount' => $voucher->max_discount,
+            'min_order_amount' => $voucher->min_order_amount,
+            'applicable_scope' => $voucher->applicable_scope?->value,
+            'title' => $valueText,
+            'description' => $minText.' · '.$scopeText,
+            'icon' => $icon,
+            'ends_at' => $voucher->ends_at?->toISOString(),
+        ];
+    }
+
+    protected function formatRupiah(int $amount): string
+    {
+        return 'Rp'.number_format($amount, 0, ',', '.');
+    }
+
+    protected function formatRupiahCompact(int $amount): string
+    {
+        if ($amount >= 1000000) {
+            $val = $amount / 1000000;
+            $txt = rtrim(rtrim(number_format($val, 1, ',', '.'), '0'), ',');
+
+            return $txt.'jt';
+        }
+        if ($amount >= 1000) {
+            $val = $amount / 1000;
+            // 50 -> "50", 45 -> "45", 1000 -> "1000"
+            $txt = (string) (int) $val;
+
+            return $txt.'rb';
+        }
+
+        return (string) $amount;
     }
 
     public function addItem(AddToCartRequest $request): JsonResponse

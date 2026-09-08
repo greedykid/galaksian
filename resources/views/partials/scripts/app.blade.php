@@ -147,6 +147,9 @@
                         'POTONGAN15K': 'unclaimed'
                     };
                 })(),
+                voucherList: [],
+                voucherListLoading: false,
+                showAllVouchers: false,
                 itemNotes: {},
                 editingNoteItemId: null,
                 tempNoteText: '',
@@ -239,6 +242,7 @@
                     this.startHeroCarousel();
                     this.fetchHome();
                     this.fetchCart(savedVoucherCode);
+                    this.fetchVouchers();
                     this.initScrollListener();
 
                     // Back gesture / HP back button: handle SPA subview navigation
@@ -369,7 +373,7 @@
                     this.selectedOrderDetail = null;
                     this.selectedOrderId = null;
                     if (this.qrisTimerInterval) clearInterval(this.qrisTimerInterval);
-                    if (tab === 'cart') this.fetchCart();
+                    if (tab === 'cart') { this.fetchCart(); this.fetchVouchers(); }
                     if (tab === 'transactions') {
                         this.transactionTab = 'berlangsung';
                         this.fetchOrders();
@@ -1064,6 +1068,18 @@
                     }
                 },
 
+                async fetchVouchers() {
+                    try {
+                        const res = await fetch('/api/v1/cart/vouchers', { headers: this.getHeaders() });
+                        const json = await res.json();
+                        if (json.success) {
+                            this.voucherList = json.data || [];
+                        }
+                    } catch (e) {
+                        console.error('Vouchers fetch error:', e);
+                    }
+                },
+
                 async applyVoucher() {
                     if (!this.voucherCode.trim()) return;
                     const code = this.voucherCode.trim().toUpperCase();
@@ -1232,6 +1248,7 @@
                         return;
                     }
                     await this.fetchCart();
+                    await this.fetchVouchers();
                     await this.fetchAddresses();
                     if (this.selectedAddressId && this.userAddresses.some(a => a.id === this.selectedAddressId)) {
                         this.checkoutForm.address_id = this.selectedAddressId;
