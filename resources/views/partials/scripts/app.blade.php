@@ -237,8 +237,78 @@
                     this.fetchCart(savedVoucherCode);
                     this.initScrollListener();
 
+                    // Back gesture / HP back button: handle SPA subview navigation
+                    window.addEventListener('popstate', (e) => this.handlePopState(e));
+                    // Push root state so browser back can reach it
+                    this.pushNavHistory({ tab: this.activeTab, sub: this.activeSubView, root: true });
+
                     // Restore tab/sub-view terakhir (kecuali state transaksional selesai)
                     this.$nextTick(() => this.restoreNavState());
+                },
+
+                // ================= BROWSER BACK / POPSTATE ROUTING =================
+                pushNavHistory(entry) {
+                    try {
+                        history.pushState(
+                            { view: entry || { tab: this.activeTab, sub: this.activeSubView } },
+                            '',
+                            location.href
+                        );
+                    } catch (e) {}
+                },
+
+                getCurrentView() {
+                    return { tab: this.activeTab, sub: this.activeSubView };
+                },
+
+                async handlePopState(e) {
+                    // Back HP/gesture saat sedang di sub-view: keluar dari sub-view, jangan tutup tab
+                    if (this.activeSubView) {
+                        await this.exitCurrentSubview();
+                    }
+                    // Saat di tab root, biarkan browser menangani (keluar halaman = perilaku normal)
+                },
+
+                async exitCurrentSubview() {
+                    const sub = this.activeSubView;
+                    if (!sub) return;
+
+                    // Set state kembali tanpa memicu popstate lagi (history.back() sudah pop entry)
+                    switch (sub) {
+                        case 'qris-payment':
+                            // Kembali ke detail transaksi
+                            if (this.selectedOrderId) {
+                                this.activeSubView = 'order-detail';
+                                await this.ensureOrderDetail(this.selectedOrderId);
+                            } else {
+                                this.activeSubView = null;
+                            }
+                            this.saveNavState();
+                            break;
+                        case 'shipping-payment':
+                            // Kembali ke detail transaksi
+                            if (this.selectedOrderId) {
+                                this.activeSubView = 'order-detail';
+                                await this.ensureOrderDetail(this.selectedOrderId);
+                            } else {
+                                this.activeSubView = null;
+                            }
+                            this.saveNavState();
+                            break;
+                        case 'checkout':
+                            this.activeSubView = null;
+                            this.saveNavState();
+                            this.fetchCart();
+                            break;
+                        case 'payment-instruction':
+                            this.activeSubView = null;
+                            this.saveNavState();
+                            break;
+                        default:
+                            this.activeSubView = null;
+                            this.saveNavState();
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 showToast(msg, type = 'success') {
@@ -517,6 +587,7 @@
                 },
 
                 openBrandCategoryView(type, name, slug) {
+                    this.pushNavHistory(this.getCurrentView());
                     this.selectedFilter.type = type;
                     this.selectedFilter.name = name;
                     this.selectedFilter.slug = slug;
@@ -541,6 +612,7 @@
                 },
 
                 openFlashSaleView(subtab = 'all') {
+                    this.pushNavHistory(this.getCurrentView());
                     this.flashSaleSubtab = subtab;
                     this.activeSubView = 'flash-sale';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -548,6 +620,7 @@
                 },
 
                 openIndonesiaCatalogView(subtab = 'all') {
+                    this.pushNavHistory(this.getCurrentView());
                     this.catalogSubtab = subtab;
                     this.activeSubView = 'indonesia-catalog';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -555,6 +628,7 @@
                 },
 
                 openSpecialForYouView(subtab = 'all') {
+                    this.pushNavHistory(this.getCurrentView());
                     this.specialSubtab = subtab;
                     this.activeSubView = 'special-for-you';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -562,6 +636,7 @@
                 },
 
                 openBuyAgainView(subtab = 'all') {
+                    this.pushNavHistory(this.getCurrentView());
                     this.buyAgainSubtab = subtab;
                     this.activeSubView = 'buy-again';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1116,6 +1191,7 @@
                     } else if (this.userAddresses.length > 0) {
                         this.checkoutForm.address_id = this.userAddresses[0].id;
                     }
+                    this.pushNavHistory(this.getCurrentView());
                     this.activeSubView = 'checkout';
                     this.saveNavState();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1156,6 +1232,7 @@
                             };
                             this.selectedOrderId = newOrder.id;
                             this.selectedOrderDetail = null;
+                            this.pushNavHistory(this.getCurrentView());
                             this.activeSubView = 'payment-instruction';
                             this.saveNavState();
                             try { localStorage.setItem('galaksian_payment_result', JSON.stringify(this.paymentResult)); } catch (e) {}
@@ -1532,6 +1609,7 @@
                 // ================= TRANSACTION DETAIL HANDLERS =================
                 async openOrderDetail(orderId) {
                     if (!orderId) return;
+                    this.pushNavHistory(this.getCurrentView());
                     this.selectedOrderId = orderId;
                     this.selectedOrderDetail = null;
                     this.activeTab = 'transactions';
@@ -1579,6 +1657,7 @@
 
                 // ================= QRIS PAYMENT METHODS =================
                 openQrisPayView() {
+                    this.pushNavHistory(this.getCurrentView());
                     this.activeSubView = 'qris-payment';
                     this.showQrisInstructions = false;
                     this.qrisSecondsRemaining = 2697; // 44:57 matching Figma screenshot
@@ -1752,6 +1831,7 @@
 
                 async openShippingPayment() {
                     if (!this.selectedOrderDetail) return;
+                    this.pushNavHistory(this.getCurrentView());
                     this.shippingPaymentMethod = 'virtual_account';
                     this.activeSubView = 'shipping-payment';
                     this.saveNavState();
