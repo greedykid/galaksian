@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         Setting::set('admin_whatsapp_number', '6281200000001');
         Setting::set('cs_whatsapp_number', '6281200000002');
         Setting::set('handling_fee_default', 5000);
+        Setting::set('shipping_insurance_amount', 2000);
         Setting::set('new_user_discount_enabled', '1');
         Setting::set('new_user_discount_amount', 10000);
         Setting::set('invoice_expiry_minutes', 1440);

@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Voucher;
@@ -137,6 +138,7 @@ class CheckoutService
                 'gift_to' => $payload['gift_to'] ?? $cart->gift_to ?? null,
                 'gift_message' => $payload['gift_message'] ?? $cart->gift_message ?? null,
                 'has_insurance' => $hasInsurance,
+                'insurance_amount' => $hasInsurance ? (int) Setting::get('shipping_insurance_amount', 2000) : 0,
             ]);
 
             // Reservasi kuota voucher secara atomik (mencegah race condition)

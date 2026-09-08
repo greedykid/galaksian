@@ -24,6 +24,7 @@ class OrderResource extends JsonResource
             'product_total' => $this->product_total,
             'shipping_jastip_amount' => $this->shipping_jastip_amount,
             'shipping_local_amount' => $this->shipping_local_amount,
+            'insurance_amount' => $this->insuranceAmount(),
             'shipping_total' => $this->shipping_total,
             'grand_total' => $this->grand_total ?: $this->product_total,
             'items_count' => $this->items()->count(),

@@ -15,6 +15,7 @@ class PricingResult
         public int $shippingJastipAmount = 0,
         public int $shippingLocalAmount = 0,
         public int $shippingTotal = 0,
+        public int $insuranceAmount = 0,
         public int $grandTotal = 0,
         public array $items = [],
         public int $rawSubtotal = 0,
@@ -40,6 +41,7 @@ class PricingResult
             'shipping_jastip_amount' => $this->shippingJastipAmount,
             'shipping_local_amount' => $this->shippingLocalAmount,
             'shipping_total' => $this->shippingTotal,
+            'insurance_amount' => $this->insuranceAmount,
             'grand_total' => $this->grandTotal,
             'items' => $this->items,
         ];

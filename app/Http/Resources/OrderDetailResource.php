@@ -20,6 +20,12 @@ class OrderDetailResource extends JsonResource
 
         $pendingInvoice = $this->invoices()->where('status', InvoiceStatus::PENDING)->latest()->first();
 
+        $insurance = $this->insuranceAmount();
+        $shippingJastip = (int) ($this->shipping_jastip_amount ?? 0);
+        $shippingLocal = (int) ($this->shipping_local_amount ?? 0);
+        $shippingTotal = $shippingJastip + $shippingLocal + $insurance;
+        $grandTotal = (int) $this->product_total + $shippingTotal;
+
         return [
             'id' => $this->id,
             'order_number' => $this->order_number,
@@ -37,12 +43,12 @@ class OrderDetailResource extends JsonResource
                 'voucher_amount' => $this->voucher_amount,
                 'handling_fee_amount' => $this->handling_fee_amount,
                 'gift_fee_amount' => (int) ($this->gift_fee_amount ?? 0),
-                'insurance_amount' => $this->has_insurance ? 2000 : 0,
+                'insurance_amount' => $insurance,
                 'product_total' => $this->product_total,
                 'shipping_jastip_amount' => $this->shipping_jastip_amount,
                 'shipping_local_amount' => $this->shipping_local_amount,
-                'shipping_total' => $this->shipping_total,
-                'grand_total' => $this->grand_total ?: ($this->product_total + ($this->shipping_total ?? 0)),
+                'shipping_total' => $shippingTotal,
+                'grand_total' => $grandTotal,
             ],
             'is_gift' => (bool) $this->is_gift,
             'gift_from' => $this->gift_from,

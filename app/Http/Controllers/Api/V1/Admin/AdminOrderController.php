@@ -73,7 +73,9 @@ class AdminOrderController extends Controller
         if ($jastip !== null || $local !== null) {
             $order->shipping_jastip_amount = $jastip ?? $order->shipping_jastip_amount ?? 0;
             $order->shipping_local_amount = $local ?? $order->shipping_local_amount ?? 0;
-            $order->shipping_total = (int) $order->shipping_jastip_amount + (int) $order->shipping_local_amount;
+            // Asuransi ditagihkan bersama ongkir
+            $insurance = $order->insuranceAmount();
+            $order->shipping_total = (int) $order->shipping_jastip_amount + (int) $order->shipping_local_amount + $insurance;
             $order->grand_total = (int) $order->product_total + (int) $order->shipping_total;
             $order->save();
         }

@@ -62,6 +62,22 @@
                                 <span class="font-bold text-zinc-900 tabular shrink-0" x-text="formatRupiah(selectedOrderDetail?.pricing?.shipping_local_amount || 0)"></span>
                             </div>
 
+                            <!-- Asuransi Pengiriman (Ditagihkan bersama ongkir) -->
+                            <template x-if="(selectedOrderDetail?.pricing?.insurance_amount || 0) > 0">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                                            <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-xs font-bold text-zinc-900" x-text="t('shipping_insurance', 'Asuransi Pengiriman')">Asuransi Pengiriman</h4>
+                                            <p class="text-[10px] text-zinc-500" x-text="t('insurance_desc', 'Proteksi kehilangan & kerusakan · Rp 2.000')">Proteksi kehilangan &amp; kerusakan · Rp 2.000</p>
+                                        </div>
+                                    </div>
+                                    <span class="font-bold text-zinc-900 tabular shrink-0" x-text="formatRupiah(selectedOrderDetail?.pricing?.insurance_amount || 0)"></span>
+                                </div>
+                            </template>
+
                             <!-- Total Shipping Fee (baris pemisah, bukan card) -->
                             <div class="flex items-center justify-between gap-3 pt-3 border-t border-zinc-100">
                                 <span class="text-xs font-bold text-zinc-900" x-text="t('total_shipping_fee', 'Total Biaya Pengiriman')">Total Biaya Pengiriman</span>

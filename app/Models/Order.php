@@ -42,6 +42,7 @@ class Order extends Model
         'gift_to',
         'gift_message',
         'has_insurance',
+        'insurance_amount',
         'product_paid_at',
         'shipping_paid_at',
         'completed_at',
@@ -68,6 +69,7 @@ class Order extends Model
             'exchange_rate' => 'integer',
             'is_gift' => 'boolean',
             'has_insurance' => 'boolean',
+            'insurance_amount' => 'integer',
             'product_paid_at' => 'datetime',
             'shipping_paid_at' => 'datetime',
             'completed_at' => 'datetime',
@@ -113,6 +115,23 @@ class Order extends Model
     public function shippingInvoice(): HasOne
     {
         return $this->hasOne(Invoice::class)->where('type', InvoiceType::SHIPPING);
+    }
+
+    /**
+     * Nilai asuransi pengiriman (Rp).
+     * Kolom insurance_amount diprioritaskan; fallback ke setting untuk order lama.
+     */
+    public function insuranceAmount(): int
+    {
+        if ((int) $this->insurance_amount > 0) {
+            return (int) $this->insurance_amount;
+        }
+
+        if ($this->has_insurance) {
+            return (int) Setting::get('shipping_insurance_amount', 2000);
+        }
+
+        return 0;
     }
 
     public function additionalInvoices(): HasMany

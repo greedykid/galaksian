@@ -112,7 +112,8 @@ class PricingCalculator
 
         $shippingJastip = (int) ($order->shipping_jastip_amount ?? 0);
         $shippingLocal = (int) ($order->shipping_local_amount ?? 0);
-        $shippingTotal = $shippingJastip + $shippingLocal;
+        $insurance = $order->insuranceAmount();
+        $shippingTotal = $shippingJastip + $shippingLocal + $insurance;
         $grandTotal = (int) $order->product_total + $shippingTotal;
 
         return new PricingResult(
@@ -126,6 +127,7 @@ class PricingCalculator
             shippingJastipAmount: $shippingJastip,
             shippingLocalAmount: $shippingLocal,
             shippingTotal: $shippingTotal,
+            insuranceAmount: $insurance,
             grandTotal: $grandTotal,
             items: [],
             rawSubtotal: $rawSubtotal,
