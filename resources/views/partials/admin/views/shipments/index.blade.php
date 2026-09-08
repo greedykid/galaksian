@@ -16,9 +16,13 @@
                         <p class="text-[11px] text-zinc-500" x-text="(s.origin_country || '') + ' → ' + (s.destination_country || '')"></p>
                         <p class="text-[11px] text-zinc-500" x-text="(s.orders_count || 0) + ' order'"></p>
                     </div>
-                    <div class="flex gap-2 pt-1 border-t border-zinc-100">
-                        <button @click="activeView='shipment-form'" class="text-[11px] font-bold text-blue-600 hover:underline" x-text="t('edit','Edit')"></button>
-                        <button @click="sendBagasian(s.id)" class="text-[11px] font-bold text-amber-600 hover:underline" x-text="t('send_bagasian','Kirim Bagasian')"></button>
+                    <div class="flex gap-2 pt-1 border-t border-zinc-100 justify-end">
+                        <button @click="sendBagasian(s.id)" class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 flex items-center justify-center text-amber-600 transition" title="Kirim Bagasian">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        </button>
+                        <button @click="activeView='shipment-form'" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-blue-600 transition" title="Edit">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
                     </div>
                 </div>
             </template>

@@ -65,6 +65,9 @@
             productFilterActive: '',
             productForm: { id: null, name: '', sku: '', slug: '', price: 0, discount_price: null, stock: 0, low_stock_threshold: 0, availability_type: 'ready_stock', brand_id: '', category_id: '', description: '', is_active: true, images: [] },
             productFormLoading: false,
+            productImages: [],
+            productImageUploading: false,
+            productImageFiles: [],
             productImportJson: '',
             importLoading: false,
 
@@ -382,6 +385,8 @@
                             description: d.description || '', is_active: !!d.is_active,
                             images: (d.images || []).map(i => i.path),
                         };
+                        // Gambar untuk UI (dengan id + path) agar bisa dihapus per gambar.
+                        this.productImages = (d.images || []).map(i => ({ id: i.id, path: i.path, is_primary: i.is_primary }));
                     }
                 } catch (e) { console.error('Product form error:', e); }
             },
@@ -420,6 +425,47 @@
             },
 
             searchProducts() { this.productsPage = 1; this.loadProducts(); },
+
+            // Pilih file gambar (dipicu oleh <input type=file>)
+            onProductImagesSelected(event) {
+                this.productImageFiles = Array.from(event.target.files || []).slice(0, 5);
+            },
+
+            // Upload gambar produk (multipart) ke endpoint admin.
+            async doUploadProductImages() {
+                if (!this.productForm.id) { this.showToast('Simpan produk dulu sebelum upload gambar.', 'error'); return; }
+                if (!this.productImageFiles.length) { this.showToast('Pilih gambar dulu.', 'error'); return; }
+                this.productImageUploading = true;
+                try {
+                    const fd = new FormData();
+                    this.productImageFiles.forEach(f => fd.append('images[]', f));
+                    const res = await fetch('/api/v1/admin/products/' + this.productForm.id + '/images', {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + this.adminToken },
+                        body: fd
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        this.showToast('Gambar berhasil diupload.');
+                        this.productImageFiles = [];
+                        await this.openProductForm(this.productForm.id);
+                    } else {
+                        this.showToast(json.message || 'Gagal upload gambar.', 'error');
+                    }
+                } catch (e) { this.showToast('Gagal upload gambar.', 'error'); }
+                finally { this.productImageUploading = false; }
+            },
+
+            // Hapus satu gambar produk.
+            async doDeleteProductImage(imageId) {
+                if (!this.productForm.id) return;
+                try {
+                    const res = await fetch('/api/v1/admin/products/' + this.productForm.id + '/images/' + imageId, { method: 'DELETE', headers: this.getHeaders() });
+                    const json = await res.json();
+                    this.showToast(json.success ? 'Gambar dihapus.' : (json.message || 'Gagal.'), json.success ? 'success' : 'error');
+                    if (json.success) await this.openProductForm(this.productForm.id);
+                } catch (e) { this.showToast('Gagal hapus gambar.', 'error'); }
+            },
 
             async doImportProducts() {
                 if (!this.productImportJson.trim()) { this.showToast('Isi JSON dulu.', 'error'); return; }

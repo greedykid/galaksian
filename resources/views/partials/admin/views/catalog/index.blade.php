@@ -22,8 +22,8 @@
                             <p class="text-[10px] text-zinc-400" x-text="b.slug || ''"></p>
                         </div>
                         <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full" :class="b.is_active ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-500'" x-text="b.is_active ? t('active','Aktif') : t('inactive','Nonaktif')"></span>
-                        <button @click="catalogEdit(b,'brand')" class="text-[11px] font-bold text-blue-600 hover:underline" x-text="t('edit','Edit')"></button>
-                        <button @click="deleteCatalog('brands', b.id)" class="text-[11px] font-bold text-red-600 hover:underline" x-text="t('delete','Hapus')"></button>
+                        <button @click="catalogEdit(b,'brand')" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-blue-600 transition" title="Edit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button @click="deleteCatalog('brands', b.id)" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-red-50 flex items-center justify-center text-zinc-500 hover:text-red-600 transition" title="Hapus"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 4v6m4-6v6"/></svg></button>
                     </div>
                 </template>
                 <template x-if="brands.length === 0"><p class="text-center text-xs text-zinc-400 py-6" x-text="t('no_brands','Belum ada brand')"></p></template>
@@ -39,8 +39,8 @@
                             <p class="text-xs font-semibold text-zinc-900" x-text="c.name"></p>
                             <p class="text-[10px] text-zinc-400" x-text="c.slug || ''"></p>
                         </div>
-                        <button @click="catalogEdit(c,'category')" class="text-[11px] font-bold text-blue-600 hover:underline" x-text="t('edit','Edit')"></button>
-                        <button @click="deleteCatalog('categories', c.id)" class="text-[11px] font-bold text-red-600 hover:underline" x-text="t('delete','Hapus')"></button>
+                        <button @click="catalogEdit(c,'category')" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-blue-600 transition" title="Edit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button @click="deleteCatalog('categories', c.id)" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-red-50 flex items-center justify-center text-zinc-500 hover:text-red-600 transition" title="Hapus"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 4v6m4-6v6"/></svg></button>
                     </div>
                 </template>
                 <template x-if="categories.length === 0"><p class="text-center text-xs text-zinc-400 py-6" x-text="t('no_categories','Belum ada kategori')"></p></template>
@@ -57,9 +57,9 @@
                             <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full" :class="b.is_active ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-500'" x-text="b.is_active ? t('active','Aktif') : t('inactive','Nonaktif')"></span>
                         </div>
                         <p class="text-[10px] text-zinc-400" x-text="(b.locale || '') + ' · ' + (b.country_filter || '')"></p>
-                        <div class="flex gap-2 pt-1 border-t border-zinc-100">
-                            <button @click="catalogEdit(b,'banner')" class="text-[11px] font-bold text-blue-600 hover:underline" x-text="t('edit','Edit')"></button>
-                            <button @click="deleteCatalog('banners', b.id)" class="text-[11px] font-bold text-red-600 hover:underline" x-text="t('delete','Hapus')"></button>
+                        <div class="flex gap-2 pt-1 border-t border-zinc-100 justify-end">
+                            <button @click="catalogEdit(b,'banner')" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-blue-600 transition" title="Edit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            <button @click="deleteCatalog('banners', b.id)" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-red-50 flex items-center justify-center text-zinc-500 hover:text-red-600 transition" title="Hapus"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 4v6m4-6v6"/></svg></button>
                         </div>
                     </div>
                 </template>

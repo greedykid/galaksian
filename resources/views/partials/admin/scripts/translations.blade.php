@@ -101,6 +101,11 @@
             delete: 'Hapus',
             save: 'Simpan',
             import: 'Import',
+            product_images: 'Gambar Produk',
+            choose_images: 'Pilih Gambar',
+            upload: 'Upload',
+            image_hint: 'Maks 5 gambar, JPG/PNG/WebP, 3MB per file',
+            primary: 'Utama',
             // Shipment
             shipment_management: 'Manajemen Shipment',
             add_shipment: '+ Shipment',
@@ -250,6 +255,11 @@
             delete: 'Delete',
             save: 'Save',
             import: 'Import',
+            product_images: 'Product Images',
+            choose_images: 'Choose Images',
+            upload: 'Upload',
+            image_hint: 'Max 5 images, JPG/PNG/WebP, 3MB each',
+            primary: 'Primary',
             // Shipment
             shipment_management: 'Shipment Management',
             add_shipment: '+ Shipment',

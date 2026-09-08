@@ -15,7 +15,9 @@
                         <p class="text-[11px] text-zinc-500" x-text="u.phone || '-'"></p>
                         <p class="text-[10px] text-zinc-400" x-text="u.email || ''"></p>
                     </div>
-                    <button @click="editUser(u); activeView='user-form'" class="text-[11px] font-bold text-blue-600 hover:underline shrink-0" x-text="t('edit','Edit')"></button>
+                    <button @click="editUser(u); activeView='user-form'" class="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-blue-600 transition shrink-0" title="Edit">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
                 </div>
             </template>
             <template x-if="users.length === 0 && !usersLoading"><p class="text-center text-xs text-zinc-400 py-8" x-text="t('no_users','Tidak ada user')"></p></template>
