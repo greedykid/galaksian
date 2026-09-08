@@ -41,15 +41,15 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Orders
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
-    Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
-    Route::post('/orders/{id}/assign-shipment', [AdminOrderController::class, 'assignShipment']);
-    Route::post('/orders/{id}/invoices', [AdminOrderController::class, 'createInvoice']);
+    Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->middleware('finance');
+    Route::post('/orders/{id}/assign-shipment', [AdminOrderController::class, 'assignShipment'])->middleware('finance');
+    Route::post('/orders/{id}/invoices', [AdminOrderController::class, 'createInvoice'])->middleware('finance');
 
     // Refunds
     Route::get('/refunds', [AdminRefundController::class, 'index']);
-    Route::post('/refunds', [AdminRefundController::class, 'store']);
-    Route::post('/refunds/{id}/approve', [AdminRefundController::class, 'approve']);
-    Route::post('/refunds/{id}/reject', [AdminRefundController::class, 'reject']);
+    Route::post('/refunds', [AdminRefundController::class, 'store'])->middleware('finance');
+    Route::post('/refunds/{id}/approve', [AdminRefundController::class, 'approve'])->middleware('finance');
+    Route::post('/refunds/{id}/reject', [AdminRefundController::class, 'reject'])->middleware('finance');
 
     // Users
     Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'update']);

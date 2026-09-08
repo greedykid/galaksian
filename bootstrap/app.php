@@ -2,6 +2,7 @@
 
 use App\Exceptions\BusinessException;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\FinanceMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'finance' => FinanceMiddleware::class,
             'localize' => LocalizationMiddleware::class,
         ]);
     })

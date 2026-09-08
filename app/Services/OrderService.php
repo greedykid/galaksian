@@ -7,6 +7,7 @@ use App\Enums\InvoiceType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
+use App\Exceptions\BusinessException;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
@@ -33,7 +34,16 @@ class OrderService
             }
 
             if ($data['resolution'] === 'refund') {
-                $refundAmount = (int) ($data['amount'] ?? $item->subtotal);
+                // PENTING: jangan percaya nominal dari klien. Gunakan snapshot order di DB.
+                // Hanya berlaku bila item belum di-resolve sebelumnya.
+                $refundAmount = (int) $item->subtotal;
+                if ($item->refund_status && $item->refund_status !== 'requested' && $item->refund_status !== 'offset_settled') {
+                    throw new BusinessException('Barang ini sudah pernah diproses.');
+                }
+                // Kalau klien berusaha mengirim nominal tak wajar, tolak.
+                if (isset($data['amount']) && (int) $data['amount'] !== $refundAmount) {
+                    throw new BusinessException('Nominal refund tidak valid.');
+                }
 
                 // SKEMA B: Cek apakah ada Invoice Tambahan yang belum dibayar (PENDING) pada pesanan ini
                 $unpaidAdditionalInvoices = $order->invoices()
@@ -171,7 +181,16 @@ class OrderService
             } elseif ($data['resolution'] === 'replace') {
                 $oldName = $item->product_name_snapshot;
                 $oldPrice = (int) $item->unit_price;
+
+                // Harga pengganti dari produk yang dipilih (boleh custom price/nego).
+                // Keamanan utama: invoice tambahan yang tercipta berstatus PENDING
+                // (harus dibayar user), dan offset PAID hanya didukung refund LEGIT
+                // yang kini dihitung dari snapshot order ($item->subtotal), bukan input.
                 $newPrice = (int) ($data['replacement_price'] ?? 0);
+                if ($newPrice <= 0) {
+                    throw new BusinessException('Harga pengganti tidak valid.');
+                }
+
                 $newName = $data['replacement_name'] ?? 'Produk Pengganti';
                 $priceDiff = ($newPrice - $oldPrice) * $item->qty;
 

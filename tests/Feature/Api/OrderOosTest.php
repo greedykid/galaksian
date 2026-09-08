@@ -80,6 +80,27 @@ class OrderOosTest extends TestCase
         ]);
     }
 
+    public function test_user_cannot_manipulate_refund_amount(): void
+    {
+        // User mencoba mengirim amount yang lebih besar dari subtotal item (snapshot order).
+        // Ini harus DITOLAK agar tidak bisa menggelembungkan refund / menandai invoice PAID.
+        $response = $this->actingAs($this->user)
+            ->postJson("/api/v1/orders/{$this->order->id}/items/{$this->orderItem->id}/resolve-oos", [
+                'resolution' => 'refund',
+                'amount' => 999999,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['amount']);
+
+        // Tidak ada refund yang dibuat & order item tidak berubah status refund.
+        $this->assertDatabaseMissing('refunds', [
+            'order_id' => $this->order->id,
+        ]);
+        $this->orderItem->refresh();
+        $this->assertNull($this->orderItem->refund_status);
+    }
+
     public function test_user_can_resolve_oos_with_cheaper_replacement_and_refund(): void
     {
         $response = $this->actingAs($this->user)

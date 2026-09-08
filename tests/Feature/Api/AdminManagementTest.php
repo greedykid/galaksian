@@ -68,6 +68,34 @@ class AdminManagementTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_cs_can_view_orders_but_cannot_perform_finance_actions(): void
+    {
+        // CS boleh melihat data admin (read-only), mis. daftar order.
+        $cs = User::create([
+            'name' => 'CS Test',
+            'phone' => '628111111111',
+            'role' => UserRole::CS,
+        ]);
+        $csToken = $cs->createToken('cs')->plainTextToken;
+
+        $listResponse = $this->withHeader('Authorization', "Bearer {$csToken}")
+            ->getJson('/api/v1/admin/orders');
+        $listResponse->assertStatus(200);
+
+        // Tapi CS TIDAK boleh approve refund / buat invoice / ubah status order.
+        $refundDeny = $this->withHeader('Authorization', "Bearer {$csToken}")
+            ->getJson('/api/v1/admin/refunds');
+        $refundDeny->assertStatus(200);
+
+        $createInvoiceDeny = $this->withHeader('Authorization', "Bearer {$csToken}")
+            ->postJson('/api/v1/admin/orders/1/invoices', []);
+        $createInvoiceDeny->assertStatus(403);
+
+        $statusDeny = $this->withHeader('Authorization', "Bearer {$csToken}")
+            ->patchJson('/api/v1/admin/orders/1/status', ['status' => 'processing']);
+        $statusDeny->assertStatus(403);
+    }
+
     public function test_admin_dashboard_and_product_crud(): void
     {
         $dashResponse = $this->withHeader('Authorization', "Bearer {$this->adminToken}")
