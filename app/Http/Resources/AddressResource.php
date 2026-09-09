@@ -15,7 +15,7 @@ class AddressResource extends JsonResource
             'recipient_name' => $this->recipient_name,
             'phone' => $this->phone,
             'address' => $this->address,
-            'photo_path' => $this->photo_path,
+            'has_photo' => filled($this->photo_path),
             'api_address' => $this->api_address,
             'delivery_note' => $this->delivery_note?->value,
             'is_default' => (bool) $this->is_default,

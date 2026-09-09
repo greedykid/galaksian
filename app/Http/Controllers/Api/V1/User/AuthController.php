@@ -94,15 +94,15 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user->password && $request->filled('current_password')) {
-            if (! Hash::check($request->validated('current_password'), $user->password)) {
-                return $this->errorResponse('Password lama yang Anda masukkan tidak sesuai.', 422);
-            }
+        if ($user->password && ! Hash::check($request->validated('current_password'), $user->password)) {
+            return $this->errorResponse('Password lama yang Anda masukkan tidak sesuai.', 422);
         }
 
         $user->update([
             'password' => Hash::make($request->validated('password')),
         ]);
+        $currentTokenId = $user->currentAccessToken()?->getKey();
+        $user->tokens()->when($currentTokenId, fn ($query) => $query->where('id', '!=', $currentTokenId))->delete();
 
         return $this->successResponse(null, 'Password berhasil diperbarui.');
     }

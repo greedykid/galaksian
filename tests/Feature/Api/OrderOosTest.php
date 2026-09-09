@@ -101,13 +101,25 @@ class OrderOosTest extends TestCase
         $this->assertNull($this->orderItem->refund_status);
     }
 
+    private function replacementProduct(string $name, int $price): Product
+    {
+        return Product::create([
+            'name' => $name,
+            'slug' => strtolower(str_replace(' ', '-', $name)).'-'.uniqid(),
+            'brand_id' => $this->orderItem->product?->brand_id ?? $this->orderItem->product->brand_id,
+            'price' => $price,
+            'stock' => 10,
+            'availability_type' => ProductAvailability::READY_STOCK,
+            'is_active' => true,
+        ]);
+    }
+
     public function test_user_can_resolve_oos_with_cheaper_replacement_and_refund(): void
     {
         $response = $this->actingAs($this->user)
             ->postJson("/api/v1/orders/{$this->order->id}/items/{$this->orderItem->id}/resolve-oos", [
                 'resolution' => 'replace',
-                'replacement_name' => 'Produk Pengganti Murah',
-                'replacement_price' => 60000,
+                'replacement_product_id' => $this->replacementProduct('Produk Pengganti Murah', 60000)->id,
             ]);
 
         $response->assertStatus(200);
@@ -137,8 +149,7 @@ class OrderOosTest extends TestCase
         $response = $this->actingAs($this->user)
             ->postJson("/api/v1/orders/{$this->order->id}/items/{$this->orderItem->id}/resolve-oos", [
                 'resolution' => 'replace',
-                'replacement_name' => 'Produk Pengganti Mahal',
-                'replacement_price' => 150000,
+                'replacement_product_id' => $this->replacementProduct('Produk Pengganti Mahal', 150000)->id,
             ]);
 
         $response->assertStatus(200);
@@ -220,8 +231,7 @@ class OrderOosTest extends TestCase
         $res2 = $this->actingAs($this->user)
             ->postJson("/api/v1/orders/{$this->order->id}/items/{$item2->id}/resolve-oos", [
                 'resolution' => 'replace',
-                'replacement_name' => 'Produk Pengganti Lebih Mahal',
-                'replacement_price' => 150000,
+                'replacement_product_id' => $this->replacementProduct('Produk Pengganti Lebih Mahal', 150000)->id,
             ]);
         $res2->assertStatus(200);
 
@@ -281,8 +291,7 @@ class OrderOosTest extends TestCase
         $resA = $this->actingAs($this->user)
             ->postJson("/api/v1/orders/{$this->order->id}/items/{$itemA->id}/resolve-oos", [
                 'resolution' => 'replace',
-                'replacement_name' => 'Produk A Pengganti',
-                'replacement_price' => 150000,
+                'replacement_product_id' => $this->replacementProduct('Produk A Pengganti', 150000)->id,
             ]);
         $resA->assertStatus(200);
 
@@ -355,8 +364,7 @@ class OrderOosTest extends TestCase
         $res = $this->actingAs($this->user)
             ->postJson("/api/v1/orders/{$this->order->id}/items/{$itemY->id}/resolve-oos", [
                 'resolution' => 'replace',
-                'replacement_name' => 'Produk Y Pengganti Mahal',
-                'replacement_price' => 160000,
+                'replacement_product_id' => $this->replacementProduct('Produk Y Pengganti Mahal', 160000)->id,
             ]);
         $res->assertStatus(200);
 

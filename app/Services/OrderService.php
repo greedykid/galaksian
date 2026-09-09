@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
+use App\Enums\ProductAvailability;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
 use App\Exceptions\BusinessException;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use App\Models\Product;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
@@ -25,7 +27,12 @@ class OrderService
     public function resolveOosItem(Order $order, int $itemId, array $data, ?User $actor = null): Order
     {
         return DB::transaction(function () use ($order, $itemId, $data, $actor) {
-            $item = $order->items()->findOrFail($itemId);
+            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $item = $order->items()->lockForUpdate()->findOrFail($itemId);
+
+            if ($item->refund_status !== null) {
+                throw new BusinessException('Item ini sudah pernah diproses.');
+            }
 
             $actorType = 'user';
             $actorId = $actor?->id;
@@ -37,9 +44,6 @@ class OrderService
                 // PENTING: jangan percaya nominal dari klien. Gunakan snapshot order di DB.
                 // Hanya berlaku bila item belum di-resolve sebelumnya.
                 $refundAmount = (int) $item->subtotal;
-                if ($item->refund_status && $item->refund_status !== 'requested' && $item->refund_status !== 'offset_settled') {
-                    throw new BusinessException('Barang ini sudah pernah diproses.');
-                }
                 // Kalau klien berusaha mengirim nominal tak wajar, tolak.
                 if (isset($data['amount']) && (int) $data['amount'] !== $refundAmount) {
                     throw new BusinessException('Nominal refund tidak valid.');
@@ -182,16 +186,15 @@ class OrderService
                 $oldName = $item->product_name_snapshot;
                 $oldPrice = (int) $item->unit_price;
 
-                // Harga pengganti dari produk yang dipilih (boleh custom price/nego).
-                // Keamanan utama: invoice tambahan yang tercipta berstatus PENDING
-                // (harus dibayar user), dan offset PAID hanya didukung refund LEGIT
-                // yang kini dihitung dari snapshot order ($item->subtotal), bukan input.
-                $newPrice = (int) ($data['replacement_price'] ?? 0);
-                if ($newPrice <= 0) {
-                    throw new BusinessException('Harga pengganti tidak valid.');
+                $replacement = Product::active()->find($data['replacement_product_id'] ?? null);
+                if (! $replacement || ($replacement->availability_type === ProductAvailability::READY_STOCK && $replacement->stock < $item->qty)) {
+                    throw new BusinessException('Produk pengganti tidak tersedia.');
                 }
 
-                $newName = $data['replacement_name'] ?? 'Produk Pengganti';
+                $newPrice = (int) ($replacement->discount_price ?? $replacement->price);
+                $newName = $replacement->name;
+                $item->product_id = $replacement->id;
+                $item->save();
                 $priceDiff = ($newPrice - $oldPrice) * $item->qty;
 
                 if ($priceDiff > 0) {

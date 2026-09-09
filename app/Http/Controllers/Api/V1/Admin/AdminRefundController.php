@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProcessRefundRequest;
 use App\Http\Resources\RefundResource;
+use App\Http\Requests\Admin\RejectRefundRequest;
 use App\Models\Order;
 use App\Models\Refund;
 use App\Services\AdminActivityLogService;
@@ -71,10 +72,10 @@ class AdminRefundController extends Controller
         );
     }
 
-    public function reject(int $id, Request $request): JsonResponse
+    public function reject(int $id, RejectRefundRequest $request): JsonResponse
     {
         $refund = Refund::findOrFail($id);
-        $reason = $request->input('reason', 'Ditolak oleh admin.');
+        $reason = $request->validated('reason');
         $refund = $this->refundService->rejectRefund($refund, $request->user(), $reason);
 
         $this->activityLogService->log(

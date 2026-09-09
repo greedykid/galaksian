@@ -19,4 +19,14 @@ class ChangePasswordRequest extends FormRequest
             'password_confirmation' => ['required', 'string', 'min:8'],
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            $user = $this->user();
+            if ($user?->password && ! $this->filled('current_password')) {
+                $validator->errors()->add('current_password', 'Password lama wajib diisi.');
+            }
+        });
+    }
 }

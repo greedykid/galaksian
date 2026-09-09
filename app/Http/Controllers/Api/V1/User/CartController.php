@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AddToCartRequest;
 use App\Http\Requests\User\ApplyVoucherRequest;
 use App\Http\Requests\User\UpdateCartItemRequest;
+use App\Http\Requests\User\UpdateGiftOptionRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -244,16 +245,17 @@ class CartController extends Controller
         );
     }
 
-    public function updateGiftOption(Request $request): JsonResponse
+    public function updateGiftOption(UpdateGiftOptionRequest $request): JsonResponse
     {
         $cart = $this->getOrCreateCart($request);
-        $isGift = $request->boolean('is_gift');
+        $data = $request->validated();
+        $isGift = (bool) $data['is_gift'];
 
         $cart->update([
             'is_gift' => $isGift,
-            'gift_from' => $request->input('gift_from'),
-            'gift_to' => $request->input('gift_to'),
-            'gift_message' => $request->input('gift_message'),
+            'gift_from' => $data['gift_from'] ?? null,
+            'gift_to' => $data['gift_to'] ?? null,
+            'gift_message' => $data['gift_message'] ?? null,
         ]);
 
         $voucher = $this->getVoucherForCart($request, $cart);
@@ -331,7 +333,7 @@ class CartController extends Controller
             return $cart;
         }
 
-        $token = $request->header('X-Cart-Token') ?? $request->input('cart_token') ?? (string) Str::uuid();
+        $token = $request->header('X-Cart-Token') ?? (string) Str::uuid();
 
         return Cart::firstOrCreate(
             ['cart_token' => $token, 'status' => 'active'],

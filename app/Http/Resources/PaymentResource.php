@@ -16,7 +16,10 @@ class PaymentResource extends JsonResource
             'status' => $this->status?->value,
             'amount' => $this->amount,
             'gateway_reference' => $this->gateway_reference,
-            'instructions' => $this->raw_payload,
+            'instructions' => $this->when(
+                $this->status?->value === 'pending',
+                $this->raw_payload
+            ),
             'paid_at' => $this->paid_at?->toIso8601String(),
             'failed_at' => $this->failed_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),

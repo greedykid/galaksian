@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\InvoiceStatus;
 use App\Enums\OrderStatus;
 use App\Enums\RefundStatus;
 use App\Exceptions\BusinessException;
@@ -45,6 +46,23 @@ class RefundService
         }
 
         return DB::transaction(function () use ($order, $data, $amount) {
+            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $paidTotal = (int) $order->invoices()->where('status', InvoiceStatus::PAID)->sum('amount');
+            if ($paidTotal === 0) {
+                $paidTotal = (int) ($order->grand_total ?: $order->product_total);
+            }
+            $existingRefunds = (int) $order->refunds()->whereIn('status', [RefundStatus::PENDING, RefundStatus::APPROVED, RefundStatus::COMPLETED])->sum('amount');
+            if ($amount > max(0, $paidTotal - $existingRefunds)) {
+                throw new BusinessException('Nominal refund melebihi sisa dana yang dapat dikembalikan.');
+            }
+
+            if (! empty($data['invoice_id'])) {
+                $invoice = $order->invoices()->whereKey($data['invoice_id'])->first();
+                if (! $invoice || $invoice->status !== InvoiceStatus::PAID) {
+                    throw new BusinessException('Invoice refund tidak valid.');
+                }
+            }
+
             $refund = Refund::create([
                 'order_id' => $order->id,
                 'invoice_id' => $data['invoice_id'] ?? null,
@@ -68,6 +86,10 @@ class RefundService
     public function approveRefund(Refund $refund, User $admin): Refund
     {
         return DB::transaction(function () use ($refund, $admin) {
+            $refund = Refund::whereKey($refund->id)->lockForUpdate()->firstOrFail();
+            if ($refund->status !== RefundStatus::PENDING) {
+                throw new BusinessException('Refund hanya dapat disetujui saat berstatus pending.');
+            }
             $refund->update([
                 'status' => RefundStatus::COMPLETED,
                 'approved_by' => $admin->id,
@@ -89,6 +111,10 @@ class RefundService
     public function rejectRefund(Refund $refund, User $admin, string $reason): Refund
     {
         return DB::transaction(function () use ($refund, $admin, $reason) {
+            $refund = Refund::whereKey($refund->id)->lockForUpdate()->firstOrFail();
+            if ($refund->status !== RefundStatus::PENDING) {
+                throw new BusinessException('Refund hanya dapat ditolak saat berstatus pending.');
+            }
             $refund->update([
                 'status' => RefundStatus::REJECTED,
                 'approved_by' => $admin->id,

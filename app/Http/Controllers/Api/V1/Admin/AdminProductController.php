@@ -255,7 +255,8 @@ class AdminProductController extends Controller
         $currentMaxOrder = (int) $product->images()->max('order');
 
         foreach ($request->file('images') as $index => $file) {
-            $filename = Str::slug($product->name).'-'.time().'-'.$index.'.'.$file->getClientOriginalExtension();
+            $extension = $file->extension() ?: $file->guessExtension() ?: 'jpg';
+            $filename = Str::slug($product->name).'-'.Str::random(12).'-'.$index.'.'.$extension;
             $path = $file->storeAs('products/'.$product->slug, $filename, 'public');
 
             ProductImage::create([

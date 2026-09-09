@@ -29,58 +29,66 @@ class PaymentGatewayService
             throw new BusinessException('Invoice ini sudah dibayar.');
         }
 
-        $paymentMethod = PaymentMethod::tryFrom($method) ?? PaymentMethod::QRIS;
-        $gatewayRef = 'PAY-'.strtoupper(Str::random(12));
+        return DB::transaction(function () use ($invoice, $method) {
+            $invoice = Invoice::where('id', $invoice->id)->lockForUpdate()->firstOrFail();
 
-        $instructions = match ($paymentMethod) {
-            PaymentMethod::VIRTUAL_ACCOUNT => [
-                'type' => 'virtual_account',
-                'bank' => 'BCA',
-                'va_number' => '8801'.rand(10000000, 99999999),
-                'expiry_time' => $invoice->expired_at?->toIso8601String(),
-            ],
-            PaymentMethod::QRIS => [
-                'type' => 'qris',
-                'qr_string' => '00020101021226540014ID.LINKAJA.WWW01189360091100223746655204581253033605802ID5911GALAKSIAN6007JAKARTA61051234062070703A016304',
-                'qr_url' => 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=GALAKSIAN_'.$invoice->invoice_number,
-                'expiry_time' => $invoice->expired_at?->toIso8601String(),
-            ],
-            PaymentMethod::PAYPAL => [
-                'type' => 'paypal',
-                'checkout_url' => 'https://www.sandbox.paypal.com/checkoutnow?token=EC-'.Str::random(17),
-                'expiry_time' => $invoice->expired_at?->toIso8601String(),
-            ],
-            PaymentMethod::MANUAL => [
-                'type' => 'manual',
-                'bank_name' => 'BCA',
-                'account_number' => '1234567890',
-                'account_name' => 'PT Galaksian Jastip Nusantara',
-                'expiry_time' => $invoice->expired_at?->toIso8601String(),
-            ],
-        };
+            if ($invoice->status === InvoiceStatus::PAID) {
+                throw new BusinessException('Invoice ini sudah dibayar.');
+            }
 
-        $payment = Payment::create([
-            'invoice_id' => $invoice->id,
-            'method' => $paymentMethod,
-            'status' => PaymentStatus::PENDING,
-            'amount' => $invoice->amount,
-            'gateway_reference' => $gatewayRef,
-            'raw_payload' => $instructions,
-        ]);
+            $paymentMethod = PaymentMethod::tryFrom($method) ?? PaymentMethod::QRIS;
+            $gatewayRef = 'PAY-'.strtoupper(Str::random(12));
 
-        $invoice->update([
-            'payment_method' => $paymentMethod,
-            'gateway_reference' => $gatewayRef,
-        ]);
+            $instructions = match ($paymentMethod) {
+                PaymentMethod::VIRTUAL_ACCOUNT => [
+                    'type' => 'virtual_account',
+                    'bank' => 'BCA',
+                    'va_number' => '8801'.random_int(10000000, 99999999),
+                    'expiry_time' => $invoice->expired_at?->toIso8601String(),
+                ],
+                PaymentMethod::QRIS => [
+                    'type' => 'qris',
+                    'qr_string' => '00020101021226540014ID.LINKAJA.WWW01189360091100223746655204581253033605802ID5911GALAKSIAN6007JAKARTA61051234062070703A016304',
+                    'qr_url' => 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=GALAKSIAN_'.$invoice->invoice_number,
+                    'expiry_time' => $invoice->expired_at?->toIso8601String(),
+                ],
+                PaymentMethod::PAYPAL => [
+                    'type' => 'paypal',
+                    'checkout_url' => 'https://www.sandbox.paypal.com/checkoutnow?token=EC-'.Str::random(17),
+                    'expiry_time' => $invoice->expired_at?->toIso8601String(),
+                ],
+                PaymentMethod::MANUAL => [
+                    'type' => 'manual',
+                    'bank_name' => 'BCA',
+                    'account_number' => '1234567890',
+                    'account_name' => 'PT Galaksian Jastip Nusantara',
+                    'expiry_time' => $invoice->expired_at?->toIso8601String(),
+                ],
+            };
 
-        return [
-            'invoice_number' => $invoice->invoice_number,
-            'amount' => $invoice->amount,
-            'method' => $paymentMethod->value,
-            'payment_reference' => $gatewayRef,
-            'instructions' => $instructions,
-            'expired_at' => $invoice->expired_at?->toIso8601String(),
-        ];
+            $payment = Payment::create([
+                'invoice_id' => $invoice->id,
+                'method' => $paymentMethod,
+                'status' => PaymentStatus::PENDING,
+                'amount' => $invoice->amount,
+                'gateway_reference' => $gatewayRef,
+                'raw_payload' => $instructions,
+            ]);
+
+            $invoice->update([
+                'payment_method' => $paymentMethod,
+                'gateway_reference' => $gatewayRef,
+            ]);
+
+            return [
+                'invoice_number' => $invoice->invoice_number,
+                'amount' => $invoice->amount,
+                'method' => $paymentMethod->value,
+                'payment_reference' => $gatewayRef,
+                'instructions' => $instructions,
+                'expired_at' => $invoice->expired_at?->toIso8601String(),
+            ];
+        });
     }
 
     protected function extractHeaderValue(array $headers, string $key): ?string
@@ -99,12 +107,21 @@ class PaymentGatewayService
     protected function verifyWebhookSignature(array $payload, array $headers = []): void
     {
         $source = $payload['source'] ?? 'payment_gateway';
+        if (! in_array($source, ['midtrans', 'xendit', 'payment_gateway'], true)) {
+            throw new BusinessException('Sumber webhook tidak valid.', 401);
+        }
         $config = config('services.payment', []);
         $signingSecret = $config['signing_secret'] ?? null;
         $callbackToken = $config['callback_token'] ?? null;
+        $requireSignature = (bool) ($config['require_signature'] ?? false);
 
-        // Jika belum ada secret gateway terkonfigurasi (dev/simulasi), lewati verifikasi.
+        // Fail-closed di production: webhook tanpa secret terkonfigurasi DITOLAK.
+        // Di local/testing, simulasi gateway tetap diizinkan agar dev & test jalan.
         if (empty($signingSecret) && empty($callbackToken)) {
+            if (app()->isProduction() || $requireSignature) {
+                throw new BusinessException('Verifikasi webhook belum dikonfigurasi.', 401);
+            }
+
             return;
         }
 
@@ -154,7 +171,7 @@ class PaymentGatewayService
 
     public function handleWebhook(array $payload, array $headers = []): array
     {
-        // Verifikasi signature webhook (aktif hanya jika secret gateway dikonfigurasi)
+        // Verifikasi signature: fail-closed di production, simulasi diizinkan di local/testing.
         $this->verifyWebhookSignature($payload, $headers);
 
         $eventId = $payload['event_id'] ?? $payload['id'] ?? null;
@@ -163,43 +180,41 @@ class PaymentGatewayService
         $signature = $this->extractHeaderValue($headers, 'x-signature') ?? $payload['signature'] ?? null;
 
         // Idempotency WAJIB: setiap webhook harus memiliki event_id yang unik.
-        // Tanpa event_id, event yang sama dapat diproses dua kali (double stock decrement,
-        // double status transition) jika payload tidak menyertakan identifier.
         if (empty($eventId)) {
             throw new BusinessException('Webhook harus menyertakan event_id / id yang unik.');
         }
 
-        // Idempotency check: jika event_id sudah pernah diproses, abaikan.
-        // Memakai firstOrCreate (berbasis unique index event_id) agar aman pada race condition,
-        // sekaligus mengunci agar satu event hanya diproses sekali.
-        $webhookEvent = WebhookEvent::firstOrCreate(
-            ['event_id' => $eventId],
-            [
-                'source' => $source,
-                'event_type' => $eventType,
-                'payload' => $payload,
-                'signature' => $signature,
-                'status' => 'received',
-            ]
-        );
+        return DB::transaction(function () use ($payload, $eventId, $eventType, $source, $signature) {
+            // Kunci event row lebih dulu untuk menutup race replay bersamaan.
+            $webhookEvent = WebhookEvent::where('event_id', $eventId)->lockForUpdate()->first();
 
-        if ($webhookEvent->status === 'processed') {
-            return [
-                'status' => 'ignored',
-                'message' => 'Event already processed',
-            ];
-        }
+            if ($webhookEvent && $webhookEvent->status === 'processed') {
+                return [
+                    'status' => 'ignored',
+                    'message' => 'Event already processed',
+                ];
+            }
 
-        return DB::transaction(function () use ($payload, $webhookEvent) {
+            if (! $webhookEvent) {
+                $webhookEvent = WebhookEvent::create([
+                    'event_id' => $eventId,
+                    'source' => $source,
+                    'event_type' => $eventType,
+                    'payload' => $payload,
+                    'signature' => $signature,
+                    'status' => 'received',
+                ]);
+            }
+
             $invoiceNumber = $payload['invoice_number'] ?? null;
             $gatewayRef = $payload['gateway_reference'] ?? $payload['order_id'] ?? null;
 
             $invoice = null;
             if ($invoiceNumber) {
-                $invoice = Invoice::where('invoice_number', $invoiceNumber)->first();
+                $invoice = Invoice::where('invoice_number', $invoiceNumber)->lockForUpdate()->first();
             }
             if (! $invoice && $gatewayRef) {
-                $invoice = Invoice::where('gateway_reference', $gatewayRef)->first();
+                $invoice = Invoice::where('gateway_reference', $gatewayRef)->lockForUpdate()->first();
             }
 
             if (! $invoice) {
@@ -207,7 +222,24 @@ class PaymentGatewayService
                 throw new BusinessException('Invoice tidak ditemukan untuk webhook ini.');
             }
 
-            $paymentStatusStr = strtolower($payload['status'] ?? $payload['transaction_status'] ?? 'paid');
+            // Jangan percaya nominal dari webhook: tolak jika amount payload
+            // dikirim dan tidak sama dengan invoice.amount (gateway-agnostik).
+            $payloadAmount = $payload['amount'] ?? $payload['gross_amount'] ?? $payload['paid_amount'] ?? null;
+            if ($payloadAmount !== null && (! is_int($payloadAmount) && ! (is_string($payloadAmount) && ctype_digit($payloadAmount)))) {
+                $webhookEvent->update(['status' => 'failed']);
+                throw new BusinessException('Format nominal pembayaran tidak valid.', 422);
+            }
+            if ($payloadAmount !== null && (int) $payloadAmount !== (int) $invoice->amount) {
+                $webhookEvent->update(['status' => 'failed']);
+                throw new BusinessException('Nominal pembayaran tidak sesuai invoice.', 422);
+            }
+
+            $paymentStatus = $payload['status'] ?? $payload['transaction_status'] ?? null;
+        if (! is_string($paymentStatus) || trim($paymentStatus) === '') {
+            $webhookEvent->update(['status' => 'failed']);
+            throw new BusinessException('Status pembayaran wajib disertakan.', 422);
+        }
+        $paymentStatusStr = strtolower($paymentStatus);
 
             $payment = Payment::where('invoice_id', $invoice->id)->latest()->first();
             if (! $payment) {
@@ -264,7 +296,7 @@ class PaymentGatewayService
                     // Decrement stock for ready stock items on paid
                     foreach ($order->items as $item) {
                         if ($item->availability_type === ProductAvailability::READY_STOCK) {
-                            $prod = Product::find($item->product_id);
+                            $prod = Product::where('id', $item->product_id)->lockForUpdate()->first();
                             if ($prod) {
                                 $prod->decrement('stock', $item->qty);
                             }

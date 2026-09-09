@@ -94,9 +94,14 @@ Entitas:
 Aturan:
 
 - OTP hashed.
-- OTP punya expiry.
-- OTP punya max attempt.
+- OTP punya expiry (5 menit, single-use).
+- OTP punya max attempt (3x) + lockout per-phone 10 menit.
+- OTP request dibatasi per-phone: max 5x/15 menit + cooldown resend 60 detik.
+- Pesan error verify seragam (anti-oracle).
 - Nomor handphone sebaiknya E.164, contoh `6281234567890`.
+- Token Sanctum: user ability `user` expiry 30 hari, admin ability `admin` expiry 12 jam.
+- Perubahan password memerlukan password lama untuk akun yang sudah memiliki password.
+- Setelah password berubah, token lain milik akun tersebut dicabut.
 - Guest boleh akses catalog.
 - Checkout wajib auth.
 
@@ -157,7 +162,8 @@ Aturan:
 - Harga dihitung backend.
 - Total ongkir tidak ditampilkan pada cart/checkout pertama.
 - Cart dapat milik user authenticated.
-- Jika guest cart didukung, gunakan `cart_token` dan merge saat login.
+- Jika guest cart didukung, gunakan `X-Cart-Token` dan merge saat login.
+- Guest cart tidak menerima token dari query string atau body.
 
 ---
 
@@ -210,10 +216,12 @@ Entitas:
 
 Aturan:
 
-- Webhook idempotent.
-- Simpan raw payload.
-- Verifikasi signature.
-- Jangan proses event dua kali.
+- Webhook idempotent (event row di-lock dalam transaksi).
+- Simpan raw payload untuk audit internal, tetapi jangan expose secret/token/signature melalui resource API.
+- Verifikasi signature fail-closed di production (tanpa secret = 401).
+- Source webhook harus dikenal dan status pembayaran wajib disertakan.
+- Nominal webhook harus memiliki format valid dan sama dengan invoice.amount.
+- Jangan proses event dua kali (guard invoice PAID + lockForUpdate stok).
 
 ---
 
@@ -335,7 +343,7 @@ Aturan:
 | phone | string unique | Nomor HP |
 | email | string nullable | Opsional |
 | password | string nullable | Jika pakai password |
-| identity_number | string nullable | KTP opsional, sebaiknya encrypted |
+| identity_number | string nullable | KTP opsional, encrypted dan tidak dikembalikan pada resource umum |
 | role | string | user/admin/cs |
 | language | string | id/en |
 | is_new_user | boolean | Promo user baru |
@@ -1087,9 +1095,12 @@ localize
 ```text
 auth:sanctum
 admin role
+finance role untuk aksi keuangan
 throttle
 activity log
 ```
+
+Role `CS` dapat membaca endpoint admin yang diizinkan, tetapi tidak dapat mengubah status order yang berdampak keuangan, membuat invoice, atau memproses refund.
 
 ### Webhook
 
@@ -1161,6 +1172,9 @@ SESSION_DRIVER=redis
 SANCTUM_STATEFUL_DOMAINS=
 
 PAYMENT_GATEWAY=midtrans_xendit_custom
+PAYMENT_WEBHOOK_SECRET=
+PAYMENT_WEBHOOK_TOKEN=
+PAYMENT_WEBHOOK_REQUIRE_SIGNATURE=false
 MIDTRANS_SERVER_KEY=
 MIDTRANS_CLIENT_KEY=
 XENDIT_API_KEY=
@@ -1470,7 +1484,39 @@ Rekomendasi:
 
 ---
 
-## 20. Logging dan Audit
+## 20. Keamanan Implementasi Saat Ini
+
+Kontrol yang sudah diterapkan:
+
+- OTP di-hash, single-use, berlaku 5 menit, maksimal 3 percobaan, dan lockout per nomor.
+- Request OTP dibatasi per nomor, dengan cooldown resend.
+- Token user/admin memiliki ability dan expiry berbeda.
+- Perubahan password memerlukan password lama dan mencabut token lain.
+- Endpoint profile tidak digunakan untuk mengganti password.
+- Checkout memvalidasi ownership alamat, trip, stok, dan menghitung harga di backend.
+- Resolve OOS mengunci order/item, mengambil harga dari produk aktif, dan menolak item yang sudah diproses.
+- Refund dibatasi terhadap sisa dana, memvalidasi invoice milik order, mengunci row, dan hanya memproses status pending.
+- Webhook memerlukan event ID, signature di production, source/status/nominal valid, lock, dan idempotency.
+- Data identity number, path private, payload sensitif, dan signature tidak diekspos pada resource umum.
+- Aksi finance dibatasi middleware `finance`; role CS hanya dapat membaca akses yang diizinkan.
+
+Production checklist:
+
+```env
+APP_DEBUG=false
+PAYMENT_WEBHOOK_REQUIRE_SIGNATURE=true
+PAYMENT_WEBHOOK_SECRET=<secret-kuat>
+```
+
+```bash
+chmod 600 .env
+```
+
+Gunakan Redis untuk cache/rate limit production dan jangan gunakan credential gateway sandbox atau nilai placeholder.
+
+---
+
+## 21. Logging dan Audit
 
 Log minimal untuk:
 
@@ -1491,7 +1537,7 @@ Gunakan:
 
 ---
 
-## 21. Testing Strategy
+## 22. Testing Strategy
 
 ### Unit Test
 
@@ -1530,7 +1576,7 @@ Gunakan:
 
 ---
 
-## 22. Maintenance Runbook
+## 23. Maintenance Runbook
 
 ### Menambah field baru di order
 
@@ -1576,7 +1622,7 @@ Gunakan:
 
 ---
 
-## 23. Catatan Penting untuk AI Agent Backend
+## 24. Catatan Penting untuk AI Agent Backend
 
 Jika kamu AI agent yang bekerja di repo ini, ingat:
 
@@ -1593,7 +1639,7 @@ Jika kamu AI agent yang bekerja di repo ini, ingat:
 
 ---
 
-## 24. Keputusan Desain Awal
+## 25. Keputusan Desain Awal
 
 | Keputusan | Alasan |
 |---|---|
@@ -1609,7 +1655,7 @@ Jika kamu AI agent yang bekerja di repo ini, ingat:
 
 ---
 
-## 25. Area yang Perlu Dikonfirmasi Sebelum Final
+## 26. Area yang Perlu Dikonfirmasi Sebelum Final
 
 1. Definisi `Api alamat`.
 2. Apakah user memilih trip saat checkout.

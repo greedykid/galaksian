@@ -740,11 +740,22 @@ erDiagram
 
 ## 5. Alur Webhook Pembayaran Idempotent (Anti Bayar Dobel)
 
+Kontrol keamanan webhook saat ini:
+
+- Production wajib mengaktifkan signature atau callback token.
+- `event_id`/`id` wajib unik untuk idempotency.
+- Source webhook harus dikenal.
+- Status pembayaran dan nominal wajib valid serta nominal harus sama dengan invoice.
+- Invoice dan event dikunci dalam transaksi.
+- Event duplikat serta invoice yang sudah paid tidak diproses ulang.
+
 Diagram alur penanganan notifikasi pembayaran dari payment gateway agar bebas dari risiko dobel transaksi:
 
 ```mermaid
 flowchart TD
-    Hook["Payment Gateway Mengirim Webhook POST"] --> CheckEvent{"Apakah event_id Sudah Ada di webhook_events?"}
+    Hook["Payment Gateway Mengirim Webhook POST"] --> Verify{"Validasi signature, source, status, dan nominal"}
+    Verify -->|Invalid| Reject["Tolak webhook"]
+    Verify -->|Valid| CheckEvent{"Apakah event_id Sudah Ada di webhook_events?"}
 
     CheckEvent -- "SUDAH ADA (Duplikat)" --> Ignore["Abaikan & Return HTTP 200 (Idempotent Safe)"]
     

@@ -99,6 +99,10 @@ Galaksian mematuhi prinsip **Clean Architecture & Separation of Concerns**:
 8. **Audit Trail Lengkap**: Perubahan status order dicatat ke tabel `order_status_histories`.
 9. **Snapshot Data Transaksi**: Saat order dibuat, harga, nama produk, brand, dan alamat di-*snapshot* (disalin permanen) ke order item agar tidak terpengaruh jika harga master produk berubah di masa depan.
 10. **Tanpa Hard Delete Transaksi**: Tabel transaksi (`orders`, `invoices`, `payments`, `refunds`) tidak boleh di-hard delete.
+11. **Password Aman**: Perubahan password akun yang sudah memiliki password wajib memverifikasi password lama. Update profile tidak dapat digunakan untuk mengganti password.
+12. **Harga OOS dari Database**: Penggantian barang hanya menerima `replacement_product_id`; nama dan harga dibaca dari produk aktif di database.
+13. **Refund Terbatas**: Refund divalidasi terhadap sisa dana, invoice harus milik order terkait, dan approve/reject hanya boleh dari status pending.
+14. **Data Sensitif Minimum**: Identity number, path file private, signature, token, dan payload sensitif tidak dikembalikan pada resource umum.
 
 ---
 
@@ -181,6 +185,8 @@ Setelah langkah ini, pembeli menerima halaman **Instruksi Pembayaran** dengan QR
 ### 5.4 Pembayaran & Webhook Idempotent (Anti Bayar Dobel)
 Saat pembeli menyelesaikan transfer, payment gateway mengirim HTTP POST ke `/api/v1/webhooks/payment`.
 
+Webhook wajib memiliki `event_id` atau `id`, status pembayaran, dan nominal yang sesuai dengan invoice. Di production, secret/callback token wajib dikonfigurasi. Source tidak dikenal, status kosong, format nominal invalid, signature invalid, atau nominal mismatch ditolak.
+
 ```text
 [Webhook Masuk]
        |
@@ -243,6 +249,8 @@ Semua perubahan status secara otomatis membuat catatan permanen di tabel `order_
 ---
 
 ### 5.6 Resolusi Barang Habis di Jepang (OOS Skema B)
+
+Endpoint menerima `replacement_product_id`, bukan harga atau nama bebas dari client. Produk pengganti harus aktif dan stoknya mencukupi. Order dan item dikunci dalam transaction, dan item yang sudah memiliki resolusi tidak dapat diproses ulang.
 
 Saat traveler berbelanja di toko fisik Jepang, bisa saja satu barang ternyata kehabisan stok (*Out of Stock*).  
 Galaksian menerapkan solusi otomatis yang elegan: **Skema B (Offset Invoice)**.
@@ -350,7 +358,7 @@ Semua endpoint diawali dengan awalan versi `/api/v1`.
 | `/api/v1/orders` | `GET` | Daftar pesanan user (`?type=pending` atau `?type=selesai`). |
 | `/api/v1/orders/{id}` | `GET` | Rincian lengkap pesanan, riwayat invoice, & timeline pengiriman. |
 | `/api/v1/orders/{id}/invoices/{invoiceId}/download` | `GET` | Mengunduh file PDF resmi invoice. |
-| `/api/v1/orders/{id}/items/{itemId}/resolve-oos` | `POST` | Menentukan solusi barang habis (refund / ganti barang). |
+| `/api/v1/orders/{id}/items/{itemId}/resolve-oos` | `POST` | Refund atau penggantian barang. Penggantian wajib memakai `replacement_product_id`; item hanya dapat diproses sekali. |
 | `/api/v1/addresses` | `GET/POST`| Mengelola daftar alamat penerima barang. |
 
 ---
@@ -375,7 +383,7 @@ Wajib menyertakan Header: `Authorization: Bearer <ADMIN_TOKEN>`.
 
 | Rute | HTTP | Fungsi |
 |---|---|---|
-| `/api/v1/webhooks/payment` | `POST` | Menangkap notifikasi pembayaran dari payment gateway (idempotent). |
+| `/api/v1/webhooks/payment` | `POST` | Notifikasi pembayaran idempotent dengan validasi signature, source, status, dan nominal. |
 
 Contoh Payload Webhook:
 ```json
@@ -411,6 +419,8 @@ php artisan serve
 ---
 
 ### 2. Akun Demo untuk Testing
+
+> Credential demo hanya untuk local/testing. Jangan gunakan password atau credential pada dokumentasi ini di production.
 
 | Tipe Akun | Identifier / Email | Keterangan |
 |---|---|---|

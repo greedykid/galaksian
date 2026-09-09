@@ -40,6 +40,9 @@ return [
         'gateway' => env('PAYMENT_GATEWAY', 'system_gateway'),
         'signing_secret' => env('PAYMENT_WEBHOOK_SECRET'),
         'callback_token' => env('PAYMENT_WEBHOOK_TOKEN'),
+        // Jika true, webhook tanpa secret terkonfigurasi DITOLAK di production.
+        // Di local/testing default false agar simulasi gateway tetap bisa jalan.
+        'require_signature' => env('PAYMENT_WEBHOOK_REQUIRE_SIGNATURE', false),
         'midtrans_server_key' => env('MIDTRANS_SERVER_KEY'),
         'xendit_api_key' => env('XENDIT_API_KEY'),
         'paypal_secret' => env('PAYPAL_SECRET'),

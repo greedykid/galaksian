@@ -18,18 +18,27 @@ class AdminAuthController extends Controller
         $login = $request->validated('login');
         $password = $request->validated('password');
 
-        $user = User::where('email', $login)->orWhere('phone', $login)->first();
+        // Normalisasi phone 0... -> 62... agar konsisten dengan OtpService.
+        $normalizedPhone = preg_replace('/\D+/', '', (string) $login) ?? '';
+        if (str_starts_with($normalizedPhone, '0')) {
+            $normalizedPhone = '62'.substr($normalizedPhone, 1);
+        }
 
+        $user = User::where('email', $login)->orWhere('phone', $login)->orWhere('phone', $normalizedPhone)->first();
+
+        // Pesan seragam untuk kredensial salah MAUPUN role non-admin:
+        // mencegah oracle 401 vs 403 untuk enumerasi kredensial + role.
         if (! $user || ! Hash::check($password, $user->password)) {
             throw new BusinessException('Kredensial login admin tidak valid.', 401);
         }
 
         if (! $user->isAdmin() && ! $user->isCs()) {
-            throw new BusinessException('Anda tidak memiliki hak akses administrator.', 403);
+            throw new BusinessException('Kredensial login admin tidak valid.', 401);
         }
 
         $user->update(['last_login_at' => now()]);
-        $token = $user->createToken('admin-token')->plainTextToken;
+        // Token admin: ability admin, expiry 12 jam.
+        $token = $user->createToken('admin-token', ['admin'], now()->addHours(12))->plainTextToken;
 
         return $this->successResponse([
             'token' => $token,
@@ -42,10 +51,8 @@ class AdminAuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user->password && $request->filled('current_password')) {
-            if (! Hash::check($request->validated('current_password'), $user->password)) {
-                throw new BusinessException('Kata sandi lama yang Anda masukkan tidak sesuai.', 422);
-            }
+        if ($user->password && ! Hash::check($request->validated('current_password'), $user->password)) {
+            throw new BusinessException('Kata sandi lama yang Anda masukkan tidak sesuai.', 422);
         }
 
         $user->update([
@@ -53,6 +60,8 @@ class AdminAuthController extends Controller
             'must_change_password' => false,
             'last_login_at' => now(),
         ]);
+        $currentTokenId = $user->currentAccessToken()?->getKey();
+        $user->tokens()->when($currentTokenId, fn ($query) => $query->where('id', '!=', $currentTokenId))->delete();
 
         return $this->successResponse([
             'user' => new UserResource($user->fresh()),

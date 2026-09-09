@@ -21,7 +21,6 @@ class UpdateProfileRequest extends FormRequest
             'phone' => ['sometimes', 'nullable', 'string', 'max:25', 'unique:users,phone,'.$userId],
             'language' => ['sometimes', 'nullable', 'string', 'in:id,en'],
             'identity_number' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'password' => ['sometimes', 'nullable', 'string', 'min:6'],
         ];
     }
 }
